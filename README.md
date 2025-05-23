@@ -1,7 +1,11 @@
-# anno-ai-avatar
+# ai-anno-2024
+## リポジトリについて
+* このリポジトリは、[anno-ai-avatar](https://github.com/takahiroanno2024/anno-ai-avatar)を理解して2025年の活動に活かすために複製したものです。
+* 元のリポジトリは2024年東京都知事選で「[AIあんの](https://note.com/jujunjun110/n/n0362b324831f)」として公開されていたシステムを、オープンソースとして公開したものです。
+* このリポジトリでは、特にRAG（Retrieval Augmented Generation）機能に注目し、Q&A以外の用途（偽情報への対処やPRの分類など）への応用可能性を検討します。
+
 ## アプリケーションの概要
 * 事前に考え方を学習させておくことで、YouTube Liveおよび電話にて、バーチャルアバターや特定の人物の声を通じて、視聴者・通話者からの質問に応答できるアプリケーションです
-* 2024年東京都知事選で「[AIあんの](https://note.com/jujunjun110/n/n0362b324831f)」として公開していたシステムを、オープンソースとして公開可能な形に調整したものです
 
 ## ライセンスについて
 * このプロジェクトは[GPL-3.0 license](https://github.com/takahiroanno2024/anno-ai-avatar?tab=GPL-3.0-1-ov-file)にて公開されています。
