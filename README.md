@@ -1,4 +1,4 @@
-# ai-anno-2024
+# ai-anno
 ## リポジトリについて
 * このリポジトリは、[anno-ai-avatar](https://github.com/takahiroanno2024/anno-ai-avatar)を理解して2025年の活動に活かすために複製したものです。
 * 元のリポジトリは2024年東京都知事選で「[AIあんの](https://note.com/jujunjun110/n/n0362b324831f)」として公開されていたシステムを、オープンソースとして公開したものです。
