@@ -25,7 +25,21 @@
 
 ## バックエンド側の環境構築
 
-[README.md](python_server/README.md) を参照し、環境を構築して下さい。
+バックエンド環境の構築には、以下の2つのドキュメントが利用できます：
+
+### 🎯 推奨：詳細な環境構築ガイド
+**[BACKEND_SETUP.md](BACKEND_SETUP.md)** - 包括的な環境構築手順書
+- 段階的なセットアップ手順（PostgreSQL、Google API、FAISSナレッジベース）
+- トラブルシューティングガイド
+- 成功確認チェックリスト
+- 実際の構築経験に基づく詳細な説明
+
+### 📖 基本情報
+**[python_server/README.md](python_server/README.md)** - プロジェクト概要とクイックスタート
+- プロジェクトの基本情報
+- 簡潔なセットアップ手順
+
+**新規開発者の方は `BACKEND_SETUP.md` をお使いください。**
 
 
 ## PDFファイルからRAG自動作成（作成中）
