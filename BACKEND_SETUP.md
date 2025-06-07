@@ -40,11 +40,25 @@ sudo systemctl enable postgresql
 ```
 
 #### 2.2 データベースの作成
+
+**⚠️ 重要**: 以下のコマンドは**必ず1行ずつ個別に実行**してください。まとめて実行すると意図しないパスワードが設定される可能性があります。
+
 ```bash
 sudo -H -u postgres psql -c "CREATE DATABASE aituber_dev;"
 sudo -H -u postgres psql -c "CREATE USER aituber_user WITH PASSWORD 'secure_password';"
 sudo -H -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO aituber_user;"
 ```
+
+#### 2.3 PostgreSQLパスワードの変更（オプション）
+
+**重要**: 上記のコマンドで'secure_password'というパスワードを設定しましたが、セキュリティ上より強固なパスワードに変更することを推奨します。
+
+```bash
+# パスワードを変更する場合
+sudo -H -u postgres psql -c "ALTER USER aituber_user WITH PASSWORD 'your_new_secure_password';"
+```
+
+パスワードを変更した場合は、後で設定する`.env`ファイルの`PG_PASSWORD`も同じパスワードに更新してください。
 
 ### ステップ3: 環境変数設定
 
@@ -55,19 +69,41 @@ sudo -H -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO ait
 4. **重要**: 請求先アカウントを設定
 
 #### 3.2 環境変数設定
+
+**基本テスト用設定（推奨）**
 ```bash
 cp .env.example .env
 ```
 
-`.env`ファイルを編集：
+`.env.example`にはダミー値が設定されており、そのまま使用すれば基本的なサーバー起動とテストが可能です。
+
+**本格運用時の設定**
+実際のAI機能を使用する場合は、以下の設定を更新してください：
+
 ```env
+# 必須設定（データベース接続）
 PG_HOST=localhost
 PG_PORT=5432
 PG_DATABASE=aituber_dev
 PG_USER=aituber_user
-PG_PASSWORD=secure_password
-GOOGLE_API_KEY=your_google_api_key_here
+PG_PASSWORD=secure_password  # 2.3でパスワードを変更した場合は新しいパスワード
+
+# AI機能用（本格運用時に設定）
+GOOGLE_API_KEY=your_actual_google_api_key_here
+
+# その他オプション機能（必要に応じて設定）
+YOUTUBE_API_KEY=your_youtube_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
+AZURE_SPEECH_KEY=your_azure_speech_key
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+GOOGLE_DRIVE_FOLDER_ID=your_drive_folder_id
+YT_ID=your_youtube_channel_id
 ```
+
+**設定の優先度**
+- **必須**: PostgreSQL設定（PG_*）
+- **推奨**: GOOGLE_API_KEY（AI応答生成用）
+- **オプション**: その他のAPI（音声合成、YouTube連携等）
 
 #### 3.3 データベースマイグレーション
 環境変数設定後にマイグレーションを実行します。データベース作成後にマイグレーションを実行するのは、空のデータベースにテーブル構造を作成するためです。2.2で箱（データベース）を作り、3.3で中身（テーブル）を作る流れになっています。
@@ -148,6 +184,19 @@ sudo systemctl restart postgresql
 **症状**: どの質問でも子育て支援の回答
 **原因**: フォールバック機能の制限（既知の問題）
 **対処**: システムは正常動作中、政策関連の質問で確認
+
+### 問題5: PostgreSQLパスワード設定ミス
+**症状**: 意図しないパスワード（例：'secure_password'）でユーザーが作成された
+**原因**: PostgreSQLコマンドを複数行まとめて実行した
+**解決**: 
+```bash
+# パスワードを変更
+sudo -H -u postgres psql -c "ALTER USER aituber_user WITH PASSWORD 'new_secure_password';"
+
+# .envファイルも更新
+# PG_PASSWORD=new_secure_password
+```
+**予防**: PostgreSQLコマンドは必ず1行ずつ個別に実行する
 
 ## システム仕様
 

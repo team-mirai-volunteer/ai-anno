@@ -1,5 +1,5 @@
 import pathlib
-from typing import Any
+from typing import Any, Optional
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
@@ -12,11 +12,11 @@ load_dotenv(override=True)
 class Settings(BaseSettings):
     """Settings for python_server"""
 
-    YOUTUBE_API_KEY: str
-    GOOGLE_APPLICATION_CREDENTIALS: pathlib.Path
-    YT_ID: str
-    ELEVENLABS_API_KEY: str
-    AZURE_SPEECH_KEY: str
+    YOUTUBE_API_KEY: Optional[str] = None
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[pathlib.Path] = None
+    YT_ID: Optional[str] = None
+    ELEVENLABS_API_KEY: Optional[str] = None
+    AZURE_SPEECH_KEY: Optional[str] = None
 
     PROJECT_ROOT: pathlib.Path = pathlib.Path(__file__).resolve().parent.parent.parent
     AITUBER_3D_ROOT: pathlib.Path = PROJECT_ROOT / "aituber_3d"
@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     FAISS_KNOWLEDGE_DB_DIR: pathlib.Path = PYTHON_SERVER_ROOT / "faiss_knowledge_manifest_demo_csv_db"
     BM25_KNOWLEDGE_DB_DIR: pathlib.Path = PYTHON_SERVER_ROOT / "bm25_knowledge_manifest_demo_csv_db"
 
-    GOOGLE_DRIVE_FOLDER_ID: str
-    GOOGLE_API_KEY: str
+    GOOGLE_DRIVE_FOLDER_ID: Optional[str] = None
+    GOOGLE_API_KEY: Optional[str] = None
 
     # Postgres
     PG_HOST: str
