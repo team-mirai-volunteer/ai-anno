@@ -46,14 +46,7 @@ sudo -H -u postgres psql -c "CREATE USER aituber_user WITH PASSWORD 'secure_pass
 sudo -H -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO aituber_user;"
 ```
 
-#### 2.3 データベースマイグレーション
-データベース作成後にマイグレーションを実行するのは、空のデータベースにテーブル構造を作成するためです。2.2で箱（データベース）を作り、2.3で中身（テーブル）を作る流れになっています。
-
-```bash
-poetry run alembic upgrade head
-```
-
-### ステップ3: Google API設定
+### ステップ3: 環境変数設定
 
 #### 3.1 Google Cloud Console設定
 1. [Google Cloud Console](https://console.cloud.google.com/)でプロジェクト作成
@@ -74,6 +67,13 @@ PG_DATABASE=aituber_dev
 PG_USER=aituber_user
 PG_PASSWORD=secure_password
 GOOGLE_API_KEY=your_google_api_key_here
+```
+
+#### 3.3 データベースマイグレーション
+環境変数設定後にマイグレーションを実行します。データベース作成後にマイグレーションを実行するのは、空のデータベースにテーブル構造を作成するためです。2.2で箱（データベース）を作り、3.3で中身（テーブル）を作る流れになっています。
+
+```bash
+poetry run alembic upgrade head
 ```
 
 ### ステップ4: ナレッジベースの構築
