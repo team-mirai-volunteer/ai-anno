@@ -233,6 +233,35 @@ poetry run python debug_api_generation.py
 - `faiss_knowledge/`: ナレッジベース
 - `qa_datasets/`: 元データ（CSV）
 
+## Additional Notes
+
+### 開発ワークフロー
+- **Lintエラー対応**: `make lint`が失敗したら`make fmt`を実行してコードフォーマットを修正
+- **依存関係更新**: `poetry update`で最新バージョンに更新、問題があれば`poetry install`で再インストール
+- **サーバー再起動**: `.env`ファイル変更後は必ずサーバーを再起動
+- **テスト実行**: 現在のテストはGoogle APIキー依存のため、本格的なテストは外部API設定後に実行
+
+### 開発時の注意点
+- **PostgreSQLコマンド**: 必ず1行ずつ個別に実行（まとめて実行すると意図しないパスワード設定の可能性）
+- **APIキー設定**: `.env`ファイルではシェル変数構文（`${VAR}`）は使用不可、直接値を記述
+- **FAISS重複実行**: `make setup/resources`の重複実行は安全だが、時間がかかるため注意
+- **デバッグスクリプト**: `debug_*.py`ファイルで各機能の個別テストが可能
+
+### 便利なコマンド
+```bash
+# 開発用サーバー起動
+make run
+
+# コードフォーマット（lint失敗時）
+make fmt
+
+# データベースリセット
+make db/reset
+
+# リソース再構築
+make setup/resources
+```
+
 ## 次のステップ
 
 環境構築完了後：
