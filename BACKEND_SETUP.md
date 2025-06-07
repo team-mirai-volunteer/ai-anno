@@ -41,9 +41,9 @@ sudo systemctl enable postgresql
 
 #### 2.2 データベースの作成
 ```bash
-sudo -u postgres psql -c "CREATE DATABASE aituber_dev;"
-sudo -u postgres psql -c "CREATE USER aituber_user WITH PASSWORD 'secure_password';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO aituber_user;"
+sudo -H -u postgres psql -c "CREATE DATABASE aituber_dev;"
+sudo -H -u postgres psql -c "CREATE USER aituber_user WITH PASSWORD 'secure_password';"
+sudo -H -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO aituber_user;"
 ```
 
 #### 2.3 データベースマイグレーション
