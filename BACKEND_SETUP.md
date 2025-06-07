@@ -47,6 +47,8 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE aituber_dev TO aitube
 ```
 
 #### 2.3 データベースマイグレーション
+データベース作成後にマイグレーションを実行するのは、空のデータベースにテーブル構造を作成するためです。2.2で箱（データベース）を作り、2.3で中身（テーブル）を作る流れになっています。
+
 ```bash
 poetry run alembic upgrade head
 ```
