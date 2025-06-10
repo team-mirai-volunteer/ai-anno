@@ -1,7 +1,7 @@
 # ローカルLLM埋め込み統合ガイド
 
 ## 概要
-このドキュメントでは、ai-anno-2024リポジトリにおいて、現在使用されているGoogle Generative AI Embeddings（`models/text-embedding-004`）をローカルLLM埋め込み（SentenceTransformer）に置き換える方法について説明します。この方法により、APIキーなしで無料かつプライベートな埋め込み生成が可能になります。
+このドキュメントでは、ai-annoリポジトリにおいて、現在使用されているGoogle Generative AI Embeddings（`models/text-embedding-004`）をローカルLLM埋め込み（SentenceTransformer）に置き換える方法について説明します。models/text-embedding-004`）をローカルLLM埋め込み（SentenceTransformer）に置き換える方法について説明します。この方法により、APIキーなしで無料かつプライベートな埋め込み生成が可能になります。
 
 ## 現在の埋め込み使用状況
 
