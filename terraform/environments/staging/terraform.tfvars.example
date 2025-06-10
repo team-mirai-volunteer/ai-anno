@@ -1,0 +1,29 @@
+# GCP Project Configuration
+project_id     = "your-gcp-project-id"
+project_number = "your-gcp-project-number"
+project_name   = "dify"
+region         = "asia-northeast1"
+
+# Dify Application Configuration
+dify_secret_key = "your-secret-key-here"  # Generate with: openssl rand -base64 32
+
+# GCS Service Account JSON (for storage access)
+# Create a service account with Storage Object Admin role and download the JSON key
+gcs_service_account_json = <<EOF
+{
+  "type": "service_account",
+  "project_id": "your-project-id",
+  "private_key_id": "key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+  "client_email": "service-account@your-project-id.iam.gserviceaccount.com",
+  "client_id": "client-id",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account%40your-project-id.iam.gserviceaccount.com"
+}
+EOF
+
+# Email Configuration
+mail_type              = "smtp"
+mail_default_send_from = "noreply@yourdomain.com"
