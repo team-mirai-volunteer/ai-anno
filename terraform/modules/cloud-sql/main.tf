@@ -57,14 +57,14 @@ resource "google_sql_database_instance" "main" {
   depends_on = [var.private_vpc_connection]
 }
 
-resource "google_sql_database" "dify" {
-  name     = "dify"
+resource "google_sql_database" "main" {
+  name     = "main-${var.environment}"
   instance = google_sql_database_instance.main.name
   project  = var.project_id
 }
 
-resource "google_sql_user" "dify" {
-  name     = "dify"
+resource "google_sql_user" "main" {
+  name     = "main-${var.environment}"
   instance = google_sql_database_instance.main.name
   password = random_password.db_password.result
   project  = var.project_id
@@ -89,14 +89,14 @@ resource "null_resource" "init_pgvector" {
     command = <<-EOT
       echo '${local.pgvector_init_script}' > /tmp/init_pgvector.sql
       gcloud sql import sql ${google_sql_database_instance.main.name} /tmp/init_pgvector.sql \
-        --database=${google_sql_database.dify.name} \
+        --database=${google_sql_database.main.name} \
         --project=${var.project_id}
       rm /tmp/init_pgvector.sql
     EOT
   }
 
   depends_on = [
-    google_sql_database.dify,
-    google_sql_user.dify
+    google_sql_database.main,
+    google_sql_user.main
   ]
 }

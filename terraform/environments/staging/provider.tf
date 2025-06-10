@@ -21,9 +21,10 @@ terraform {
   }
 
   backend "remote" {
-    organization = "gamification"
+    organization = "ai-anno"
     workspaces {
-      name = "ai-anno-dify-staging"
+      tags = ["ai-anno"]
+
     }
   }
 }

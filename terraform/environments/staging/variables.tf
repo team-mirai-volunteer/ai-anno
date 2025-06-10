@@ -11,7 +11,7 @@ variable "project_number" {
 variable "project_name" {
   description = "The project name to use as prefix"
   type        = string
-  default     = "dify"
+  default     = "ai-anno"
 }
 
 variable "region" {

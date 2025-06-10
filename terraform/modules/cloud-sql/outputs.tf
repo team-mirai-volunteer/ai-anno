@@ -15,12 +15,12 @@ output "private_ip_address" {
 
 output "database_name" {
   description = "The name of the database"
-  value       = google_sql_database.dify.name
+  value       = google_sql_database.main.name
 }
 
 output "database_user" {
   description = "The database user"
-  value       = google_sql_user.dify.name
+  value       = google_sql_user.main.name
 }
 
 output "database_password" {
