@@ -145,16 +145,6 @@ resource "google_cloud_run_v2_service" "main" {
         period_seconds        = 5
         failure_threshold     = 3
       }
-
-      liveness_probe {
-        tcp_socket {
-          port = 6379
-        }
-        initial_delay_seconds = 30
-        timeout_seconds       = 1
-        period_seconds        = 10
-        failure_threshold     = 3
-      }
     }
 
     volumes {
