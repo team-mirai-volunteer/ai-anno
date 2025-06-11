@@ -90,11 +90,11 @@ module "cloud_run" {
   database_user            = module.cloud_sql.database_user
   database_password        = module.cloud_sql.database_password
 
-  nginx_image   = "${module.artifact_registry.repository_url}/nginx:latest"
-  api_image     = "${module.artifact_registry.repository_url}/api:latest"
-  web_image     = "${module.artifact_registry.repository_url}/web:latest"
-  worker_image  = "${module.artifact_registry.repository_url}/worker:latest"
-  sandbox_image = "${module.artifact_registry.repository_url}/sandbox:latest"
+  nginx_image   = "nginx:1.25-alpine"  # 使用されない（削除予定）
+  api_image     = "langgenius/dify-api:0.6.12"
+  web_image     = "langgenius/dify-web:0.6.12"
+  worker_image  = "langgenius/dify-api:0.6.12"
+  sandbox_image = "langgenius/dify-sandbox:0.2.1"
 
   common_env_vars = {
     LOG_LEVEL                 = "INFO"

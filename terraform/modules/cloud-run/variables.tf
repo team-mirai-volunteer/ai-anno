@@ -152,3 +152,27 @@ variable "sandbox_memory" {
   type        = string
   default     = "2Gi"
 }
+
+variable "web_min_instances" {
+  description = "Minimum instances for web service"
+  type        = number
+  default     = 1
+}
+
+variable "web_max_instances" {
+  description = "Maximum instances for web service"
+  type        = number
+  default     = 10
+}
+
+variable "web_cpu" {
+  description = "CPU allocation for web container"
+  type        = string
+  default     = "1"
+}
+
+variable "web_memory" {
+  description = "Memory allocation for web container"
+  type        = string
+  default     = "2Gi"
+}

@@ -48,25 +48,20 @@ resource "google_cloud_run_v2_service" "main" {
     }
 
     containers {
-      name  = "nginx"
-      image = var.nginx_image
+      name  = "api"
+      image = var.api_image
 
       ports {
-        container_port = 80
+        container_port = 5001
       }
 
       resources {
         cpu_idle = true
         limits = {
-          cpu    = "1"
-          memory = "512Mi"
+          cpu    = var.main_cpu
+          memory = var.main_memory
         }
       }
-    }
-
-    containers {
-      name  = "api"
-      image = var.api_image
 
       dynamic "env" {
         for_each = local.env_vars
@@ -86,14 +81,6 @@ resource "google_cloud_run_v2_service" "main" {
         }
       }
 
-      resources {
-        cpu_idle = true
-        limits = {
-          cpu    = var.main_cpu
-          memory = var.main_memory
-        }
-      }
-
       volume_mounts {
         name       = "cloudsql"
         mount_path = "/cloudsql"
@@ -101,21 +88,31 @@ resource "google_cloud_run_v2_service" "main" {
     }
 
     containers {
-      name  = "web"
-      image = var.web_image
+      name  = "redis"
+      image = "redis:6-alpine"
 
       resources {
-        cpu_idle = true
+        cpu_idle = false
         limits = {
           cpu    = "1"
           memory = "1Gi"
         }
       }
+
+      startup_probe {
+        tcp_socket {
+          port = 6379
+        }
+        initial_delay_seconds = 5
+        timeout_seconds       = 1
+        period_seconds        = 5
+        failure_threshold     = 3
+      }
     }
 
     containers {
-      name  = "redis"
-      image = "redis:7-alpine"
+      name  = "ssrf-proxy"
+      image = "ubuntu/squid:latest"
 
       resources {
         cpu_idle = false
@@ -258,6 +255,59 @@ resource "google_cloud_run_v2_service" "sandbox" {
   }
 }
 
+resource "google_cloud_run_v2_service" "web" {
+  name                = "${var.project_name}-web-${var.environment}"
+  location            = var.region
+  project             = var.project_id
+  deletion_protection = false
+
+  template {
+    service_account = google_service_account.cloud_run.email
+
+    vpc_access {
+      connector = var.vpc_connector_id
+      egress    = "PRIVATE_RANGES_ONLY"
+    }
+
+    scaling {
+      min_instance_count = var.web_min_instances
+      max_instance_count = var.web_max_instances
+    }
+
+    containers {
+      name  = "web"
+      image = var.web_image
+
+      ports {
+        container_port = 3000
+      }
+
+      env {
+        name  = "CONSOLE_API_URL"
+        value = "https://${google_cloud_run_v2_service.main.uri}"
+      }
+
+      env {
+        name  = "APP_API_URL"
+        value = "https://${google_cloud_run_v2_service.main.uri}"
+      }
+
+      resources {
+        cpu_idle = true
+        limits = {
+          cpu    = var.web_cpu
+          memory = var.web_memory
+        }
+      }
+    }
+  }
+
+  traffic {
+    type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
+    percent = 100
+  }
+}
+
 resource "google_secret_manager_secret" "db_password" {
   secret_id = "${var.project_name}-db-password-${var.environment}"
   project   = var.project_id
@@ -275,6 +325,14 @@ resource "google_secret_manager_secret_version" "db_password" {
 resource "google_cloud_run_service_iam_member" "main_public" {
   location = google_cloud_run_v2_service.main.location
   service  = google_cloud_run_v2_service.main.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+  project  = var.project_id
+}
+
+resource "google_cloud_run_service_iam_member" "web_public" {
+  location = google_cloud_run_v2_service.web.location
+  service  = google_cloud_run_v2_service.web.name
   role     = "roles/run.invoker"
   member   = "allUsers"
   project  = var.project_id
