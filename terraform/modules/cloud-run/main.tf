@@ -29,9 +29,10 @@ locals {
 }
 
 resource "google_cloud_run_v2_service" "main" {
-  name     = "${var.project_name}-main-${var.environment}"
-  location = var.region
-  project  = var.project_id
+  name                = "${var.project_name}-main-${var.environment}"
+  location            = var.region
+  project             = var.project_id
+  deletion_protection = false
 
   template {
     service_account = google_service_account.cloud_run.email
@@ -162,9 +163,10 @@ resource "google_cloud_run_v2_service" "main" {
 }
 
 resource "google_cloud_run_v2_service" "worker" {
-  name     = "${var.project_name}-worker-${var.environment}"
-  location = var.region
-  project  = var.project_id
+  name                = "${var.project_name}-worker-${var.environment}"
+  location            = var.region
+  project             = var.project_id
+  deletion_protection = false
 
   template {
     service_account = google_service_account.cloud_run.email
@@ -230,9 +232,10 @@ resource "google_cloud_run_v2_service" "worker" {
 }
 
 resource "google_cloud_run_v2_service" "sandbox" {
-  name     = "${var.project_name}-sandbox-${var.environment}"
-  location = var.region
-  project  = var.project_id
+  name                = "${var.project_name}-sandbox-${var.environment}"
+  location            = var.region
+  project             = var.project_id
+  deletion_protection = false
 
   template {
     service_account = google_service_account.cloud_run.email
