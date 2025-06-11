@@ -34,6 +34,6 @@ resource "google_artifact_registry_repository_iam_member" "cloud_build_writer" {
   location   = google_artifact_registry_repository.docker.location
   repository = google_artifact_registry_repository.docker.name
   role       = "roles/artifactregistry.writer"
-  member     = "serviceAccount:${var.project_number}@cloudbuild.gserviceaccount.com"
+  member     = "serviceAccount:${var.cloud_build_service_account}"
   project    = var.project_id
 }

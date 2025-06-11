@@ -2,6 +2,14 @@ locals {
   environment = "staging"
 }
 
+module "cloud_build" {
+  source = "../../modules/cloud-build"
+
+  project_id   = var.project_id
+  project_name = var.project_name
+  environment  = local.environment
+}
+
 module "networking" {
   source = "../../modules/networking"
 
@@ -57,12 +65,12 @@ module "storage" {
 module "artifact_registry" {
   source = "../../modules/artifact-registry"
 
-  project_id                = var.project_id
-  project_number            = var.project_number
-  project_name              = var.project_name
-  region                    = var.region
-  environment               = local.environment
-  cloud_run_service_account = module.cloud_run.service_account_email
+  project_id                  = var.project_id
+  project_name                = var.project_name
+  region                      = var.region
+  environment                 = local.environment
+  cloud_run_service_account   = module.cloud_run.service_account_email
+  cloud_build_service_account = module.cloud_build.service_account_email
 
   keep_versions_count             = 5
   delete_versions_older_than_days = 30

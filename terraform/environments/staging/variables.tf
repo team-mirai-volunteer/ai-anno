@@ -3,10 +3,6 @@ variable "project_id" {
   type        = string
 }
 
-variable "project_number" {
-  description = "The GCP project number"
-  type        = string
-}
 
 variable "project_name" {
   description = "The project name to use as prefix"

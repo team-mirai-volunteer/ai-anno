@@ -3,8 +3,8 @@ variable "project_id" {
   type        = string
 }
 
-variable "project_number" {
-  description = "The GCP project number"
+variable "cloud_build_service_account" {
+  description = "Service account email for Cloud Build"
   type        = string
 }
 
