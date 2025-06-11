@@ -102,9 +102,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
       name  = "dify-api"
       image = var.api_image
 
-      ports {
-        container_port = 5001
-      }
 
       resources {
         cpu_idle = true
@@ -203,9 +200,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
       name  = "dify-web"
       image = var.web_image
 
-      ports {
-        container_port = 3000
-      }
 
       resources {
         cpu_idle = true
@@ -287,9 +281,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
       name  = "dify-plugin-daemon"
       image = var.plugin_daemon_image
 
-      ports {
-        container_port = 5003
-      }
 
       resources {
         cpu_idle = true
@@ -507,9 +498,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
       name  = "ssrf-proxy"
       image = "ubuntu/squid:latest"
 
-      ports {
-        container_port = 3128
-      }
 
       resources {
         cpu_idle = true
@@ -590,14 +578,6 @@ resource "google_secret_manager_secret_version" "db_password" {
 resource "google_cloud_run_service_iam_member" "main_public" {
   location = google_cloud_run_v2_service.dify_service.location
   service  = google_cloud_run_v2_service.dify_service.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-  project  = var.project_id
-}
-
-resource "google_cloud_run_service_iam_member" "web_public" {
-  location = google_cloud_run_v2_service.web.location
-  service  = google_cloud_run_v2_service.web.name
   role     = "roles/run.invoker"
   member   = "allUsers"
   project  = var.project_id

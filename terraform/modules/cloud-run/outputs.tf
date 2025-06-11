@@ -8,11 +8,6 @@ output "main_service_name" {
   value       = google_cloud_run_v2_service.dify_service.name
 }
 
-output "worker_service_name" {
-  description = "Name of the worker Cloud Run service"
-  value       = google_cloud_run_v2_service.worker.name
-}
-
 output "sandbox_service_name" {
   description = "Name of the sandbox Cloud Run service"
   value       = google_cloud_run_v2_service.sandbox.name
@@ -21,15 +16,5 @@ output "sandbox_service_name" {
 output "service_account_email" {
   description = "Email of the Cloud Run service account"
   value       = google_service_account.cloud_run.email
-}
-
-output "web_service_uri" {
-  description = "The URL of the web Cloud Run service"
-  value       = google_cloud_run_v2_service.web.uri
-}
-
-output "web_service_name" {
-  description = "Name of the web Cloud Run service"
-  value       = google_cloud_run_v2_service.web.name
 }
 
