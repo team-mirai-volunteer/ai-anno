@@ -1,11 +1,11 @@
 output "main_service_url" {
   description = "URL of the main Cloud Run service"
-  value       = google_cloud_run_v2_service.main.uri
+  value       = google_cloud_run_v2_service.dify_service.uri
 }
 
 output "main_service_name" {
   description = "Name of the main Cloud Run service"
-  value       = google_cloud_run_v2_service.main.name
+  value       = google_cloud_run_v2_service.dify_service.name
 }
 
 output "worker_service_name" {
@@ -32,3 +32,4 @@ output "web_service_name" {
   description = "Name of the web Cloud Run service"
   value       = google_cloud_run_v2_service.web.name
 }
+

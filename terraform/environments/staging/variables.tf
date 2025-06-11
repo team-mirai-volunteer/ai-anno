@@ -39,3 +39,15 @@ variable "mail_default_send_from" {
   type        = string
   default     = "noreply@example.com"
 }
+
+variable "dify_plugin_daemon_key" {
+  description = "Dify Plugin daemon key"
+  type        = string
+  sensitive   = true
+}
+
+variable "dify_plugin_dify_inner_api_key" {
+  description = "Dify inner API key for plugin"
+  type        = string
+  sensitive   = true
+}

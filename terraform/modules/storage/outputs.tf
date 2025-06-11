@@ -27,3 +27,13 @@ output "backups_bucket_url" {
   description = "URL of the backups storage bucket"
   value       = google_storage_bucket.backups.url
 }
+
+output "plugin_storage_bucket_name" {
+  description = "Name of the plugin storage bucket"
+  value       = google_storage_bucket.plugin_storage.name
+}
+
+output "plugin_storage_bucket_url" {
+  description = "URL of the plugin storage bucket"
+  value       = google_storage_bucket.plugin_storage.url
+}

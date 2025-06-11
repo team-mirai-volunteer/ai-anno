@@ -104,3 +104,46 @@ resource "google_storage_bucket_iam_member" "backups_write" {
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${var.cloud_run_service_account}"
 }
+
+resource "google_storage_bucket" "plugin_storage" {
+  name          = "${var.project_id}-${var.project_name}-plugins-${var.environment}"
+  location      = var.region
+  project       = var.project_id
+  force_destroy = var.force_destroy
+
+  uniform_bucket_level_access = true
+
+  dynamic "lifecycle_rule" {
+    for_each = var.plugin_retention_days > 0 ? [1] : []
+    content {
+      condition {
+        age = var.plugin_retention_days
+      }
+      action {
+        type = "Delete"
+      }
+    }
+  }
+
+  versioning {
+    enabled = false
+  }
+}
+
+resource "google_storage_bucket_iam_member" "plugin_storage_read" {
+  bucket = google_storage_bucket.plugin_storage.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${var.cloud_run_service_account}"
+}
+
+resource "google_storage_bucket_iam_member" "plugin_storage_write" {
+  bucket = google_storage_bucket.plugin_storage.name
+  role   = "roles/storage.objectCreator"
+  member = "serviceAccount:${var.cloud_run_service_account}"
+}
+
+resource "google_storage_bucket_iam_member" "plugin_storage_admin" {
+  bucket = google_storage_bucket.plugin_storage.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${var.cloud_run_service_account}"
+}

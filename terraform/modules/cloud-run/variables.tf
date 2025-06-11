@@ -50,6 +50,23 @@ variable "database_password" {
   sensitive   = true
 }
 
+variable "plugin_daemon_key" {
+  description = "Plugin daemon key"
+  type        = string
+  sensitive   = true
+}
+
+variable "plugin_dify_inner_api_key" {
+  description = "Dify inner API key for plugin"
+  type        = string
+  sensitive   = true
+}
+
+variable "plugin_storage_bucket" {
+  description = "Google Cloud Storage bucket for plugin storage"
+  type        = string
+}
+
 variable "nginx_image" {
   description = "Docker image for nginx"
   type        = string
@@ -67,6 +84,11 @@ variable "web_image" {
 
 variable "worker_image" {
   description = "Docker image for worker"
+  type        = string
+}
+
+variable "plugin_daemon_image" {
+  description = "Docker image for plugin daemon"
   type        = string
 }
 
@@ -176,3 +198,28 @@ variable "web_memory" {
   type        = string
   default     = "2Gi"
 }
+
+variable "plugin_daemon_min_instances" {
+  description = "Minimum instances for daemon service"
+  type        = number
+  default     = 1
+}
+
+variable "plugin_daemon_max_instances" {
+  description = "Maximum instances for daemon service"
+  type        = number
+  default     = 100
+}
+
+variable "plugin_daemon_cpu" {
+  description = "CPU allocation for daemon container"
+  type        = string
+  default     = "2"
+}
+
+variable "plugin_daemon_memory" {
+  description = "Memory allocation for daemon container"
+  type        = string
+  default     = "4Gi"
+}
+
