@@ -68,10 +68,6 @@ resource "google_cloud_run_v2_service" "main" {
       name  = "api"
       image = var.api_image
 
-      ports {
-        container_port = 5001
-      }
-
       dynamic "env" {
         for_each = local.env_vars
         content {
@@ -108,10 +104,6 @@ resource "google_cloud_run_v2_service" "main" {
       name  = "web"
       image = var.web_image
 
-      ports {
-        container_port = 3000
-      }
-
       resources {
         cpu_idle = true
         limits = {
@@ -124,10 +116,6 @@ resource "google_cloud_run_v2_service" "main" {
     containers {
       name  = "redis"
       image = "redis:7-alpine"
-
-      ports {
-        container_port = 6379
-      }
 
       resources {
         cpu_idle = false
