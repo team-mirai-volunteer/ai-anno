@@ -185,12 +185,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
         }
       }
 
-      # TODO: 確認して private IP で接続できるか
-      volume_mounts {
-        name       = "cloudsql"
-        mount_path = "/cloudsql"
-      }
-
       startup_probe {
         timeout_seconds   = 30
         period_seconds    = 30
