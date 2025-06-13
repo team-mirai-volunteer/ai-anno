@@ -75,30 +75,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
     }
 
     containers {
-      name  = "nginx"
-      image = var.nginx_image
-      resources {
-        limits = {
-          cpu    = "0.5"
-          memory = "1Gi"
-        }
-      }
-      ports {
-        name           = "http1"
-        container_port = 80
-      }
-      depends_on = ["dify-web", "dify-api", "dify-plugin-daemon", "redis"]
-      startup_probe {
-        timeout_seconds   = 30
-        period_seconds    = 30
-        failure_threshold = 1
-        tcp_socket {
-          port = 80
-        }
-      }
-    }
-
-    containers {
       name  = "dify-api"
       image = var.api_image
 
@@ -199,6 +175,10 @@ resource "google_cloud_run_v2_service" "dify_service" {
       name  = "dify-web"
       image = var.web_image
 
+      ports {
+        name           = "http1"
+        container_port = 80
+      }
 
       resources {
         cpu_idle = true
@@ -210,13 +190,18 @@ resource "google_cloud_run_v2_service" "dify_service" {
 
 
       env {
+        name  = "PORT"
+        value = "80"
+      }
+
+      env {
         name  = "CONSOLE_API_URL"
-        value = ""
+        value = "http://localhost:5001"
       }
 
       env {
         name  = "APP_API_URL"
-        value = ""
+        value = "http://localhost:5001"
       }
 
       env {
@@ -276,7 +261,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
         period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
-          port = 3000
+          port = 80
         }
       }
     }
