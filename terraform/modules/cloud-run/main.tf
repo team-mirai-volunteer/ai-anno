@@ -106,15 +106,11 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = "1.5"
+          cpu    = "1.0"
           memory = var.main_memory
         }
       }
 
-      env {
-        name  = "PORT"
-        value = "5001"
-      }
 
       env {
         name  = "MODE"
@@ -218,10 +214,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
         }
       }
 
-      env {
-        name  = "PORT"
-        value = "3000"
-      }
 
       env {
         name  = "CONSOLE_API_URL"
@@ -303,15 +295,11 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = "1.5"
+          cpu    = "1.0"
           memory = var.plugin_daemon_memory
         }
       }
 
-      env {
-        name  = "PORT"
-        value = "5002"
-      }
 
       dynamic "env" {
         for_each = local.env_vars
@@ -407,15 +395,11 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = "1.5"
+          cpu    = "1.0"
           memory = var.main_memory
         }
       }
 
-      env {
-        name  = "PORT"
-        value = "5000"
-      }
 
       env {
         name  = "MODE"
@@ -583,10 +567,6 @@ resource "google_cloud_run_v2_service" "sandbox" {
         container_port = 8080
       }
 
-      env {
-        name  = "PORT"
-        value = "8080"
-      }
     }
   }
 

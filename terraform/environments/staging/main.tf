@@ -133,7 +133,7 @@ module "cloud_run" {
   web_min_instances           = 1
   web_max_instances           = 5
   web_cpu                     = "1"
-  web_memory                  = "2Gi"
+  web_memory                  = "1Gi"
   plugin_daemon_min_instances = 1
   plugin_daemon_max_instances = 10
   plugin_daemon_cpu           = "2"
