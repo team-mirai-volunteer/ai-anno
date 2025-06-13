@@ -486,10 +486,10 @@ resource "google_cloud_run_v2_service" "dify_service" {
       image = "redis:6-alpine"
 
       resources {
-        cpu_idle = false
+        cpu_idle = true
         limits = {
           cpu    = "1"
-          memory = "1Gi"
+          memory = "128Mi"
         }
       }
 
