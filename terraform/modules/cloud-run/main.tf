@@ -89,8 +89,8 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
       depends_on = ["dify-web", "dify-api", "dify-plugin-daemon", "redis"]
       startup_probe {
-        timeout_seconds   = 240
-        period_seconds    = 240
+        timeout_seconds   = 30
+        period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
           port = 80
@@ -192,8 +192,8 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
 
       startup_probe {
-        timeout_seconds   = 240
-        period_seconds    = 240
+        timeout_seconds   = 30
+        period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
           port = 5001
@@ -278,8 +278,8 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
 
       startup_probe {
-        timeout_seconds   = 240
-        period_seconds    = 240
+        timeout_seconds   = 30
+        period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
           port = 3000
@@ -379,8 +379,8 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
 
       startup_probe {
-        timeout_seconds   = 240
-        period_seconds    = 240
+        timeout_seconds   = 30
+        period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
           port = 5002
