@@ -80,7 +80,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         limits = {
           cpu    = "0.5"
-          memory = "4Gi"
+          memory = "1Gi"
         }
       }
       ports {
