@@ -33,7 +33,7 @@ resource "google_storage_bucket" "model_cache" {
       age = var.model_cache_retention_days
     }
     action {
-      type = "SetStorageClass"
+      type          = "SetStorageClass"
       storage_class = "NEARLINE"
     }
   }
@@ -43,7 +43,7 @@ resource "google_storage_bucket" "model_cache" {
       age = var.model_cache_archive_days
     }
     action {
-      type = "SetStorageClass"
+      type          = "SetStorageClass"
       storage_class = "ARCHIVE"
     }
   }

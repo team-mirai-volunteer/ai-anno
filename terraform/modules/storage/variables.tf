@@ -57,5 +57,5 @@ variable "backup_retention_days" {
 variable "plugin_retention_days" {
   description = "Days to retain plugin files (0 = no automatic deletion)"
   type        = number
-  default     = 0  # プラグインは再利用されるため、自動削除は無効にする
+  default     = 0 # プラグインは再利用されるため、自動削除は無効にする
 }

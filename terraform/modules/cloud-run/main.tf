@@ -578,6 +578,15 @@ resource "google_cloud_run_v2_service" "sandbox" {
           memory = var.sandbox_memory
         }
       }
+      ports {
+        name           = "http1"
+        container_port = 8080
+      }
+
+      env {
+        name  = "PORT"
+        value = "8080"
+      }
     }
   }
 
