@@ -194,6 +194,15 @@ resource "google_cloud_run_v2_service" "dify_service" {
         name       = "cloudsql"
         mount_path = "/cloudsql"
       }
+
+      startup_probe {
+        timeout_seconds   = 240
+        period_seconds    = 240
+        failure_threshold = 1
+        tcp_socket {
+          port = 5001
+        }
+      }
     }
 
     containers {
@@ -274,6 +283,15 @@ resource "google_cloud_run_v2_service" "dify_service" {
       env {
         name  = "MAX_TOOLS_NUM"
         value = 10
+      }
+
+      startup_probe {
+        timeout_seconds   = 240
+        period_seconds    = 240
+        failure_threshold = 1
+        tcp_socket {
+          port = 3000
+        }
       }
     }
 
@@ -372,6 +390,14 @@ resource "google_cloud_run_v2_service" "dify_service" {
         value = ""
       }
 
+      startup_probe {
+        timeout_seconds   = 240
+        period_seconds    = 240
+        failure_threshold = 1
+        tcp_socket {
+          port = 5002
+        }
+      }
     }
 
     containers {
