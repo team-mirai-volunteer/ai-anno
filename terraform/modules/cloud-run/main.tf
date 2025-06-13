@@ -512,7 +512,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = "0.5"
+          cpu    = "0.25"
           memory = "512Mi"
         }
       }
