@@ -79,7 +79,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       image = var.nginx_image
       resources {
         limits = {
-          cpu    = "1"
+          cpu    = "0.5"
           memory = "4Gi"
         }
       }
@@ -106,7 +106,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = var.main_cpu
+          cpu    = "1.5"
           memory = var.main_memory
         }
       }
@@ -213,7 +213,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = var.web_cpu
+          cpu    = "0.5"
           memory = var.web_memory
         }
       }
@@ -303,7 +303,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = var.plugin_daemon_cpu
+          cpu    = "1.5"
           memory = var.plugin_daemon_memory
         }
       }
@@ -407,7 +407,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
       resources {
         cpu_idle = true
         limits = {
-          cpu    = var.main_cpu
+          cpu    = "1.5"
           memory = var.main_memory
         }
       }
