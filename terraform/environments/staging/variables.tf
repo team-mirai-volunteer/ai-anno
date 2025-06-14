@@ -80,3 +80,46 @@ variable "iap_ssh_users" {
   default     = []
 }
 
+# Load Balancer variables
+variable "domain_name" {
+  description = "Domain name for SSL certificate (leave empty for IP-only access)"
+  type        = string
+  default     = ""
+}
+
+variable "enable_ssl" {
+  description = "Enable SSL certificate and HTTPS"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cdn" {
+  description = "Enable Cloud CDN for static content caching"
+  type        = bool
+  default     = false
+}
+
+variable "health_check_path" {
+  description = "Path for health check endpoint"
+  type        = string
+  default     = "/"
+}
+
+variable "health_check_port" {
+  description = "Port for health check"
+  type        = number
+  default     = 80
+}
+
+variable "backend_timeout_sec" {
+  description = "Timeout for backend requests in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "session_affinity" {
+  description = "Session affinity type (NONE, CLIENT_IP, CLIENT_IP_PORT_PROTO, etc.)"
+  type        = string
+  default     = "NONE"
+}
+

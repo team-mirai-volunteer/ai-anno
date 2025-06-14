@@ -42,3 +42,24 @@ output "vpc_network_name" {
   description = "Name of the VPC network"
   value       = module.networking.network_name
 }
+
+# Load Balancer outputs
+output "load_balancer_ip" {
+  description = "The IP address of the load balancer"
+  value       = module.load_balancer.load_balancer_ip
+}
+
+output "load_balancer_url" {
+  description = "The URL to access the application through the load balancer"
+  value       = module.load_balancer.load_balancer_url
+}
+
+output "backend_service_name" {
+  description = "The name of the backend service"
+  value       = module.load_balancer.backend_service_name
+}
+
+output "ssl_certificate_name" {
+  description = "The name of the SSL certificate (if SSL is enabled)"
+  value       = module.load_balancer.ssl_certificate_name
+}

@@ -1,29 +1,42 @@
-# GCP Project Configuration
+# Project Configuration
 project_id     = "your-gcp-project-id"
 project_number = "your-gcp-project-number"
-project_name   = "dify"
+project_name   = "ai-anno"
 region         = "asia-northeast1"
 
-# Dify Application Configuration
-dify_secret_key = "your-secret-key-here"  # Generate with: openssl rand -base64 32
+# Dify Application Secrets (sensitive - keep secure)
+dify_secret_key                = "your-dify-secret-key"
+dify_plugin_daemon_key         = "your-plugin-daemon-key"
+dify_plugin_dify_inner_api_key = "your-plugin-inner-api-key"
+dify_server_key                = "your-server-key"
+dify_inner_api_key             = "your-inner-api-key"
 
-# GCS Service Account JSON (for storage access)
-# Create a service account with Storage Object Admin role and download the JSON key
-gcs_service_account_json = <<EOF
-{
-  "type": "service_account",
-  "project_id": "your-project-id",
-  "private_key_id": "key-id",
-  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
-  "client_email": "service-account@your-project-id.iam.gserviceaccount.com",
-  "client_id": "client-id",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-account%40your-project-id.iam.gserviceaccount.com"
-}
-EOF
-
-# Email Configuration
+# Mail Configuration
 mail_type              = "smtp"
-mail_default_send_from = "noreply@yourdomain.com"
+mail_default_send_from = "noreply@example.com"
+
+# SSH Configuration
+ssh_keys = "username:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB... user@example.com"
+ssh_source_ranges = ["0.0.0.0/0"]  # Restrict this to your IP ranges for security
+iap_ssh_users = [
+  "user:your-email@example.com"
+]
+
+# Load Balancer Configuration
+
+# For HTTP-only access (no domain required)
+enable_ssl = false
+enable_cdn = false
+
+# For HTTPS access with domain (uncomment and configure)
+# enable_ssl  = true
+# domain_name = "ai-anno.example.com"
+# enable_cdn  = true  # Optional: Enable CDN for better performance
+
+# Health check configuration
+health_check_path = "/"  # Or "/health" if your app has a dedicated health endpoint
+health_check_port = 80
+
+# Backend configuration
+backend_timeout_sec = 30
+session_affinity    = "NONE"  # Or "CLIENT_IP" for sticky sessions

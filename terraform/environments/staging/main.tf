@@ -124,3 +124,24 @@ module "secret_manager" {
   vm_service_account_email  = module.compute_engine.service_account_email
 }
 
+module "load_balancer" {
+  source = "../../modules/load-balancer"
+
+  project_id    = var.project_id
+  project_name  = var.project_name
+  environment   = local.environment
+  region        = var.region
+  zone          = module.compute_engine.zone
+  instance_name = module.compute_engine.instance_name
+  network_name  = module.networking.network_name
+
+  # Load balancer configuration
+  domain_name         = var.domain_name
+  enable_ssl          = var.enable_ssl
+  enable_cdn          = var.enable_cdn
+  health_check_path   = var.health_check_path
+  health_check_port   = var.health_check_port
+  backend_timeout_sec = var.backend_timeout_sec
+  session_affinity    = var.session_affinity
+}
+

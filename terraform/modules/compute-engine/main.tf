@@ -67,7 +67,8 @@ resource "google_compute_instance" "dify" {
     var.environment,
     "allow-ssh",
     "allow-http",
-    "allow-https"
+    "allow-https",
+    "allow-health-check"
   ]
 
   boot_disk {
