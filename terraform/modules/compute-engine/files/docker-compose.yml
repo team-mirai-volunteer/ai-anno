@@ -96,6 +96,8 @@ services:
     image: langgenius/dify-plugin-daemon:0.1.2-local
     restart: always
     environment:
+      SERVER_KEY: ${SERVER_KEY}
+      SERVER_PORT: ${PLUGIN_DAEMON_PORT}
       DIFY_INNER_API_URL: ${PLUGIN_DIFY_INNER_API_URL}
       DIFY_INNER_API_KEY: ${PLUGIN_DIFY_INNER_API_KEY}
       PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
