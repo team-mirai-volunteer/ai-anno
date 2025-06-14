@@ -71,7 +71,7 @@ variable "ssh_keys" {
 variable "ssh_source_ranges" {
   description = "Source IP ranges allowed for SSH access"
   type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
 }
 
 variable "vm_user" {
@@ -115,32 +115,3 @@ variable "database_user" {
   type        = string
 }
 
-variable "database_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "dify_secret_key" {
-  description = "Secret key for Dify application"
-  type        = string
-  sensitive   = true
-}
-
-variable "gcs_service_account_json" {
-  description = "Service account JSON for GCS access"
-  type        = string
-  sensitive   = true
-}
-
-variable "plugin_daemon_key" {
-  description = "Dify Plugin daemon key"
-  type        = string
-  sensitive   = true
-}
-
-variable "plugin_dify_inner_api_key" {
-  description = "Dify inner API key for plugin"
-  type        = string
-  sensitive   = true
-}

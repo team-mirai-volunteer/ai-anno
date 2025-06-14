@@ -94,16 +94,26 @@ module "compute_engine" {
   database_host              = module.cloud_sql.private_ip_address
   database_name              = module.cloud_sql.database_name
   database_user              = module.cloud_sql.database_user
-  database_password          = module.cloud_sql.database_password
-  dify_secret_key            = var.dify_secret_key
-  gcs_service_account_json   = var.gcs_service_account_json
-  plugin_daemon_key          = var.dify_plugin_daemon_key
-  plugin_dify_inner_api_key  = var.dify_plugin_dify_inner_api_key
 
   machine_type    = "e2-standard-8"  # 8 vCPUs, 32GB RAM for staging
   boot_disk_size  = 200
   boot_disk_type  = "pd-ssd"
   ssh_keys        = var.ssh_keys
   ssh_source_ranges = var.ssh_source_ranges
+}
+
+module "secret_manager" {
+  source = "../../modules/secret-manager"
+
+  project_id   = var.project_id
+  project_name = var.project_name
+  environment  = local.environment
+
+  database_password         = module.cloud_sql.database_password
+  dify_secret_key           = var.dify_secret_key
+  gcs_service_account_json  = var.gcs_service_account_json
+  plugin_daemon_key         = var.dify_plugin_daemon_key
+  plugin_inner_api_key      = var.dify_plugin_dify_inner_api_key
+  vm_service_account_email  = module.compute_engine.service_account_email
 }
 

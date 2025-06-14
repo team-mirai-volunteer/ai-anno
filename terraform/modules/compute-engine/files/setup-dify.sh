@@ -1,20 +1,40 @@
 #!/bin/bash
 set -e
 
+# Install Docker and Docker Compose if not already installed
+if ! command -v docker &> /dev/null; then
+    echo "Installing Docker..."
+    apt-get update
+    apt-get upgrade -y
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    rm get-docker.sh
+fi
+
+if ! command -v docker-compose &> /dev/null; then
+    echo "Installing Docker Compose..."
+    curl -L "https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+fi
+
 # Variables (to be replaced by Terraform)
 PROJECT_ID="${PROJECT_ID}"
+PROJECT_NAME="${PROJECT_NAME}"
+ENVIRONMENT="${ENVIRONMENT}"
 REGION="${REGION}"
 DB_HOST="${DB_HOST}"
 DB_NAME="${DB_NAME}"
 DB_USER="${DB_USER}"
-DB_PASSWORD="${DB_PASSWORD}"
-SECRET_KEY="${SECRET_KEY}"
 GOOGLE_STORAGE_BUCKET="${GOOGLE_STORAGE_BUCKET}"
-GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON="${GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON}"
-PLUGIN_DAEMON_KEY="${PLUGIN_DAEMON_KEY}"
-PLUGIN_DIFY_INNER_API_KEY="${PLUGIN_DIFY_INNER_API_KEY}"
 PLUGIN_STORAGE_BUCKET="${PLUGIN_STORAGE_BUCKET}"
-GCS_CREDENTIALS="${GCS_CREDENTIALS}"
+
+# Fetch secrets from Secret Manager
+echo "Fetching secrets from Secret Manager..."
+DB_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-db-password-${ENVIRONMENT}" --project="${PROJECT_ID}")
+SECRET_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-dify-secret-${ENVIRONMENT}" --project="${PROJECT_ID}")
+GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-gcs-sa-${ENVIRONMENT}" --project="${PROJECT_ID}")
+PLUGIN_DAEMON_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-daemon-${ENVIRONMENT}" --project="${PROJECT_ID}")
+PLUGIN_DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-api-${ENVIRONMENT}" --project="${PROJECT_ID}")
 
 # Create dify directory structure
 mkdir -p /opt/dify/{nginx/ssl,volumes/{app/storage,redis/data,plugin-daemon/data}}
@@ -49,7 +69,6 @@ GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=${GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON}
 DIFY_PLUGIN_DAEMON_KEY=${PLUGIN_DAEMON_KEY}
 DIFY_PLUGIN_DIFY_INNER_API_KEY=${PLUGIN_DIFY_INNER_API_KEY}
 PLUGIN_STORAGE_BUCKET=${PLUGIN_STORAGE_BUCKET}
-GCS_CREDENTIALS=${GCS_CREDENTIALS}
 
 # Mail configuration
 MAIL_TYPE=smtp
