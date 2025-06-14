@@ -32,9 +32,8 @@ PLUGIN_STORAGE_BUCKET="${PLUGIN_STORAGE_BUCKET}"
 echo "Fetching secrets from Secret Manager..."
 DB_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-db-password-${ENVIRONMENT}" --project="${PROJECT_ID}")
 SECRET_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-dify-secret-${ENVIRONMENT}" --project="${PROJECT_ID}")
-# GCS Service Account JSON needs to be base64 encoded for .env file
-GCS_SA_JSON=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-gcs-sa-${ENVIRONMENT}" --project="${PROJECT_ID}")
-GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=$(echo "$GCS_SA_JSON" | base64 -w 0)
+# GCS Service Account JSON is already base64 encoded in Secret Manager
+GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-gcs-sa-${ENVIRONMENT}" --project="${PROJECT_ID}")
 PLUGIN_DAEMON_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-daemon-${ENVIRONMENT}" --project="${PROJECT_ID}")
 PLUGIN_DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-api-${ENVIRONMENT}" --project="${PROJECT_ID}")
 # Fetch additional secrets for Dify
