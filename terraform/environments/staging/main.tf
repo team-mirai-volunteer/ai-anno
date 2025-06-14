@@ -100,6 +100,7 @@ module "compute_engine" {
   boot_disk_type  = "pd-ssd"
   ssh_keys        = var.ssh_keys
   ssh_source_ranges = var.ssh_source_ranges
+  iap_ssh_users   = var.iap_ssh_users
 }
 
 module "secret_manager" {

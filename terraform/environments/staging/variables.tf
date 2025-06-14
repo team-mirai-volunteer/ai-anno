@@ -67,3 +67,9 @@ variable "ssh_source_ranges" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "iap_ssh_users" {
+  description = "List of users who can SSH via IAP"
+  type        = list(string)
+  default     = []
+}
