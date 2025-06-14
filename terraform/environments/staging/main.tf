@@ -115,6 +115,8 @@ module "secret_manager" {
   gcs_service_account_json  = var.gcs_service_account_json
   plugin_daemon_key         = var.dify_plugin_daemon_key
   plugin_inner_api_key      = var.dify_plugin_dify_inner_api_key
+  server_key                = var.dify_server_key
+  dify_inner_api_key        = var.dify_inner_api_key
   vm_service_account_email  = module.compute_engine.service_account_email
 }
 

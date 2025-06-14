@@ -43,6 +43,18 @@ variable "plugin_inner_api_key" {
   sensitive   = true
 }
 
+variable "server_key" {
+  description = "Dify server key"
+  type        = string
+  sensitive   = true
+}
+
+variable "dify_inner_api_key" {
+  description = "Dify inner API key"
+  type        = string
+  sensitive   = true
+}
+
 variable "vm_service_account_email" {
   description = "VM service account email"
   type        = string

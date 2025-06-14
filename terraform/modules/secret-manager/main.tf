@@ -105,6 +105,48 @@ resource "google_secret_manager_secret_version" "plugin_inner_api_key" {
   secret_data = var.plugin_inner_api_key
 }
 
+# Server key
+resource "google_secret_manager_secret" "server_key" {
+  secret_id = "${var.project_name}-server-key-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "server_key" {
+  secret      = google_secret_manager_secret.server_key.id
+  secret_data = var.server_key
+}
+
+# Dify inner API key
+resource "google_secret_manager_secret" "dify_inner_api_key" {
+  secret_id = "${var.project_name}-dify-inner-api-key-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "dify_inner_api_key" {
+  secret      = google_secret_manager_secret.dify_inner_api_key.id
+  secret_data = var.dify_inner_api_key
+}
+
 # Grant VM service account access to secrets
 resource "google_secret_manager_secret_iam_member" "vm_access_db_password" {
   project   = var.project_id
@@ -137,6 +179,20 @@ resource "google_secret_manager_secret_iam_member" "vm_access_plugin_daemon" {
 resource "google_secret_manager_secret_iam_member" "vm_access_plugin_api" {
   project   = var.project_id
   secret_id = google_secret_manager_secret.plugin_inner_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_access_server_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.server_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_access_dify_inner_api_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.dify_inner_api_key.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.vm_service_account_email}"
 }

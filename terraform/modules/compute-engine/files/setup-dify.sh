@@ -37,6 +37,9 @@ GCS_SA_JSON=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-gc
 GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=$(echo "$GCS_SA_JSON" | base64 -w 0)
 PLUGIN_DAEMON_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-daemon-${ENVIRONMENT}" --project="${PROJECT_ID}")
 PLUGIN_DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-api-${ENVIRONMENT}" --project="${PROJECT_ID}")
+# Fetch additional secrets for Dify
+SERVER_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-server-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
+DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-dify-inner-api-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 
 # Create dify directory structure
 mkdir -p /opt/dify/{nginx/ssl,volumes/{app/storage,redis/data,plugin-daemon/data}}
@@ -71,6 +74,11 @@ GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON
 DIFY_PLUGIN_DAEMON_KEY=$PLUGIN_DAEMON_KEY
 DIFY_PLUGIN_DIFY_INNER_API_KEY=$PLUGIN_DIFY_INNER_API_KEY
 PLUGIN_STORAGE_BUCKET=$PLUGIN_STORAGE_BUCKET
+
+# Additional Dify configuration
+SERVER_KEY=$SERVER_KEY
+DIFY_INNER_API_URL=http://api:5001
+DIFY_INNER_API_KEY=$DIFY_INNER_API_KEY
 
 # Mail configuration (disabled - set MAIL_TYPE=smtp and add SMTP_SERVER/SMTP_PORT to enable)
 MAIL_TYPE=
