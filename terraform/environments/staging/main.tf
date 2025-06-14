@@ -112,7 +112,7 @@ module "secret_manager" {
 
   database_password         = module.cloud_sql.database_password
   dify_secret_key           = var.dify_secret_key
-  gcs_service_account_json  = var.gcs_service_account_json
+  gcs_service_account_json  = module.storage.gcs_service_account_json
   plugin_daemon_key         = var.dify_plugin_daemon_key
   plugin_inner_api_key      = var.dify_plugin_dify_inner_api_key
   server_key                = var.dify_server_key

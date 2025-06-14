@@ -26,12 +26,6 @@ variable "dify_secret_key" {
   sensitive   = true
 }
 
-variable "gcs_service_account_json" {
-  description = "Service account JSON for GCS access"
-  type        = string
-  sensitive   = true
-}
-
 variable "mail_type" {
   description = "Mail service type (smtp, resend)"
   type        = string

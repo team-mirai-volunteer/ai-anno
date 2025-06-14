@@ -37,3 +37,14 @@ output "plugin_storage_bucket_url" {
   description = "URL of the plugin storage bucket"
   value       = google_storage_bucket.plugin_storage.url
 }
+
+output "gcs_service_account_json" {
+  value = try(google_service_account_key.dify_gcs.private_key, "")
+  sensitive = true
+  description = "Base64 encoded service account key for GCS access"
+}
+
+output "gcs_service_account_email" {
+  value = try(google_service_account.dify_gcs.email, "")
+  description = "Email of the GCS service account"
+}

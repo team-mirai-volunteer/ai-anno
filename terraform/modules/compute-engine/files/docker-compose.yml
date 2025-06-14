@@ -122,6 +122,16 @@ services:
     environment:
       PLUGIN_STORAGE_TYPE: google-storage
       LOG_LEVEL: INFO
+      STORAGE_TYPE: google-storage
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_USERNAME: ""
+      REDIS_PASSWORD: ""
+      REDIS_USE_SSL: "false"
+      PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
+      PLUGIN_REMOTE_INSTALLING_PORT: 5003
+      PLUGIN_WORKING_PATH: "/app/storage/cwd"
     env_file:
       - .env
     volumes:
