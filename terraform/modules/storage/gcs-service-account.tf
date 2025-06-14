@@ -20,14 +20,4 @@ resource "google_project_iam_member" "dify_gcs_storage_admin" {
   member  = "serviceAccount:${google_service_account.dify_gcs.email}"
 }
 
-# Output the service account key
-output "gcs_service_account_key_json" {
-  value     = google_service_account_key.dify_gcs.private_key
-  sensitive = true
-  description = "Base64 encoded service account key for GCS access"
-}
-
-output "gcs_service_account_email" {
-  value = google_service_account.dify_gcs.email
-  description = "Email of the GCS service account"
-}
+# Outputs are defined in outputs.tf
