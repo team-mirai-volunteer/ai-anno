@@ -351,6 +351,11 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
 
       env {
+        name  = "GCS_CREDENTIALS"
+        value = lookup(local.env_vars, "GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON", "")
+      }
+
+      env {
         name  = "FORCE_VERIFYING_SIGNATURE"
         value = true
       }
