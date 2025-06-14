@@ -252,6 +252,11 @@ resource "google_cloud_run_v2_service" "dify_service" {
       }
 
       env {
+        name  = "DIFY_PORT"
+        value = "3000"
+      }
+
+      env {
         name  = "LOOP_NODE_MAX_COUNT"
         value = 100
       }
