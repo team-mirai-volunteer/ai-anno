@@ -539,11 +539,11 @@ TEXT_GENERATION_TIMEOUT_MS=60000
 # Environment Variables for db Service
 # ------------------------------
 
-PGUSER=${DB_USERNAME}
+PGUSER=$${DB_USERNAME}
 # The password for the default postgres user.
-POSTGRES_PASSWORD=${DB_PASSWORD}
+POSTGRES_PASSWORD=$${DB_PASSWORD}
 # The name of the default postgres database.
-POSTGRES_DB=${DB_DATABASE}
+POSTGRES_DB=$${DB_DATABASE}
 # postgres data directory
 PGDATA=/var/lib/postgresql/data/pgdata
 
@@ -670,7 +670,7 @@ SSRF_DEFAULT_WRITE_TIME_OUT=5
 # compose profile will be used)
 # if you want to use unstructured, add ',unstructured' to the end
 # ------------------------------
-COMPOSE_PROFILES=${VECTOR_STORE:-weaviate}
+COMPOSE_PROFILES=$${VECTOR_STORE:-weaviate}
 
 # ------------------------------
 # Docker Compose Service Expose Host Port Configurations
