@@ -24,11 +24,6 @@ variable "environment" {
   type        = string
 }
 
-variable "cloud_run_service_account" {
-  description = "Service account email for Cloud Run"
-  type        = string
-}
-
 variable "keep_versions_count" {
   description = "Number of recent versions to keep"
   type        = number

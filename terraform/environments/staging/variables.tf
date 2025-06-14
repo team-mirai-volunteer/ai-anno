@@ -55,3 +55,15 @@ variable "dify_plugin_dify_inner_api_key" {
   type        = string
   sensitive   = true
 }
+
+variable "ssh_keys" {
+  description = "SSH keys for VM access in format 'username:ssh-rsa AAAAB3...'"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_source_ranges" {
+  description = "Source IP ranges allowed for SSH access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

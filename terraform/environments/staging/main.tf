@@ -36,7 +36,6 @@ module "cloud_sql" {
   environment               = local.environment
   network_id                = module.networking.network_id
   private_vpc_connection    = module.networking.private_vpc_connection
-  cloud_run_service_account = module.cloud_run.service_account_email
 
   database_version              = "POSTGRES_15"
   database_tier                 = "db-custom-2-7680"
@@ -53,7 +52,6 @@ module "storage" {
   project_name              = var.project_name
   region                    = var.region
   environment               = local.environment
-  cloud_run_service_account = module.cloud_run.service_account_email
 
   force_destroy              = true
   uploads_retention_days     = 30
@@ -69,74 +67,43 @@ module "artifact_registry" {
   project_name                = var.project_name
   region                      = var.region
   environment                 = local.environment
-  cloud_run_service_account   = module.cloud_run.service_account_email
   cloud_build_service_account = module.cloud_build.service_account_email
 
   keep_versions_count             = 5
   delete_versions_older_than_days = 30
 }
 
-module "cloud_run" {
-  source = "../../modules/cloud-run"
+module "compute_engine" {
+  source = "../../modules/compute-engine"
 
-  project_id                = var.project_id
-  project_name              = var.project_name
-  region                    = var.region
-  environment               = local.environment
-  vpc_connector_id          = module.networking.vpc_connector_id
-  database_connection_name  = module.cloud_sql.instance_connection_name
-  database_host             = module.cloud_sql.private_ip_address
-  database_name             = module.cloud_sql.database_name
-  database_user             = module.cloud_sql.database_user
-  database_password         = module.cloud_sql.database_password
-  plugin_daemon_key         = var.dify_plugin_daemon_key
-  plugin_dify_inner_api_key = var.dify_plugin_dify_inner_api_key
-  plugin_storage_bucket     = module.storage.plugin_storage_bucket_name
+  project_id   = var.project_id
+  project_name = var.project_name
+  region       = var.region
+  zone         = "${var.region}-a"
+  environment  = local.environment
 
-  nginx_image         = "nginx:1.28-alpine"
-  api_image           = "langgenius/dify-api:1.4.2"
-  web_image           = "langgenius/dify-web:1.4.2"
-  worker_image        = "langgenius/dify-api:1.4.2"
-  plugin_daemon_image = "langgenius/dify-plugin-daemon:0.1.2-local"
-  sandbox_image       = "langgenius/dify-sandbox:0.2.12"
+  network_id   = module.networking.network_id
+  network_name = module.networking.network_name
+  subnet_id    = module.networking.subnet_id
 
-  common_env_vars = {
-    LOG_LEVEL                           = "INFO"
-    SECRET_KEY                          = var.dify_secret_key
-    STORAGE_TYPE                        = "google-storage"
-    GOOGLE_STORAGE_BUCKET               = module.storage.uploads_bucket_name
-    GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON = base64encode(var.gcs_service_account_json)
-    REDIS_HOST                          = "localhost"
-    REDIS_PORT                          = "6379"
-    REDIS_DB                            = "0"
-    CELERY_BROKER_URL                   = "redis://localhost:6379/1"
-    MAIL_TYPE                           = var.mail_type
-    MAIL_DEFAULT_SEND_FROM              = var.mail_default_send_from
-    CODE_MAX_NUMBER                     = "3"
-    CODE_MIN_NUMBER                     = "0"
-    CODE_MAX_STRING_LENGTH              = "80000"
-    MIGRATION_ENABLED                   = "true"
-  }
+  uploads_bucket_name        = module.storage.uploads_bucket_name
+  model_cache_bucket_name    = module.storage.model_cache_bucket_name
+  plugin_storage_bucket_name = module.storage.plugin_storage_bucket_name
+  artifact_registry_name     = module.artifact_registry.repository_name
 
-  main_min_instances          = 1
-  main_max_instances          = 10
-  main_cpu                    = "2"
-  main_memory                 = "4Gi"
-  worker_min_instances        = 0
-  worker_max_instances        = 5
-  worker_cpu                  = "1"
-  worker_memory               = "2Gi"
-  sandbox_min_instances       = 0
-  sandbox_max_instances       = 3
-  sandbox_cpu                 = "1"
-  sandbox_memory              = "2Gi"
-  web_min_instances           = 1
-  web_max_instances           = 5
-  web_cpu                     = "1"
-  web_memory                  = "1Gi"
-  plugin_daemon_min_instances = 1
-  plugin_daemon_max_instances = 10
-  plugin_daemon_cpu           = "2"
-  plugin_daemon_memory        = "4Gi"
+  database_host              = module.cloud_sql.private_ip_address
+  database_name              = module.cloud_sql.database_name
+  database_user              = module.cloud_sql.database_user
+  database_password          = module.cloud_sql.database_password
+  dify_secret_key            = var.dify_secret_key
+  gcs_service_account_json   = var.gcs_service_account_json
+  plugin_daemon_key          = var.dify_plugin_daemon_key
+  plugin_dify_inner_api_key  = var.dify_plugin_dify_inner_api_key
+
+  machine_type    = "e2-standard-8"  # 8 vCPUs, 32GB RAM for staging
+  boot_disk_size  = 200
+  boot_disk_type  = "pd-ssd"
+  ssh_keys        = var.ssh_keys
+  ssh_source_ranges = var.ssh_source_ranges
 }
 

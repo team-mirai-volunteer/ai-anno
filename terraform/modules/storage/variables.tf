@@ -19,11 +19,6 @@ variable "environment" {
   type        = string
 }
 
-variable "cloud_run_service_account" {
-  description = "Service account email for Cloud Run"
-  type        = string
-}
-
 variable "force_destroy" {
   description = "Allow destruction of buckets with content"
   type        = bool

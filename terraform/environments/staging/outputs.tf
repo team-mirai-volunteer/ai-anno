@@ -1,6 +1,21 @@
-output "main_service_url" {
-  description = "URL of the main Dify service"
-  value       = module.cloud_run.main_service_url
+output "dify_vm_name" {
+  description = "Name of the Dify VM instance"
+  value       = module.compute_engine.instance_name
+}
+
+output "dify_vm_internal_ip" {
+  description = "Internal IP of the Dify VM"
+  value       = module.compute_engine.internal_ip
+}
+
+output "dify_vm_external_ip" {
+  description = "External IP of the Dify VM (if assigned)"
+  value       = module.compute_engine.external_ip
+}
+
+output "dify_vm_zone" {
+  description = "Zone where the Dify VM is deployed"
+  value       = module.compute_engine.zone
 }
 
 output "database_instance_name" {

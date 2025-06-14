@@ -70,12 +70,6 @@ resource "google_sql_user" "main" {
   project  = var.project_id
 }
 
-resource "google_project_iam_member" "cloudsql_client" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${var.cloud_run_service_account}"
-}
-
 locals {
   pgvector_init_script = <<-EOT
     CREATE EXTENSION IF NOT EXISTS vector;

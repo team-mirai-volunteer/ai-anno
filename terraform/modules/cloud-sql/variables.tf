@@ -29,11 +29,6 @@ variable "private_vpc_connection" {
   type        = any
 }
 
-variable "cloud_run_service_account" {
-  description = "Service account email for Cloud Run"
-  type        = string
-}
-
 variable "database_version" {
   description = "PostgreSQL database version"
   type        = string

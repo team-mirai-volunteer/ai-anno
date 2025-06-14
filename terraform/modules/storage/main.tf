@@ -75,36 +75,6 @@ resource "google_storage_bucket" "backups" {
   }
 }
 
-resource "google_storage_bucket_iam_member" "uploads_read" {
-  bucket = google_storage_bucket.uploads.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "uploads_write" {
-  bucket = google_storage_bucket.uploads.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "model_cache_read" {
-  bucket = google_storage_bucket.model_cache.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "model_cache_write" {
-  bucket = google_storage_bucket.model_cache.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "backups_write" {
-  bucket = google_storage_bucket.backups.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
 resource "google_storage_bucket" "plugin_storage" {
   name          = "${var.project_id}-${var.project_name}-plugins-${var.environment}"
   location      = var.region
@@ -128,22 +98,4 @@ resource "google_storage_bucket" "plugin_storage" {
   versioning {
     enabled = false
   }
-}
-
-resource "google_storage_bucket_iam_member" "plugin_storage_read" {
-  bucket = google_storage_bucket.plugin_storage.name
-  role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "plugin_storage_write" {
-  bucket = google_storage_bucket.plugin_storage.name
-  role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${var.cloud_run_service_account}"
-}
-
-resource "google_storage_bucket_iam_member" "plugin_storage_admin" {
-  bucket = google_storage_bucket.plugin_storage.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.cloud_run_service_account}"
 }
