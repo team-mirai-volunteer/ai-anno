@@ -11,6 +11,8 @@ resource "google_storage_bucket" "vm_scripts" {
     enabled = false
   }
 
+  uniform_bucket_level_access = true
+
   labels = {
     environment = var.environment
     project     = var.project_name
@@ -35,6 +37,13 @@ resource "google_storage_bucket_object" "setup_script" {
     DOCKER_COMPOSE_CONTENT = file("${path.module}/files/docker-compose.yml")
     NGINX_CONFIG_CONTENT   = file("${path.module}/files/nginx/nginx.conf")
   })
+}
+
+# Grant VM service account access to read startup script
+resource "google_storage_bucket_iam_member" "vm_scripts_reader" {
+  bucket = google_storage_bucket.vm_scripts.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.dify_vm.email}"
 }
 
 # Service account for VM instance
