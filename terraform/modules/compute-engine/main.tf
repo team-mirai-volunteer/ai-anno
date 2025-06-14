@@ -25,17 +25,19 @@ resource "google_storage_bucket_object" "setup_script" {
   name   = "setup-dify.sh"
   bucket = google_storage_bucket.vm_scripts.name
   content = templatefile("${path.module}/files/setup-dify.sh", {
-    PROJECT_ID             = var.project_id
-    PROJECT_NAME           = var.project_name
-    ENVIRONMENT            = var.environment
-    REGION                 = var.region
-    DB_HOST                = var.database_host
-    DB_NAME                = var.database_name
-    DB_USER                = var.database_user
-    GOOGLE_STORAGE_BUCKET  = var.uploads_bucket_name
-    PLUGIN_STORAGE_BUCKET  = var.plugin_storage_bucket_name
-    DOCKER_COMPOSE_CONTENT = file("${path.module}/files/docker-compose.yml")
-    NGINX_CONFIG_CONTENT   = file("${path.module}/files/nginx/nginx.conf")
+    PROJECT_ID                = var.project_id
+    PROJECT_NAME              = var.project_name
+    ENVIRONMENT               = var.environment
+    REGION                    = var.region
+    DB_HOST                   = var.database_host
+    DB_NAME                   = var.database_name
+    DB_USER                   = var.database_user
+    GOOGLE_STORAGE_BUCKET     = var.uploads_bucket_name
+    PLUGIN_STORAGE_BUCKET     = var.plugin_storage_bucket_name
+    HMAC_ACCESS_KEY_SECRET_ID = var.hmac_access_key_secret_id
+    HMAC_SECRET_KEY_SECRET_ID = var.hmac_secret_key_secret_id
+    DOCKER_COMPOSE_CONTENT    = file("${path.module}/files/docker-compose.yml")
+    NGINX_CONFIG_CONTENT      = file("${path.module}/files/nginx/nginx.conf")
   })
 }
 
@@ -196,4 +198,19 @@ resource "google_artifact_registry_repository_iam_member" "vm_reader" {
   repository = var.artifact_registry_name
   role       = "roles/artifactregistry.reader"
   member     = "serviceAccount:${google_service_account.dify_vm.email}"
+}
+
+# Grant the VM service account access to read HMAC secrets
+resource "google_secret_manager_secret_iam_member" "vm_hmac_access_key_reader" {
+  project   = var.project_id
+  secret_id = var.hmac_access_key_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.dify_vm.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_hmac_secret_key_reader" {
+  project   = var.project_id
+  secret_id = var.hmac_secret_key_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.dify_vm.email}"
 }

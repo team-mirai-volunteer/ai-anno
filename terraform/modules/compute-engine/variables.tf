@@ -121,3 +121,13 @@ variable "database_user" {
   type        = string
 }
 
+variable "hmac_access_key_secret_id" {
+  description = "Secret Manager secret ID for HMAC access key"
+  type        = string
+}
+
+variable "hmac_secret_key_secret_id" {
+  description = "Secret Manager secret ID for HMAC secret key"
+  type        = string
+}
+

@@ -120,9 +120,9 @@ services:
     image: langgenius/dify-plugin-daemon:0.1.2-local
     restart: always
     environment:
-      PLUGIN_STORAGE_TYPE: google-storage
+      PLUGIN_STORAGE_TYPE: s3
       LOG_LEVEL: INFO
-      STORAGE_TYPE: google-storage
+      STORAGE_TYPE: s3
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_DB: 0

@@ -54,3 +54,4 @@ variable "plugin_retention_days" {
   type        = number
   default     = 0 # プラグインは再利用されるため、自動削除は無効にする
 }
+

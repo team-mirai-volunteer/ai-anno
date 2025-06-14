@@ -48,3 +48,18 @@ output "gcs_service_account_email" {
   value = try(google_service_account.dify_gcs.email, "")
   description = "Email of the GCS service account"
 }
+
+output "hmac_access_key_secret_id" {
+  description = "Secret Manager secret ID for HMAC access key"
+  value       = google_secret_manager_secret.hmac_access_key.secret_id
+}
+
+output "hmac_secret_key_secret_id" {
+  description = "Secret Manager secret ID for HMAC secret key"
+  value       = google_secret_manager_secret.hmac_secret_key.secret_id
+}
+
+output "hmac_service_account_email" {
+  description = "Email of the HMAC service account"
+  value       = google_service_account.gcs_hmac.email
+}
