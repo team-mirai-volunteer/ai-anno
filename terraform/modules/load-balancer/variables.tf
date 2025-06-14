@@ -18,13 +18,8 @@ variable "region" {
   type        = string
 }
 
-variable "zone" {
-  description = "The GCP zone for the instance group"
-  type        = string
-}
-
-variable "instance_name" {
-  description = "Name of the Compute Engine instance to add to the load balancer"
+variable "instance_group_url" {
+  description = "URL of the managed instance group to use as backend"
   type        = string
 }
 

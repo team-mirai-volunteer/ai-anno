@@ -1,21 +1,22 @@
-output "instance_name" {
-  description = "Name of the Compute Engine instance"
-  value       = google_compute_instance.dify.name
+# MIG outputs
+output "instance_group_manager_id" {
+  description = "ID of the managed instance group"
+  value       = google_compute_region_instance_group_manager.dify.id
 }
 
-output "instance_id" {
-  description = "ID of the Compute Engine instance"
-  value       = google_compute_instance.dify.instance_id
+output "instance_group_manager_self_link" {
+  description = "Self link of the managed instance group"
+  value       = google_compute_region_instance_group_manager.dify.self_link
 }
 
-output "internal_ip" {
-  description = "Internal IP address of the instance"
-  value       = google_compute_instance.dify.network_interface[0].network_ip
+output "instance_group_manager_instance_group" {
+  description = "Instance group URL of the managed instance group"
+  value       = google_compute_region_instance_group_manager.dify.instance_group
 }
 
-output "external_ip" {
-  description = "External IP address of the instance"
-  value       = length(google_compute_instance.dify.network_interface[0].access_config) > 0 ? google_compute_instance.dify.network_interface[0].access_config[0].nat_ip : null
+output "instance_template_self_link" {
+  description = "Self link of the instance template"
+  value       = google_compute_instance_template.dify.self_link
 }
 
 output "service_account_email" {
@@ -23,7 +24,13 @@ output "service_account_email" {
   value       = google_service_account.dify_vm.email
 }
 
+# Legacy outputs for compatibility (will be removed in future)
+output "instance_name" {
+  description = "Base name for instances in the MIG"
+  value       = "${var.project_name}-dify-${var.environment}"
+}
+
 output "zone" {
-  description = "Zone of the instance"
-  value       = google_compute_instance.dify.zone
+  description = "Zone of the instance (deprecated - MIG is regional)"
+  value       = var.zone
 }

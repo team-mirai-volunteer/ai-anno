@@ -1,21 +1,22 @@
-output "dify_vm_name" {
-  description = "Name of the Dify VM instance"
+output "dify_instance_group_name" {
+  description = "Name of the Dify instance group"
+  value       = module.compute_engine.instance_group_manager_id
+}
+
+output "dify_instance_template" {
+  description = "Self link of the instance template"
+  value       = module.compute_engine.instance_template_self_link
+}
+
+output "dify_instance_base_name" {
+  description = "Base name for instances in the MIG"
   value       = module.compute_engine.instance_name
 }
 
-output "dify_vm_internal_ip" {
-  description = "Internal IP of the Dify VM"
-  value       = module.compute_engine.internal_ip
-}
-
-output "dify_vm_external_ip" {
-  description = "External IP of the Dify VM (if assigned)"
-  value       = module.compute_engine.external_ip
-}
-
-output "dify_vm_zone" {
-  description = "Zone where the Dify VM is deployed"
-  value       = module.compute_engine.zone
+# Note: With MIG, individual instance IPs are dynamic. Use the load balancer IP instead.
+output "dify_access_note" {
+  description = "How to access Dify instances"
+  value       = "Access Dify through the load balancer at ${module.load_balancer.load_balancer_url}. Individual instance IPs are managed by the MIG and may change."
 }
 
 output "database_instance_name" {

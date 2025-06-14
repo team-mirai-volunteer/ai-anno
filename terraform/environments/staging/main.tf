@@ -127,13 +127,12 @@ module "secret_manager" {
 module "load_balancer" {
   source = "../../modules/load-balancer"
 
-  project_id    = var.project_id
-  project_name  = var.project_name
-  environment   = local.environment
-  region        = var.region
-  zone          = module.compute_engine.zone
-  instance_name = module.compute_engine.instance_name
-  network_name  = module.networking.network_name
+  project_id         = var.project_id
+  project_name       = var.project_name
+  environment        = local.environment
+  region             = var.region
+  network_name       = module.networking.network_name
+  instance_group_url = module.compute_engine.instance_group_manager_instance_group
 
   # Load balancer configuration
   domain_name         = var.domain_name

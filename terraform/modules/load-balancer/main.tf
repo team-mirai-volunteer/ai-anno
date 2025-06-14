@@ -40,24 +40,7 @@ resource "google_compute_health_check" "health_check" {
   }
 }
 
-# Create an unmanaged instance group from the existing VM
-resource "google_compute_instance_group" "instance_group" {
-  name    = "${local.lb_name}-instance-group"
-  project = var.project_id
-  zone    = var.zone
-
-  instances = ["projects/${var.project_id}/zones/${var.zone}/instances/${var.instance_name}"]
-
-  named_port {
-    name = "http"
-    port = 80
-  }
-
-  named_port {
-    name = "https"
-    port = 443
-  }
-}
+# Note: Unmanaged instance group removed - now using only MIG
 
 # Backend service configuration
 resource "google_compute_backend_service" "backend" {
@@ -71,7 +54,7 @@ resource "google_compute_backend_service" "backend" {
   session_affinity      = var.session_affinity
 
   backend {
-    group           = google_compute_instance_group.instance_group.id
+    group           = var.instance_group_url
     balancing_mode  = "UTILIZATION"
     capacity_scaler = 1.0
     max_utilization = 0.8

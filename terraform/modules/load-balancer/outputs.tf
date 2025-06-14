@@ -23,10 +23,7 @@ output "backend_service_name" {
   value       = google_compute_backend_service.backend.name
 }
 
-output "instance_group_id" {
-  description = "The ID of the instance group"
-  value       = google_compute_instance_group.instance_group.id
-}
+# Note: instance_group_id output removed as we now only use MIG
 
 output "health_check_id" {
   description = "The ID of the health check"
