@@ -367,6 +367,26 @@ resource "google_cloud_run_v2_service" "dify_service" {
         value = ""
       }
 
+      env {
+        name = "DB_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_password.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "POSTGRES_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_password.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       startup_probe {
         timeout_seconds   = 30
         period_seconds    = 30
