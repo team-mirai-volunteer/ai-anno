@@ -97,7 +97,7 @@ module "cloud_run" {
   api_image           = "langgenius/dify-api:1.4.2"
   web_image           = "langgenius/dify-web:1.4.2"
   worker_image        = "langgenius/dify-api:1.4.2"
-  plugin_daemon_image = "langgenius/dify-plugin-daemon:0.1.2"
+  plugin_daemon_image = "langgenius/dify-plugin-daemon:0.1.2-local"
   sandbox_image       = "langgenius/dify-sandbox:0.2.12"
 
   common_env_vars = {
