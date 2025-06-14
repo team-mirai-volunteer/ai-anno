@@ -148,7 +148,7 @@ POSTGRES_EFFECTIVE_CACHE_SIZE=4096MB
 REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_USERNAME=
-REDIS_PASSWORD=difyai123456
+REDIS_PASSWORD=
 REDIS_USE_SSL=false
 REDIS_DB=0
 REDIS_USE_SENTINEL=false
@@ -164,7 +164,7 @@ REDIS_CLUSTERS_PASSWORD=
 # ------------------------------
 # Celery Configuration
 # ------------------------------
-CELERY_BROKER_URL=redis://:difyai123456@redis:6379/1
+CELERY_BROKER_URL=redis://redis:6379/1
 BROKER_USE_SSL=false
 CELERY_USE_SENTINEL=false
 CELERY_SENTINEL_MASTER_NAME=
@@ -180,7 +180,7 @@ CONSOLE_CORS_ALLOW_ORIGINS=*
 # ------------------------------
 # File Storage Configuration
 # ------------------------------
-STORAGE_TYPE=opendal
+STORAGE_TYPE=google-storage
 OPENDAL_SCHEME=fs
 OPENDAL_FS_ROOT=storage
 
@@ -242,7 +242,7 @@ SUPABASE_URL=your-server-url
 # ------------------------------
 # Vector Database Configuration
 # ------------------------------
-VECTOR_STORE=weaviate
+VECTOR_STORE=pgvector
 
 WEAVIATE_ENDPOINT=http://weaviate:8080
 WEAVIATE_API_KEY=WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
@@ -606,9 +606,9 @@ MILVUS_AUTHORIZATION_ENABLED=true
 # Environment Variables for pgvector / pgvector-rs Service
 # (only used when VECTOR_STORE is pgvector / pgvector-rs)
 # ------------------------------
-PGVECTOR_PGUSER=postgres
-PGVECTOR_POSTGRES_PASSWORD=difyai123456
-PGVECTOR_POSTGRES_DB=dify
+PGVECTOR_PGUSER=$DB_USER
+PGVECTOR_POSTGRES_PASSWORD=$DB_PASSWORD
+PGVECTOR_POSTGRES_DB=$DB_DATABASE
 PGVECTOR_PGDATA=/var/lib/postgresql/data/pgdata
 
 # ------------------------------
@@ -670,7 +670,7 @@ SSRF_DEFAULT_WRITE_TIME_OUT=5
 # compose profile will be used)
 # if you want to use unstructured, add ',unstructured' to the end
 # ------------------------------
-COMPOSE_PROFILES=$${VECTOR_STORE:-weaviate}
+COMPOSE_PROFILES=pgvector
 
 # ------------------------------
 # Docker Compose Service Expose Host Port Configurations
