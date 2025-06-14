@@ -133,6 +133,16 @@ resource "google_cloud_run_v2_service" "dify_service" {
         value = var.plugin_dify_inner_api_key
       }
 
+      env {
+        name  = "CODE_EXECUTION_ENDPOINT"
+        value = "https://${google_cloud_run_v2_service.sandbox.uri}"
+      }
+
+      env {
+        name  = "CODE_EXECUTION_API_KEY"
+        value = "dify-sandbox"
+      }
+
       dynamic "env" {
         for_each = local.env_vars
         content {
@@ -177,7 +187,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
 
       ports {
         name           = "http1"
-        container_port = 80
+        container_port = 3000
       }
 
       resources {
@@ -188,11 +198,6 @@ resource "google_cloud_run_v2_service" "dify_service" {
         }
       }
 
-
-      env {
-        name  = "PORT"
-        value = "80"
-      }
 
       env {
         name  = "CONSOLE_API_URL"
@@ -261,7 +266,7 @@ resource "google_cloud_run_v2_service" "dify_service" {
         period_seconds    = 30
         failure_threshold = 1
         tcp_socket {
-          port = 80
+          port = 3000
         }
       }
     }
@@ -425,6 +430,16 @@ resource "google_cloud_run_v2_service" "dify_service" {
         value = var.plugin_dify_inner_api_key
       }
 
+      env {
+        name  = "CODE_EXECUTION_ENDPOINT"
+        value = "https://${google_cloud_run_v2_service.sandbox.uri}"
+      }
+
+      env {
+        name  = "CODE_EXECUTION_API_KEY"
+        value = "dify-sandbox"
+      }
+
       dynamic "env" {
         for_each = local.env_vars
         content {
@@ -546,6 +561,24 @@ resource "google_cloud_run_v2_service" "sandbox" {
         container_port = 8080
       }
 
+      env {
+        name  = "GIN_MODE"
+        value = "release"
+      }
+
+      env {
+        name  = "API_KEY"
+        value = "dify-sandbox"
+      }
+
+      startup_probe {
+        timeout_seconds   = 30
+        period_seconds    = 30
+        failure_threshold = 1
+        tcp_socket {
+          port = 8080
+        }
+      }
     }
   }
 
