@@ -571,6 +571,11 @@ resource "google_cloud_run_v2_service" "sandbox" {
         value = "dify-sandbox"
       }
 
+      env {
+        name  = "SANDBOX_PORT"
+        value = "8080"
+      }
+
       startup_probe {
         timeout_seconds   = 30
         period_seconds    = 30
