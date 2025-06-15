@@ -569,11 +569,11 @@ namespace Aituber
 
         public bool isAutoQuestion;
 
-        public GUID id;
+        public Guid id;
 
         public Question(string question, string userName, string imageIcon, bool isAutoQuestion)
         {
-            this.id = GUID.Generate();
+            this.id = Guid.NewGuid();
             this.question = question;
             this.userName = userName;
             this.imageIcon = imageIcon;

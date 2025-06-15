@@ -1,7 +1,6 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using Aituber;
-using UnityEditor;
 using UnityEngine;
 
 public class QueueIndicator : MonoBehaviour
@@ -16,11 +15,11 @@ public class QueueIndicator : MonoBehaviour
     [HideInInspector]
     private List<Question> questionList = new List<Question>();
 
-    private Dictionary<GUID, QueueIconItem> queueItems = new Dictionary<GUID, QueueIconItem>();
+    private Dictionary<Guid, QueueIconItem> queueItems = new();
 
     private bool invalidate = false;
 
-    public int QueueLength {  get { return queueItems.Count; } }
+    public int QueueLength { get { return queueItems.Count; } }
 
     public void AppendInIndicator(Question question)
     {
@@ -39,7 +38,7 @@ public class QueueIndicator : MonoBehaviour
     {
         if (invalidate)
         {
-            var used = new HashSet<GUID>();
+            var used = new HashSet<Guid>();
             for (var questionIndex = 0; questionIndex < questionList.Count; questionIndex++)
             {
                 var question = questionList[questionIndex];
@@ -55,7 +54,7 @@ public class QueueIndicator : MonoBehaviour
                 var iconItem = queueItems[question.id];
                 iconItem.AdjustAnchorLocation(new Vector2(0, 0) + new Vector2(43 * questionIndex, 0));
             }
-            var remove = new HashSet<GUID>();
+            var remove = new HashSet<Guid>();
             foreach (var question in queueItems)
             {
                 if (!used.Contains(question.Key))
@@ -69,7 +68,7 @@ public class QueueIndicator : MonoBehaviour
                 removeGameObject.Dismiss();
                 queueItems.Remove(item);
             }
-            this.counterLabel.text = string.Format("{0}åè",queueItems.Count);
+            this.counterLabel.text = string.Format("{0}‰ª∂", queueItems.Count);
             invalidate = false;
 
         }
