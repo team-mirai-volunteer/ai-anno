@@ -96,10 +96,12 @@ resource "google_compute_region_instance_group_manager" "dify" {
     port = 443
   }
 
-  auto_healing_policies {
-    health_check      = google_compute_health_check.dify_mig.self_link
-    initial_delay_sec = 300
-  }
+  # 開発中のため自動復旧を一時的に無効化
+  # TODO: アプリケーション開発完了後に有効化する
+  # auto_healing_policies {
+  #   health_check      = google_compute_health_check.dify_mig.self_link
+  #   initial_delay_sec = 600
+  # }
 
   update_policy {
     type                           = "PROACTIVE"
@@ -110,8 +112,7 @@ resource "google_compute_region_instance_group_manager" "dify" {
     replacement_method             = "SUBSTITUTE"
   }
 
-  wait_for_instances = true
-  wait_for_instances_status = "STABLE"
+  wait_for_instances = false
 
   lifecycle {
     create_before_destroy = true

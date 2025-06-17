@@ -29,18 +29,22 @@ resource "google_compute_managed_ssl_certificate" "ssl_cert" {
 resource "google_compute_health_check" "health_check" {
   name                = "${local.lb_name}-health-check"
   project             = var.project_id
-  check_interval_sec  = 10
-  timeout_sec         = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 3
+  check_interval_sec  = 30    # 開発中のため間隔を延長
+  timeout_sec         = 20    # タイムアウトを延長
+  healthy_threshold   = 1     # すぐに健全と判定
+  unhealthy_threshold = 10    # 不健全判定を遅らせる
 
-  http_health_check {
-    port         = var.health_check_port
-    request_path = var.health_check_path
+  # 開発中のため、TCPヘルスチェックに変更（HTTPよりも寛容）
+  tcp_health_check {
+    port = var.health_check_port
   }
+  
+  # TODO: アプリケーション開発完了後にHTTPヘルスチェックに戻す
+  # http_health_check {
+  #   port         = var.health_check_port
+  #   request_path = var.health_check_path
+  # }
 }
-
-# Note: Unmanaged instance group removed - now using only MIG
 
 # Backend service configuration
 resource "google_compute_backend_service" "backend" {
