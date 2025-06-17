@@ -20,7 +20,7 @@ terraform {
     }
   }
 
-  backend "remote" {
+  cloud {
     organization = "ai-anno"
     workspaces {
       tags = ["ai-anno"]
