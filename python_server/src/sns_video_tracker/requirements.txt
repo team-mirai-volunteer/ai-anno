@@ -1,0 +1,10 @@
+selenium==4.15.2
+webdriver-manager==4.0.1
+gspread==5.12.4
+google-auth==2.23.4
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.1.1
+requests==2.31.0
+beautifulsoup4==4.12.2
+python-dotenv==1.0.0
+schedule==1.2.0
