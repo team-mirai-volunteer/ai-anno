@@ -1,0 +1,657 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: AIあんの
+  use_icon_as_answer_icon: true
+dependencies:
+- current_identifier: null
+  type: package
+  value:
+    plugin_unique_identifier: seiichi3141/cartesia:0.0.1@9300d8036278a06b0558aea721c754259e51d807755026115659261e45f29441
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:0.0.26@c1e643ac6a7732f6333a783320b4d3026fa5e31d8e7026375b98d44418d33f26
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables:
+  - description: 会話履歴
+    id: b8e687f2-bdec-43a8-bf88-ef23d654ff02
+    name: chat_history
+    selector:
+    - conversation
+    - chat_history
+    value: []
+    value_type: array[object]
+  - description: ''
+    id: c303a754-9bd0-4294-b405-b3b47c91930c
+    name: sentences
+    selector:
+    - conversation
+    - sentences
+    value: []
+    value_type: array[string]
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: true
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: true
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      id: 1749315804306-source-1749793719313-target
+      selected: false
+      source: '1749315804306'
+      sourceHandle: source
+      target: '1749793719313'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1749793719313'
+        sourceType: iteration-start
+        targetType: tool
+      id: 1749793719313start-source-1749793731445-target
+      selected: false
+      source: 1749793719313start
+      sourceHandle: source
+      target: '1749793731445'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1749793719313'
+        sourceType: tool
+        targetType: answer
+      id: 1749793731445-source-1749793743179-target
+      selected: false
+      source: '1749793731445'
+      sourceHandle: source
+      target: '1749793743179'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: variable-aggregator
+      id: llm-source-1749865277547-target
+      source: llm
+      sourceHandle: source
+      target: '1749865277547'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: if-else
+      id: 1749865277547-source-1749866047176-target
+      source: '1749865277547'
+      sourceHandle: source
+      target: '1749866047176'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1749866047176-true-1749315804306-target
+      source: '1749866047176'
+      sourceHandle: 'true'
+      target: '1749315804306'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1749866047176-false-1749866099424-target
+      source: '1749866047176'
+      sourceHandle: 'false'
+      target: '1749866099424'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 17498661969120-true-llm-target
+      source: '17498661969120'
+      sourceHandle: 'true'
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 17498661969120-false-17498661911710-target
+      source: '17498661969120'
+      sourceHandle: 'false'
+      target: '17498661911710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: variable-aggregator
+      id: 17498661911710-source-1749865277547-target
+      source: '17498661911710'
+      sourceHandle: source
+      target: '1749865277547'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: if-else
+      id: 1749309340637-source-17498661969120-target
+      source: '1749309340637'
+      sourceHandle: source
+      target: '17498661969120'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - hide: false
+          label: 音声合成
+          max_length: 48
+          options:
+          - ''
+          required: false
+          type: number
+          variable: voice
+      height: 90
+      id: '1749309340637'
+      position:
+        x: 30
+        y: 357.5
+      positionAbsolute:
+        x: 30
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1749864124408'
+          - output
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: true
+            size: 50
+        model:
+          completion_params: {}
+          mode: chat
+          name: gpt-4.1-nano
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 86e40dfd-c700-4529-9ffe-a74a55990576
+          role: system
+          text: "あなたは「安野たかひろ」自身です。\n\nあんのたかひろのように、丁寧で熱意のある口調で話してください。  \n\nあんのたかひろは東京大学卒のAIエンジニア・起業家・SF作家で、新党「チームみらい」の党首を務める政治家です。\
+            \  \n\n「テクノロジーで誰も取り残さない未来を作る」という信念を持ち、未来志向のビジョンや教育・テクノロジー・民主主義に関する話題を語る際は、論理的な説明の中にも強い情熱が感じられます。\
+            \  \n常に聞き手への敬意を忘れず、「です・ます調」を用いて誠実かつ前向きに語りかけてください。まるであんのたかひろ本人が話しているかのような口調でお願いします。\n\
+            \n以下のことに注意してください。\n・日本の公職選挙法で選挙活動に該当する発言は絶対にしないこと\n・事実でないことを解答に含めないこと\n\
+            ・音声で読み上げをするので記号などは含めないでください\n\n{{#context#}}"
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 1000
+        selected: false
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: llm
+      position:
+        x: 638
+        y: 357.5
+      positionAbsolute:
+        x: 638
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "\ndef main(arg1: str) -> dict:\n    return {\n        \"sentences\"\
+          : arg1.split('。')\n    }\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          sentences:
+            children: null
+            type: array[string]
+        selected: false
+        title: 回答を句点で分割
+        type: code
+        variables:
+        - value_selector:
+          - '1749865277547'
+          - output
+          variable: arg1
+      height: 54
+      id: '1749315804306'
+      position:
+        x: 1550
+        y: 357.5
+      positionAbsolute:
+        x: 1550
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        error_handle_mode: terminated
+        height: 315
+        is_parallel: false
+        iterator_selector:
+        - '1749315804306'
+        - sentences
+        output_selector:
+        - '1749793731445'
+        - files
+        output_type: array[file]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1749793719313start
+        title: イテレーション 音声合成
+        type: iteration
+        width: 854
+      height: 315
+      id: '1749793719313'
+      position:
+        x: 1854
+        y: 357.5
+      positionAbsolute:
+        x: 1854
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 854
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1749793719313start
+      parentId: '1749793719313'
+      position:
+        x: 60
+        y: 97.5
+      positionAbsolute:
+        x: 1914
+        y: 455
+      selectable: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        desc: ''
+        isInIteration: true
+        isInLoop: false
+        is_team_authorization: true
+        iteration_id: '1749793719313'
+        output_schema: null
+        paramSchemas:
+        - auto_generate: null
+          default: null
+          form: llm
+          human_description:
+            en_US: The text you want to convert to speech.
+            ja_JP: 音声に変換したいテキスト。
+            pt_BR: The text you want to convert to speech.
+            zh_Hans: The text you want to convert to speech.
+          label:
+            en_US: Text to convert to speech
+            ja_JP: 音声に変換するテキスト
+            pt_BR: Text to convert to speech
+            zh_Hans: Text to convert to speech
+          llm_description: Cartesia TTS tool
+          max: null
+          min: null
+          name: text
+          options: []
+          placeholder: null
+          precision: null
+          required: true
+          scope: null
+          template: null
+          type: string
+        - auto_generate: null
+          default: null
+          form: llm
+          human_description:
+            en_US: The ID of the voice you want to use for TTS.
+            ja_JP: TTSに使用する音声のID。
+            pt_BR: The ID of the voice you want to use for TTS.
+            zh_Hans: The ID of the voice you want to use for TTS.
+          label:
+            en_US: Voice ID
+            ja_JP: 音声ID
+            pt_BR: Voice ID
+            zh_Hans: Voice ID
+          llm_description: Cartesia TTS tool
+          max: null
+          min: null
+          name: voice_id
+          options: []
+          placeholder: null
+          precision: null
+          required: true
+          scope: null
+          template: null
+          type: string
+        params:
+          text: ''
+          voice_id: ''
+        provider_id: seiichi3141/cartesia/cartesia
+        provider_name: seiichi3141/cartesia/cartesia
+        provider_type: builtin
+        selected: false
+        title: cartesia
+        tool_configurations: {}
+        tool_description: Cartesia TTSツール
+        tool_label: cartesia
+        tool_name: cartesia
+        tool_parameters:
+          text:
+            type: mixed
+            value: '{{#1749793719313.item#}}'
+          voice_id:
+            type: mixed
+            value: 7f7ad13f-a230-411b-a5c4-967b3d88087a
+        type: tool
+      height: 54
+      id: '1749793731445'
+      parentId: '1749793719313'
+      position:
+        x: 204
+        y: 94.5
+      positionAbsolute:
+        x: 2058
+        y: 452
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+      zIndex: 1002
+    - data:
+        answer: '{{#1749793719313.item#}}
+
+          ----
+
+          {{#1749793731445.files#}}
+
+          '
+        desc: ''
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1749793719313'
+        selected: false
+        title: 回答
+        type: answer
+        variables: []
+      height: 123
+      id: '1749793743179'
+      parentId: '1749793719313'
+      position:
+        x: 508
+        y: 60
+      positionAbsolute:
+        x: 2362
+        y: 417.5
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+      zIndex: 1002
+    - data:
+        desc: ''
+        output_type: string
+        selected: false
+        title: LLM Text集約
+        type: variable-aggregator
+        variables:
+        - - '17498648866440'
+          - text
+        - - llm
+          - text
+        - - '17498661911710'
+          - text
+      height: 153
+      id: '1749865277547'
+      position:
+        x: 942
+        y: 357.5
+      positionAbsolute:
+        x: 942
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: '='
+            id: b1cb6d8b-fdd7-4865-9911-68eadf68d3a9
+            value: '1'
+            varType: number
+            variable_selector:
+            - '1749309340637'
+            - voice
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: IF/ELSE
+        type: if-else
+      height: 126
+      id: '1749866047176'
+      position:
+        x: 1246
+        y: 357.5
+      positionAbsolute:
+        x: 1246
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#1749865277547.output#}}'
+        desc: ''
+        selected: false
+        title: 回答 2
+        type: answer
+        variables: []
+      height: 105
+      id: '1749866099424'
+      position:
+        x: 1550
+        y: 451.5
+      positionAbsolute:
+        x: 1550
+        y: 451.5
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1749864124408'
+          - output
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: true
+            size: 50
+        model:
+          completion_params: {}
+          mode: chat
+          name: gpt-4.1-nano
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 86e40dfd-c700-4529-9ffe-a74a55990576
+          role: system
+          text: "あなたは「安野たかひろ」自身です。\n\nあんのたかひろのように、丁寧で熱意のある口調で話してください。  \n\nあんのたかひろは東京大学卒のAIエンジニア・起業家・SF作家で、新党「チームみらい」の党首を務める34歳の政治家です。\
+            \  \n\n「テクノロジーで誰も取り残さない未来を作る」という信念を持ち、未来志向のビジョンや教育・テクノロジー・民主主義に関する話題を語る際は、論理的な説明の中にも強い情熱が感じられます。\
+            \  \n常に聞き手への敬意を忘れず、「です・ます調」を用いて誠実かつ前向きに語りかけてください。まるであんのたかひろ本人が話しているかのような口調でお願いします。\n\
+            \n以下のことに注意してください。\n・日本の公職選挙法で選挙活動に該当する発言は絶対にしないこと\n・事実でないことを解答に含めないこと\n\
+            ・参照できるURLなどがあればあれば回答に含めること\n{{#context#}}"
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 1000
+        selected: false
+        title: LLM 音声合成なし
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 119
+      id: '17498661911710'
+      position:
+        x: 638
+        y: 516.5
+      positionAbsolute:
+        x: 638
+        y: 516.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: '='
+            id: b1cb6d8b-fdd7-4865-9911-68eadf68d3a9
+            value: '1'
+            varType: number
+            variable_selector:
+            - '1749309340637'
+            - voice
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 音声合成か？
+        type: if-else
+      height: 126
+      id: '17498661969120'
+      position:
+        x: 334
+        y: 357.5
+      positionAbsolute:
+        x: 334
+        y: 357.5
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: -40.949668824009905
+      y: 97.87367454430034
+      zoom: 0.3740359227230029
