@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using Aituber;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
 namespace Aituber
