@@ -122,6 +122,9 @@ module "secret_manager" {
   server_key                = var.dify_server_key
   dify_inner_api_key        = var.dify_inner_api_key
   vm_service_account_email  = module.compute_engine.service_account_email
+  init_password             = var.init_password
+  redis_password            = var.redis_password
+  code_execution_api_key    = var.code_execution_api_key
 }
 
 module "load_balancer" {

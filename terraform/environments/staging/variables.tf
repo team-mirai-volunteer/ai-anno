@@ -123,3 +123,21 @@ variable "session_affinity" {
   default     = "NONE"
 }
 
+variable "init_password" {
+  description = "Initial admin password for Dify"
+  type        = string
+  sensitive   = true
+}
+
+variable "redis_password" {
+  description = "Redis password"
+  type        = string
+  sensitive   = true
+}
+
+variable "code_execution_api_key" {
+  description = "Code execution API key"
+  type        = string
+  sensitive   = true
+}
+
