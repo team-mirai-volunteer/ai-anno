@@ -205,6 +205,12 @@
       },
       "hash": "f8120fb22dade99ea8a9e03b77a3bbc2a4c79806"
     },
+    "jp.lilxyzw.liltoon": {
+      "version": "file:jp.lilxyzw.liltoon",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,
