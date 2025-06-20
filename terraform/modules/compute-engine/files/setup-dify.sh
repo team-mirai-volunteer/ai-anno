@@ -84,6 +84,15 @@ export PLUGIN_AWS_SECRET_KEY=$S3_SECRET_KEY
 export PLUGIN_AWS_REGION=$REGION
 export PLUGIN_S3_USE_PATH_STYLE=false
 
+export CONSOLE_API_URL=https://stg-ai-anno.ngo-go.com
+export CONSOLE_WEB_URL=https://stg-ai-anno.ngo-go.com
+export SERVICE_API_URL=https://stg-ai-anno.ngo-go.com
+export APP_API_URL=https://stg-ai-anno.ngo-go.com
+export APP_WEB_URL=https://stg-ai-anno.ngo-go.com
+export FILES_URL=https://stg-ai-anno.ngo-go.com
+export CONSOLE_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+export WEB_API_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+
 # Set permissions
 chmod 600 docker/.env
 chown -R 1000:1000 volumes/
