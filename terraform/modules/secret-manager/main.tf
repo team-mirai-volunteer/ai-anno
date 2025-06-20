@@ -196,3 +196,88 @@ resource "google_secret_manager_secret_iam_member" "vm_access_dify_inner_api_key
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.vm_service_account_email}"
 }
+
+# Init password secret
+resource "google_secret_manager_secret" "init_password" {
+  secret_id = "${var.project_name}-init-password-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "init_password" {
+  secret      = google_secret_manager_secret.init_password.id
+  secret_data = var.init_password
+}
+
+# Redis password secret
+resource "google_secret_manager_secret" "redis_password" {
+  secret_id = "${var.project_name}-redis-password-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "redis_password" {
+  secret      = google_secret_manager_secret.redis_password.id
+  secret_data = var.redis_password
+}
+
+# Code execution API key secret
+resource "google_secret_manager_secret" "code_execution_api_key" {
+  secret_id = "${var.project_name}-code-execution-api-key-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "code_execution_api_key" {
+  secret      = google_secret_manager_secret.code_execution_api_key.id
+  secret_data = var.code_execution_api_key
+}
+
+# Grant VM service account access to new secrets
+resource "google_secret_manager_secret_iam_member" "vm_access_init_password" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.init_password.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_access_redis_password" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.redis_password.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_access_code_execution_api_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.code_execution_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}

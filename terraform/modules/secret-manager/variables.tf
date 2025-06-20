@@ -59,3 +59,21 @@ variable "vm_service_account_email" {
   description = "VM service account email"
   type        = string
 }
+
+variable "init_password" {
+  description = "Initial admin password for Dify"
+  type        = string
+  sensitive   = true
+}
+
+variable "redis_password" {
+  description = "Redis password"
+  type        = string
+  sensitive   = true
+}
+
+variable "code_execution_api_key" {
+  description = "Code execution API key"
+  type        = string
+  sensitive   = true
+}

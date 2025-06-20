@@ -39,6 +39,9 @@ PLUGIN_DAEMON_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NA
 PLUGIN_DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-api-${ENVIRONMENT}" --project="${PROJECT_ID}")
 SERVER_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-server-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 DIFY_INNER_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-dify-inner-api-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
+INIT_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-init-password-${ENVIRONMENT}" --project="${PROJECT_ID}")
+REDIS_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-redis-password-${ENVIRONMENT}" --project="${PROJECT_ID}")
+CODE_EXECUTION_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-code-execution-api-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 
 # Clone Dify 1.4.3 from git
 echo "Cloning Dify 1.4.3..."
@@ -70,10 +73,16 @@ export PGUSER=$DB_USER
 export POSTGRES_PASSWORD=$DB_PASSWORD
 export POSTGRES_DB=$DB_NAME
 export SECRET_KEY=$SECRET_KEY
-export GOOGLE_STORAGE_BUCKET_NAME=$GOOGLE_STORAGE_BUCKET_NAME
-export GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64
+export INIT_PASSWORD=$INIT_PASSWORD
+export REDIS_PASSWORD=$REDIS_PASSWORD
 export PLUGIN_DAEMON_KEY=$PLUGIN_DAEMON_KEY
 export PLUGIN_DIFY_INNER_API_KEY=$PLUGIN_DIFY_INNER_API_KEY
+export CODE_EXECUTION_API_KEY=$CODE_EXECUTION_API_KEY
+export GOOGLE_STORAGE_BUCKET_NAME=$GOOGLE_STORAGE_BUCKET_NAME
+export GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64
+
+# Update CELERY_BROKER_URL with Redis password
+export CELERY_BROKER_URL="redis://:${REDIS_PASSWORD}@redis:6379/1"
 
 # For plugin daemon S3 compatibility mode
 export PLUGIN_STORAGE_TYPE=s3
