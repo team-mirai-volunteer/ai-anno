@@ -5,21 +5,6 @@ using System;
 using WebSocketSharp;
 using UnityEngine.Networking;
 using Assets.Scripts.Components;
-using UnityEditor;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using WebSocketSharp;
-using UnityEngine.Networking;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using WebSocketSharp;
-using UnityEngine.Networking;
 using System.Collections.Concurrent;
 
 public class UnityMainThreadDispatcher : MonoBehaviour
@@ -47,7 +32,7 @@ public class UnityMainThreadDispatcher : MonoBehaviour
 
     public void Update()
     {
-        lock(_executionQueue)
+        lock (_executionQueue)
         {
             while (_executionQueue.Count > 0)
             {
@@ -67,16 +52,20 @@ public class UnityMainThreadDispatcher : MonoBehaviour
 
 public class GetCommentFromOne : MonoBehaviour
 {
+    [SerializeField]
+    private TMPro.TMP_Text debugText;
+
     private WebSocket ws;
     private string serverUrl = Constants.SERVER_BASE_URL + "/youtube/chat_message";
     private string webSocketUrl = "ws://127.0.0.1:11180/sub";
     private float reconnectDelay = 5f;
     private bool isReconnecting = false;
+    private bool isDestroyed = false;
 
     void Start()
     {
         // Ensure UnityMainThreadDispatcher is initialized
-        UnityMainThreadDispatcher.Instance.Enqueue(() => {});
+        UnityMainThreadDispatcher.Instance.Enqueue(() => { });
         ConnectWebSocket();
     }
 
@@ -96,7 +85,10 @@ public class GetCommentFromOne : MonoBehaviour
 
         ws.OnClose += (sender, e) =>
         {
-            UnityMainThreadDispatcher.Instance.Enqueue(() => 
+            if (isDestroyed)
+                return;
+
+            UnityMainThreadDispatcher.Instance.Enqueue(() =>
             {
                 Debug.Log($"WebSocket connection closed. Code: {e.Code}, Reason: {e.Reason}");
                 if (!isReconnecting)
@@ -108,7 +100,7 @@ public class GetCommentFromOne : MonoBehaviour
 
         ws.OnOpen += (sender, e) =>
         {
-            UnityMainThreadDispatcher.Instance.Enqueue(() => 
+            UnityMainThreadDispatcher.Instance.Enqueue(() =>
             {
                 Debug.Log("WebSocket connection opened");
                 isReconnecting = false;
@@ -134,7 +126,13 @@ public class GetCommentFromOne : MonoBehaviour
             if (data != null && data.type == "comments")
             {
                 Debug.Log($"WebSocket message received: {message}");
-                StartCoroutine(ProcessComments(data.data.comments));
+                // TODO: 受信したコメントを Dify に流し込む実装が必要
+                if (debugText != null && data.data.comments.Count > 0)
+                {
+                    var commentData = data.data.comments[0].data;
+                    debugText.text = $"{commentData.name}: {commentData.comment}";
+                }
+                // StartCoroutine(ProcessComments(data.data.comments));
             }
         }
         catch (Exception e)
@@ -186,6 +184,7 @@ public class GetCommentFromOne : MonoBehaviour
 
     void OnDestroy()
     {
+        isDestroyed = true;
         if (ws != null && ws.ReadyState == WebSocketState.Open)
         {
             ws.Close();
