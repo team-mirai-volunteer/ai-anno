@@ -180,7 +180,7 @@ namespace AiTuber.Services.Dify
 
         /// <summary>
         /// ユーザーの質問に対してDifyから回答を取得
-        /// ストリーミングまたはブロッキングモードで処理
+        /// ストリーミングモードで処理
         /// </summary>
         /// <param name="userQuery">ユーザーの質問</param>
         /// <param name="userId">ユーザーID</param>
@@ -200,7 +200,7 @@ namespace AiTuber.Services.Dify
 
         /// <summary>
         /// ユーザーの質問に対してDifyから回答を取得（リアルタイムコールバック付き）
-        /// ストリーミングまたはブロッキングモードで処理
+        /// ストリーミングモードで処理
         /// </summary>
         /// <param name="userQuery">ユーザーの質問</param>
         /// <param name="userId">ユーザーID</param>

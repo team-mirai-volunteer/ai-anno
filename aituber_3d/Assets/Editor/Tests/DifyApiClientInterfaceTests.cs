@@ -304,34 +304,6 @@ namespace AiTuber.Tests.Dify
             Assert.AreEqual(1, _mockClient.CallCount);
         }
 
-        [UnityTest]
-        public IEnumerator ブロッキングリクエスト送信_有効なリクエスト_成功結果を返す()
-        {
-            // Arrange
-            var request = new DifyApiRequest
-            {
-                query = "こんにちは",
-                user = "test-user",
-                response_mode = "blocking"
-            };
-
-            // Act
-            var task = _mockClient.SendStreamingRequestAsync(request, null);
-
-            // Wait for completion
-            while (!task.IsCompleted)
-            {
-                yield return null;
-            }
-
-            var result = task.Result;
-
-            // Assert
-            Assert.IsTrue(result.IsSuccess);
-            Assert.AreEqual("mock-conv-id", result.ConversationId);
-            Assert.IsTrue(result.TextResponse.Contains("Mock response"));
-            Assert.IsTrue(result.TextResponse.Contains("こんにちは"));
-        }
 
         #endregion
     }
