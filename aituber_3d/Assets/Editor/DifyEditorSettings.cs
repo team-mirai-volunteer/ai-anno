@@ -145,33 +145,7 @@ namespace AiTuber.Editor.Dify
             OnSettingsChanged();
         }
 
-        /// <summary>
-        /// 設定をデフォルト値にリセット
-        /// </summary>
-        public static void ResetToDefaults()
-        {
-            SetApiKey(string.Empty);
-            SetApiUrl(DEFAULT_API_URL);
-            SetEnableDebugLogging(DEFAULT_DEBUG_LOGGING);
 
-            Debug.Log("[DifyEditor] Settings reset to defaults");
-        }
-
-        /// <summary>
-        /// 既存DifyConfigAssetから設定を読み込み
-        /// </summary>
-        /// <param name="configAsset">読み込むDifyConfigAsset</param>
-        public static void LoadFromConfigAsset(AiTuber.Services.Dify.Unity.DifyConfigAsset configAsset)
-        {
-            if (configAsset == null)
-                return;
-
-            SetApiKey(configAsset.ApiKey);
-            SetApiUrl(configAsset.ApiUrl);
-            SetEnableDebugLogging(configAsset.EnableDebugLogging);
-
-            Debug.Log($"[DifyEditor] Settings loaded from {configAsset.name}");
-        }
 
         /// <summary>
         /// 設定をDifyConfigAssetに保存
@@ -267,23 +241,5 @@ namespace AiTuber.Editor.Dify
 
         #endregion
 
-        #region EditorPrefs Cleanup
-
-        /// <summary>
-        /// 全ての設定をEditorPrefsから削除
-        /// デバッグ用メソッド
-        /// </summary>
-        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
-        public static void ClearAllPrefs()
-        {
-            EditorPrefs.DeleteKey(API_KEY_PREF);
-            EditorPrefs.DeleteKey(API_URL_PREF);
-            EditorPrefs.DeleteKey(DEBUG_LOGGING_PREF);
-
-            Debug.Log("[DifyEditor] All EditorPrefs cleared");
-            OnSettingsChanged();
-        }
-
-        #endregion
     }
 }
