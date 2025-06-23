@@ -147,27 +147,6 @@ namespace AiTuber.Editor.Dify
 
 
 
-        /// <summary>
-        /// 設定をDifyConfigAssetに保存
-        /// </summary>
-        /// <param name="configAsset">保存先DifyConfigAsset</param>
-        public static void SaveToConfigAsset(AiTuber.Services.Dify.Unity.DifyConfigAsset configAsset)
-        {
-            if (configAsset == null)
-                return;
-
-            var serviceConfig = new AiTuber.Services.Dify.DifyServiceConfig
-            {
-                ApiKey = ApiKey,
-                ApiUrl = ApiUrl,
-                EnableAudioProcessing = true // デフォルトで有効
-            };
-
-            configAsset.FromDifyServiceConfig(serviceConfig);
-            EditorUtility.SetDirty(configAsset);
-
-            Debug.Log($"[DifyEditor] Settings saved to {configAsset.name}");
-        }
 
         /// <summary>
         /// DifyApiClientインスタンスを作成

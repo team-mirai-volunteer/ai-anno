@@ -18,7 +18,10 @@ namespace AiTuber.Services.Dify.Unity
     {
         [Header("Dify Configuration")]
         [SerializeField] 
-        private DifyConfigAsset _difyConfigAsset;
+        private string _apiKey = "";
+        
+        [SerializeField] 
+        private string _apiUrl = "https://api.dify.ai/v1/chat-messages";
 
         [Header("Unity Component References")]
         [SerializeField] 
@@ -94,9 +97,9 @@ namespace AiTuber.Services.Dify.Unity
         /// </summary>
         private void ValidateComponents()
         {
-            if (_difyConfigAsset == null)
+            if (string.IsNullOrEmpty(_apiKey))
             {
-                Debug.LogError("[DifyQueueManager] DifyConfigAsset is not assigned!");
+                Debug.LogError("[DifyQueueManager] API Key is not configured!");
                 enabled = false;
                 return;
             }
@@ -141,9 +144,9 @@ namespace AiTuber.Services.Dify.Unity
                 // 設定の作成
                 _config = new DifyServiceConfig
                 {
-                    ApiKey = _difyConfigAsset.ApiKey,
-                    ApiUrl = _difyConfigAsset.ApiUrl,
-                    EnableAudioProcessing = _difyConfigAsset.EnableAudioProcessing
+                    ApiKey = _apiKey,
+                    ApiUrl = _apiUrl,
+                    EnableAudioProcessing = true
                 };
 
                 // 設定の検証
