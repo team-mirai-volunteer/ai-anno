@@ -29,7 +29,10 @@ resource "google_compute_instance_template" "dify" {
     network    = var.network_id
     subnetwork = var.subnet_id
 
-    # No external IP - access via LB only
+    # Assign external IP for initial setup
+    access_config {
+      // Ephemeral public IP
+    }
   }
 
   service_account {
