@@ -1,16 +1,16 @@
 using NUnit.Framework;
 using System;
-using AiTuber.Services.Dify.Infrastructure;
-using AiTuber.Services.Dify.Data;
+using AiTuber.Services.Legacy.Dify.Infrastructure;
+using AiTuber.Services.Legacy.Dify.Data;
 
-namespace AiTuber.Tests.Dify.SSE
+namespace AiTuber.Tests.Dify.InterfaceAdapters
 {
     /// <summary>
-    /// SSEParser クラスのユニットテスト
+    /// SSEParser クラスのユニットテスト (Clean Architecture移行準備)
     /// 同期的Pure C#メソッドのみテスト、Unity Test Runner安全な実装
     /// </summary>
     [TestFixture]
-    public class SSEParserTests
+    public class SSEStreamTranslatorTests
     {
 
         #region ParseSSEStream Tests
