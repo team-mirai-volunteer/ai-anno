@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
-using AiTuber.Services.Dify;
-using AiTuber.Services.Dify.Data;
+using AiTuber.Services.Legacy.Dify;
+using AiTuber.Services.Legacy.Dify.Data;
 using Cysharp.Threading.Tasks;
 
 namespace AiTuber.Editor.Agent
@@ -83,12 +83,6 @@ namespace AiTuber.Editor.Agent
                 else
                 {
                     Debug.LogError($"[Dify Test] ❌ Query failed: {result.ErrorMessage}");
-                    
-                    if (result.DebugInfo != null)
-                    {
-                        Debug.LogError($"[Dify Test] Exception: {result.DebugInfo.ExceptionType}");
-                        Debug.LogError($"[Dify Test] Message: {result.DebugInfo.Message}");
-                    }
                 }
             }
             catch (Exception ex)

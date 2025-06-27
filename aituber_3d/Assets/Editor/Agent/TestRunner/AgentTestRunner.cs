@@ -102,7 +102,7 @@ namespace Assets.Editor.Agent.TestRunner
             
             try
             {
-                var result = AiTuber.Services.Dify.Infrastructure.SSEParser.ParseSingleLine(testData);
+                var result = AiTuber.Services.Legacy.Dify.Infrastructure.SSEParser.ParseSingleLine(testData);
                 
                 if (result != null && result.IsValid && result.Event != null)
                 {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
-using AiTuber.Services.Dify;
-using AiTuber.Services.Dify.Data;
+using AiTuber.Services.Legacy.Dify;
+using AiTuber.Services.Legacy.Dify.Data;
 using Cysharp.Threading.Tasks;
 
 namespace AiTuber.Editor.Agent

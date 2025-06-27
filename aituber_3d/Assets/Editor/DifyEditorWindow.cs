@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Threading;
 using System.Threading.Tasks;
-using AiTuber.Services.Dify;
+using AiTuber.Services.Legacy.Dify;
 
 namespace AiTuber.Editor.Dify
 {
@@ -340,7 +340,7 @@ namespace AiTuber.Editor.Dify
         /// UIスレッドで実行され、リアルタイムでレスポンスを更新
         /// </summary>
         /// <param name="streamEvent">受信したストリームイベント</param>
-        private void OnStreamEventReceived(AiTuber.Services.Dify.Data.DifyStreamEvent streamEvent)
+        private void OnStreamEventReceived(AiTuber.Services.Legacy.Dify.Data.DifyStreamEvent streamEvent)
         {
             if (streamEvent == null) return;
 

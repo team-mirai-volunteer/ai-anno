@@ -153,9 +153,9 @@ namespace AiTuber.Editor.Dify
         /// 現在の設定を使用して設定済みクライアントを生成
         /// </summary>
         /// <returns>設定済みDifyApiClient</returns>
-        public static AiTuber.Services.Dify.DifyApiClient CreateApiClient()
+        public static AiTuber.Services.Legacy.Dify.DifyApiClient CreateApiClient()
         {
-            var client = new AiTuber.Services.Dify.DifyApiClient
+            var client = new AiTuber.Services.Legacy.Dify.DifyApiClient
             {
                 ApiKey = ApiKey,
                 ApiUrl = ApiUrl
