@@ -13,7 +13,7 @@ resource "google_compute_global_address" "lb_ip" {
 # SSL Certificate (managed by Google) - only if domain is provided and SSL is enabled
 resource "google_compute_managed_ssl_certificate" "ssl_cert-2" {
   count   = var.enable_ssl && var.domain_name != "" ? 1 : 0
-  name    = "${local.lb_name}-ssl-cert"
+  name    = "${local.lb_name}-ssl-cert-2"
   project = var.project_id
 
   managed {
