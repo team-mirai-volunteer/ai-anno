@@ -177,11 +177,6 @@ resource "google_storage_bucket_iam_member" "vm_model_cache_write" {
   member = "serviceAccount:${google_service_account.dify_vm.email}"
 }
 
-resource "google_storage_bucket_iam_member" "vm_plugin_storage_admin" {
-  bucket = var.plugin_storage_bucket_name
-  role   = "roles/storage.admin"
-  member = "serviceAccount:${google_service_account.dify_vm.email}"
-}
 
 # Cloud SQL client permissions
 resource "google_project_iam_member" "vm_cloudsql_client" {

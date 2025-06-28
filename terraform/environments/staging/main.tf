@@ -88,7 +88,6 @@ module "compute_engine" {
 
   uploads_bucket_name        = module.storage.uploads_bucket_name
   model_cache_bucket_name    = module.storage.model_cache_bucket_name
-  plugin_storage_bucket_name = module.storage.plugin_storage_bucket_name
   artifact_registry_name     = module.artifact_registry.repository_name
 
   database_host              = module.cloud_sql.private_ip_address

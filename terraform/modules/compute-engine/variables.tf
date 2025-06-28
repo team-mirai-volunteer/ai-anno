@@ -90,10 +90,6 @@ variable "model_cache_bucket_name" {
   type        = string
 }
 
-variable "plugin_storage_bucket_name" {
-  description = "Name of the plugin storage bucket"
-  type        = string
-}
 
 variable "artifact_registry_name" {
   description = "Name of the Artifact Registry repository"
