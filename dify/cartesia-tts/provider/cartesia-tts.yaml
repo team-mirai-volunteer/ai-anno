@@ -1,0 +1,63 @@
+provider: cartesia-tts
+label:
+  en_US: CartesiaTts
+description:
+  en_US: Models provided by cartesia-tts.
+  zh_Hans: CartesiaTts 提供的模型。
+background: "#E5E7EB"
+help:
+  title:
+    en_US: Get your API Key from cartesia-tts
+    zh_Hans: 从 CartesiaTts 获取 API Key
+  url:
+    en_US: https://__put_your_url_here__/account/api-keys
+supported_model_types:
+  - tts
+configurate_methods:
+  - predefined-model
+  - customizable-model
+model_credential_schema:
+  model:
+    label:
+      en_US: Model Name
+      zh_Hans: 模型名称
+    placeholder:
+      en_US: Enter your model name
+      zh_Hans: 输入模型名称
+  credential_form_schemas:
+    - variable: cartesia_api_key
+      label:
+        en_US: API Key
+      type: secret-input
+      required: true
+      placeholder:
+        zh_Hans: 在此输入您的 API Key
+        en_US: Enter your API Key
+provider_credential_schema:
+  credential_form_schemas:
+    - variable: cartesia_api_key
+      label:
+        en_US: API Key
+      type: secret-input
+      required: true
+      placeholder:
+        zh_Hans: 在此输入您的 API Key
+        en_US: Enter your API Key
+    - variable: voice_id
+      label:
+        en_US: Voice ID
+        zh_Hans: 语音 ID
+      type: text-input
+      required: true
+      placeholder:
+        zh_Hans: 在此输入您的语音 ID
+        en_US: Enter your Voice ID
+models:
+  tts:
+    predefined:
+      - "models/tts/*.yaml"
+extra:
+  python:
+    provider_source: provider/cartesia-tts.py
+    model_sources:
+      - "models/tts/tts.py"
