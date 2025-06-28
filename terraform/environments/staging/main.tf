@@ -95,10 +95,6 @@ module "compute_engine" {
   database_name              = module.cloud_sql.database_name
   database_user              = module.cloud_sql.database_user
 
-  # HMAC keys for plugin daemon S3 compatibility
-  hmac_access_key_secret_id = module.storage.hmac_access_key_secret_id
-  hmac_secret_key_secret_id = module.storage.hmac_secret_key_secret_id
-
   # AWS S3 configuration for plugin storage
   plugin_aws_region = var.plugin_aws_region
   plugin_s3_bucket  = var.plugin_s3_bucket
