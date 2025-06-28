@@ -17,6 +17,7 @@ namespace AiTuber.Services.Dify.Mock
     /// </summary>
     public class MockHttpClient : IHttpClient
     {
+        private const int MOCK_CONNECTION_DELAY_MS = 50;
         private readonly SSERecordingReader _recordingReader;
         private readonly SSERecordingSimulator _simulator;
 
@@ -125,7 +126,7 @@ namespace AiTuber.Services.Dify.Mock
                 throw new ArgumentNullException(nameof(url));
 
             // Mock環境では軽量な遅延のみ
-            await UniTask.Delay(TimeSpan.FromMilliseconds(50), cancellationToken: cancellationToken);
+            await UniTask.Delay(TimeSpan.FromMilliseconds(MOCK_CONNECTION_DELAY_MS), cancellationToken: cancellationToken);
             
             return true; // Mock環境では常に接続成功
         }

@@ -18,6 +18,8 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
     /// </summary>
     public class UnityWebRequestHttpClient : IHttpClient
     {
+        private const int CONNECTION_TEST_TIMEOUT_SECONDS = 5;
+        private const int STREAMING_REQUEST_TIMEOUT_SECONDS = 60;
         private readonly DifyConfiguration _configuration;
 
         /// <summary>
@@ -186,7 +188,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 // 軽量なGETリクエストで接続確認
                 using var unityRequest = new UnityWebRequest(url, "GET");
                 unityRequest.downloadHandler = new DownloadHandlerBuffer();
-                unityRequest.timeout = 5; // 5秒タイムアウト
+                unityRequest.timeout = CONNECTION_TEST_TIMEOUT_SECONDS;
 
                 var operation = unityRequest.SendWebRequest();
                 await operation.ToUniTask(cancellationToken: cancellationToken);
@@ -228,7 +230,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             }
             
             // SSEストリーミング用タイムアウト設定
-            webRequest.timeout = 60; // 60秒（長時間ストリーミング対応）
+            webRequest.timeout = STREAMING_REQUEST_TIMEOUT_SECONDS;
             
             return webRequest;
         }

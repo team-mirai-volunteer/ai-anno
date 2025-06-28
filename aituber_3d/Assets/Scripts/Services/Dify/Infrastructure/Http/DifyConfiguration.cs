@@ -11,6 +11,11 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
     /// </summary>
     public class DifyConfiguration
     {
+        private const int DEFAULT_TIMEOUT_SECONDS = 30;
+        private const int DEFAULT_RETRY_COUNT = 3;
+        private const int MIN_API_KEY_LENGTH = 10;
+        private const int MAX_TIMEOUT_SECONDS = 300;
+        private const int MAX_RETRY_COUNT = 10;
         /// <summary>
         /// Dify API キー
         /// </summary>
@@ -55,8 +60,8 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             string apiKey,
             string apiUrl,
             bool enableAudioProcessing = true,
-            int timeoutSeconds = 30,
-            int retryCount = 3,
+            int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS,
+            int retryCount = DEFAULT_RETRY_COUNT,
             bool enableDebugLogging = false)
         {
             ApiKey = ValidateApiKey(apiKey);
@@ -108,7 +113,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new ArgumentException("ApiKey cannot be null or empty", nameof(apiKey));
 
-            if (apiKey.Length < 10)
+            if (apiKey.Length < MIN_API_KEY_LENGTH)
                 throw new ArgumentException("ApiKey must be at least 10 characters", nameof(apiKey));
 
             return apiKey.Trim();
@@ -142,7 +147,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             if (timeoutSeconds <= 0)
                 throw new ArgumentException("TimeoutSeconds must be greater than 0", nameof(timeoutSeconds));
 
-            if (timeoutSeconds > 300) // 5分以上は制限
+            if (timeoutSeconds > MAX_TIMEOUT_SECONDS)
                 throw new ArgumentException("TimeoutSeconds must be less than or equal to 300", nameof(timeoutSeconds));
 
             return timeoutSeconds;
@@ -159,7 +164,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             if (retryCount < 0)
                 throw new ArgumentException("RetryCount must be greater than or equal to 0", nameof(retryCount));
 
-            if (retryCount > 10) // 10回以上は制限
+            if (retryCount > MAX_RETRY_COUNT)
                 throw new ArgumentException("RetryCount must be less than or equal to 10", nameof(retryCount));
 
             return retryCount;
