@@ -92,7 +92,7 @@ GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_
 CELERY_BROKER_URL=redis://:$REDIS_PASSWORD@redis:6379/1
 
 # Plugin Storage Configuration (S3 compatibility mode)
-PLUGIN_STORAGE_TYPE=s3
+PLUGIN_STORAGE_TYPE=local
 PLUGIN_S3_ENDPOINT=https://storage.googleapis.com
 PLUGIN_STORAGE_OSS_BUCKET=$PLUGIN_STORAGE_BUCKET
 PLUGIN_AWS_ACCESS_KEY=$S3_ACCESS_KEY
@@ -101,14 +101,14 @@ PLUGIN_AWS_REGION=$REGION
 PLUGIN_S3_USE_PATH_STYLE=false
 
 # API URLs Configuration
-CONSOLE_API_URL=https://stg-ai-anno.ngo-go.com
-CONSOLE_WEB_URL=https://stg-ai-anno.ngo-go.com
-SERVICE_API_URL=https://stg-ai-anno.ngo-go.com
-APP_API_URL=https://stg-ai-anno.ngo-go.com
-APP_WEB_URL=https://stg-ai-anno.ngo-go.com
-FILES_URL=https://stg-ai-anno.ngo-go.com
-CONSOLE_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
-WEB_API_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+CONSOLE_API_URL=
+CONSOLE_WEB_URL=
+SERVICE_API_URL=
+APP_API_URL=
+APP_WEB_URL=
+FILES_URL=
+CONSOLE_CORS_ALLOW_ORIGINS=
+WEB_API_CORS_ALLOW_ORIGINS=
 EOF
 
 # Set permissions
