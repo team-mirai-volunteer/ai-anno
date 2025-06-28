@@ -145,7 +145,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     EditorPrefs.SetString("DifyEditor.ApiKey", _tempApiKey);
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 if (!string.IsNullOrEmpty(_tempApiKey) && !_tempApiKey.StartsWith("app-"))
@@ -162,7 +162,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     EditorPrefs.SetString("DifyEditor.ApiUrl", _tempApiUrl);
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 EditorGUILayout.Space(5);
@@ -217,7 +217,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     // モード変更時にコントローラーを再初期化
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 EditorGUILayout.Space(5);
@@ -241,7 +241,7 @@ namespace AiTuber.Editor.Dify
                         if (EditorGUI.EndChangeCheck())
                         {
                             EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                            InitializeDifyController();
+                            InitializeDifyUseCase();
                         }
                         
                         using (new EditorGUILayout.HorizontalScope())
@@ -262,7 +262,7 @@ namespace AiTuber.Editor.Dify
                                         _tempSSERecordingPath = selectedPath; // 絶対パスのまま
                                     }
                                     EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                                    InitializeDifyController();
+                                    InitializeDifyUseCase();
                                 }
                             }
                             
@@ -270,7 +270,7 @@ namespace AiTuber.Editor.Dify
                             {
                                 _tempSSERecordingPath = "SSERecordings/dify_sse_recording.json";
                                 EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                                InitializeDifyController();
+                                InitializeDifyUseCase();
                             }
                         }
                         
@@ -519,9 +519,9 @@ namespace AiTuber.Editor.Dify
         #region API Operations
 
         /// <summary>
-        /// DifyControllerの初期化
+        /// UseCaseの初期化
         /// </summary>
-        private void InitializeDifyController()
+        private void InitializeDifyUseCase()
         {
             if (!IsConfigurationValid())
             {
@@ -563,7 +563,7 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyController();
+                InitializeDifyUseCase();
                                 
                 var isConnected = await _processQueryUseCase.TestConnectionAsync(_cancellationTokenSource.Token);
                 
@@ -603,7 +603,7 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyController();
+                InitializeDifyUseCase();
                 
                 if (_processQueryUseCase == null)
                 {
