@@ -133,7 +133,7 @@ namespace AiTuber.Tests.MockComponents
             var task = _mockClient!.SendStreamingRequestAsync(
                 request,
                 data => {
-                    if (data.StartsWith("data: "))
+                    if (data.StartsWith("data: ") && !data.Contains("[DONE]"))
                     {
                         receivedEvents.Add(data);
                     }
@@ -154,7 +154,7 @@ namespace AiTuber.Tests.MockComponents
 
             // Assert
             Assert.AreEqual(1179, receivedEvents.Count, 
-                "Should reproduce all 1,179 events from recording");
+                "Should reproduce all 1,179 events from recording (excluding [DONE] marker)");
         }
 
         [UnityTest]
@@ -170,7 +170,7 @@ namespace AiTuber.Tests.MockComponents
             var task = _mockClient!.SendStreamingRequestAsync(
                 request,
                 data => {
-                    if (data.StartsWith("data: "))
+                    if (data.StartsWith("data: ") && !data.Contains("[DONE]"))
                     {
                         receivedTimestamps.Add(DateTimeOffset.UtcNow);
                     }
@@ -212,7 +212,7 @@ namespace AiTuber.Tests.MockComponents
             var task = fastMockClient.SendStreamingRequestAsync(
                 request,
                 data => {
-                    if (data.StartsWith("data: "))
+                    if (data.StartsWith("data: ") && !data.Contains("[DONE]"))
                     {
                         receivedEvents.Add(data);
                     }
