@@ -1,5 +1,0 @@
-volumes/app
-volumes/db
-volumes/plugin_daemon
-volumes/redis
-volumes/weaviate

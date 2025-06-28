@@ -102,8 +102,7 @@ namespace Aituber
             {
                 Debug.LogError("No stop words files found in Resources/Text/");
             }
-            // YouTube のコメントは GetCommentFromOne でわんコメから直接受け取る
-            // FetchCommentAsync();
+            FetchCommentAsync();
         }
 
         async UniTask FetchCommentAsync()
@@ -113,8 +112,7 @@ namespace Aituber
                 if (!stopRequested)
                 {
                     var response = await GetChatData(CHAT_API_URL);
-                    if (response != null)
-                    {
+                    if (response != null) {
                         var count = 0;
                         foreach (var message in response.messages)
                         {
@@ -126,17 +124,17 @@ namespace Aituber
 
                             if (!bannedPhrases.Any(word => messageTextHanAlp.Contains(word)))
                             {
-                                count++;
-                                commentPanelManager.queueManager.AddTextToQueue(new Question(messageTextHanAlp, message.author_name, message.author_image_url, false));
+                                count ++;
+                                commentPanelManager.queueManager.AddTextToQueue(new Question(messageTextHanAlp, message.author_name, message.author_image_url,false));
                             }
                             else
                             {
-                                Debug.LogWarning(string.Format("BANワード検知:{0}", messageTextHanAlp));
+                                Debug.LogWarning(string.Format("BANワード検知:{0}",messageTextHanAlp));
                             }
                         }
                         if (count > 0)
                         {
-                            Debug.Log(string.Format("Enqueued {0} YT comments", count));
+                            Debug.Log(string.Format("Enqueued {0} YT comments",count));
                         }
                     }
                     await UniTask.Delay(TimeSpan.FromSeconds(1));
