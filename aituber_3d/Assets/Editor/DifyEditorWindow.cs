@@ -2,7 +2,14 @@ using UnityEngine;
 using UnityEditor;
 using System.Threading;
 using System.Threading.Tasks;
-using AiTuber.Services.Dify;
+using AiTuber.Services.Dify.Presentation.Controllers;
+using AiTuber.Services.Dify.Presentation;
+using AiTuber.Services.Dify.Application.UseCases;
+using AiTuber.Services.Dify.Application.Ports;
+using AiTuber.Services.Dify.Infrastructure.Http;
+using AiTuber.Services.Dify.InterfaceAdapters.Translators;
+using AiTuber.Services.Dify.Mock;
+using AiTuber.Services.Dify.Domain.Entities;
 
 namespace AiTuber.Editor.Dify
 {
@@ -29,10 +36,15 @@ namespace AiTuber.Editor.Dify
         private string _tempApiKey = "";
         private string _tempApiUrl = "";
         private bool _tempDebugLogging = true;
+        private string _tempSSERecordingPath = "";
+        
+        // Mock/Real切り替え
+        private enum ClientMode { Mock, Real }
+        private ClientMode _clientMode = ClientMode.Mock;
 
-        // サービス関連
-        private DifyService _difyService;
-        private CancellationTokenSource _cancellationTokenSource;
+        // Clean Architecture サービス関連
+        private DifyController? _difyController;
+        private CancellationTokenSource? _cancellationTokenSource;
 
         // UI スタイリング
         private GUIStyle _headerStyle;
@@ -85,6 +97,7 @@ namespace AiTuber.Editor.Dify
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             
             DrawHeader();
+            DrawModeSection();
             DrawSettingsSection();
             DrawConnectionTestSection();
             DrawQuerySection();
@@ -136,8 +149,8 @@ namespace AiTuber.Editor.Dify
                 _tempApiKey = EditorGUILayout.TextField(_tempApiKey);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    DifyEditorSettings.SetApiKey(_tempApiKey);
-                    InitializeDifyService();
+                    EditorPrefs.SetString("DifyEditor.ApiKey", _tempApiKey);
+                    InitializeDifyController();
                 }
                 
                 if (!string.IsNullOrEmpty(_tempApiKey) && !_tempApiKey.StartsWith("app-"))
@@ -153,8 +166,8 @@ namespace AiTuber.Editor.Dify
                 _tempApiUrl = EditorGUILayout.TextField(_tempApiUrl);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    DifyEditorSettings.SetApiUrl(_tempApiUrl);
-                    InitializeDifyService();
+                    EditorPrefs.SetString("DifyEditor.ApiUrl", _tempApiUrl);
+                    InitializeDifyController();
                 }
                 
                 EditorGUILayout.Space(5);
@@ -164,29 +177,139 @@ namespace AiTuber.Editor.Dify
                 _tempDebugLogging = EditorGUILayout.Toggle("Enable Debug Logging", _tempDebugLogging);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    DifyEditorSettings.SetEnableDebugLogging(_tempDebugLogging);
+                    EditorPrefs.SetBool("DifyEditor.DebugLogging", _tempDebugLogging);
                 }
                 
                 EditorGUILayout.Space(10);
                 
                 // 設定状態表示
                 EditorGUILayout.Space(5);
-                var validationErrors = DifyEditorSettings.ValidateConfiguration();
-                if (validationErrors.Count > 0)
-                {
-                    EditorGUILayout.LabelField("Configuration Errors:", _errorStyle);
-                    foreach (var error in validationErrors)
-                    {
-                        EditorGUILayout.LabelField($"• {error}", _errorStyle);
-                    }
-                }
-                else if (DifyEditorSettings.IsValid())
+                if (IsConfigurationValid())
                 {
                     EditorGUILayout.LabelField("✓ Configuration is valid", _successStyle);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("Configuration Errors:", _errorStyle);
+                    if (string.IsNullOrWhiteSpace(_tempApiKey))
+                        EditorGUILayout.LabelField("• API Key is required", _errorStyle);
+                    if (string.IsNullOrWhiteSpace(_tempApiUrl))
+                        EditorGUILayout.LabelField("• API URL is required", _errorStyle);
+                    if (!string.IsNullOrWhiteSpace(_tempApiUrl) && !System.Uri.IsWellFormedUriString(_tempApiUrl, System.UriKind.Absolute))
+                        EditorGUILayout.LabelField("• API URL must be a valid URL", _errorStyle);
                 }
                 
                 EditorGUILayout.Space(5);
                 
+            }
+            
+            EditorGUILayout.Space(10);
+        }
+
+        /// <summary>
+        /// Mock/Real切り替えセクション描画
+        /// </summary>
+        private void DrawModeSection()
+        {
+            EditorGUILayout.LabelField("Client Mode", EditorStyles.boldLabel);
+            
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                EditorGUILayout.LabelField("Choose HTTP Client Implementation:", EditorStyles.label);
+                
+                EditorGUI.BeginChangeCheck();
+                _clientMode = (ClientMode)EditorGUILayout.EnumPopup("Mode", _clientMode);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    // モード変更時にコントローラーを再初期化
+                    InitializeDifyController();
+                }
+                
+                EditorGUILayout.Space(5);
+                
+                // モード説明
+                switch (_clientMode)
+                {
+                    case ClientMode.Mock:
+                        EditorGUILayout.HelpBox(
+                            "Mock Mode: Uses SSERecordings data to reproduce Dify events perfectly.\n" +
+                            "• No OpenAI token consumption\n" +
+                            "• Perfect timing reproduction\n" +
+                            "• Ideal for development and testing",
+                            MessageType.Info);
+                        
+                        // SSE録画ファイルパス設定
+                        EditorGUILayout.Space(5);
+                        EditorGUILayout.LabelField("SSE Recording File", EditorStyles.label);
+                        EditorGUI.BeginChangeCheck();
+                        _tempSSERecordingPath = EditorGUILayout.TextField(_tempSSERecordingPath);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
+                            InitializeDifyController();
+                        }
+                        
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            if (GUILayout.Button("Browse SSE File", GUILayout.Width(120)))
+                            {
+                                var selectedPath = EditorUtility.OpenFilePanel("Select SSE Recording", "SSERecordings", "json");
+                                if (!string.IsNullOrEmpty(selectedPath))
+                                {
+                                    // プロジェクトルートからの相対パスに変換
+                                    var projectPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, ".."));
+                                    if (selectedPath.StartsWith(projectPath))
+                                    {
+                                        _tempSSERecordingPath = System.IO.Path.GetRelativePath(projectPath, selectedPath);
+                                    }
+                                    else
+                                    {
+                                        _tempSSERecordingPath = selectedPath; // 絶対パスのまま
+                                    }
+                                    EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
+                                    InitializeDifyController();
+                                }
+                            }
+                            
+                            if (GUILayout.Button("Reset Default", GUILayout.Width(100)))
+                            {
+                                _tempSSERecordingPath = "SSERecordings/dify_sse_recording.json";
+                                EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
+                                InitializeDifyController();
+                            }
+                        }
+                        
+                        // ファイル状態表示
+                        var fullPath = System.IO.Path.Combine(Application.dataPath, "..", _tempSSERecordingPath);
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            EditorGUILayout.LabelField("✓ SSE Recording file found", _successStyle);
+                        }
+                        else
+                        {
+                            EditorGUILayout.LabelField("✗ SSE Recording file not found", _errorStyle);
+                        }
+                        
+                        break;
+                        
+                    case ClientMode.Real:
+                        EditorGUILayout.HelpBox(
+                            "Real Mode: Uses UnityWebRequest to connect to actual Dify API.\n" +
+                            "• Consumes OpenAI tokens\n" +
+                            "• Real network communication\n" +
+                            "• Production-ready implementation",
+                            MessageType.Warning);
+                        break;
+                }
+                
+                EditorGUILayout.Space(5);
+                
+                // モード状態表示
+                var modeColor = _clientMode == ClientMode.Mock ? Color.green : Color.yellow;
+                var oldColor = GUI.color;
+                GUI.color = modeColor;
+                EditorGUILayout.LabelField($"Current Mode: {_clientMode}", EditorStyles.boldLabel);
+                GUI.color = oldColor;
             }
             
             EditorGUILayout.Space(10);
@@ -201,7 +324,7 @@ namespace AiTuber.Editor.Dify
             
             using (new EditorGUILayout.VerticalScope("box"))
             {
-                using (new EditorGUI.DisabledScope(!DifyEditorSettings.IsValid() || _isProcessing))
+                using (new EditorGUI.DisabledScope(!IsConfigurationValid() || _isProcessing))
                 {
                     if (GUILayout.Button("Test Connection"))
                     {
@@ -235,7 +358,7 @@ namespace AiTuber.Editor.Dify
                 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    using (new EditorGUI.DisabledScope(!DifyEditorSettings.IsValid() || string.IsNullOrWhiteSpace(_currentQuery) || _isProcessing))
+                    using (new EditorGUI.DisabledScope(!IsConfigurationValid() || string.IsNullOrWhiteSpace(_currentQuery) || _isProcessing))
                     {
                         if (GUILayout.Button("Send Query (Streaming)"))
                         {
@@ -322,12 +445,25 @@ namespace AiTuber.Editor.Dify
         /// </summary>
         private void LoadSettings()
         {
-            _tempApiKey = DifyEditorSettings.ApiKey;
-            _tempApiUrl = DifyEditorSettings.ApiUrl;
-            _tempDebugLogging = DifyEditorSettings.EnableDebugLogging;
+            _tempApiKey = EditorPrefs.GetString("DifyEditor.ApiKey", "");
+            _tempApiUrl = EditorPrefs.GetString("DifyEditor.ApiUrl", "https://api.dify.ai/v1/chat-messages");
+            _tempDebugLogging = EditorPrefs.GetBool("DifyEditor.DebugLogging", true);
+            _tempSSERecordingPath = EditorPrefs.GetString("DifyEditor.SSERecordingPath", "SSERecordings/dify_sse_recording.json");
             
             Debug.Log($"[DifyEditor] Settings loaded - URL: {_tempApiUrl}");
-            Debug.Log($"[DifyEditor] Settings loaded: {DifyEditorSettings.GetConfigurationSummary()}");
+            Debug.Log($"[DifyEditor] Settings loaded - API Key: {(!string.IsNullOrEmpty(_tempApiKey) ? "configured" : "not set")}");
+            Debug.Log($"[DifyEditor] Settings loaded - SSE Recording: {_tempSSERecordingPath}");
+        }
+        
+        /// <summary>
+        /// 設定の妥当性確認
+        /// </summary>
+        /// <returns>設定が有効な場合true</returns>
+        private bool IsConfigurationValid()
+        {
+            return !string.IsNullOrWhiteSpace(_tempApiKey) &&
+                   !string.IsNullOrWhiteSpace(_tempApiUrl) &&
+                   System.Uri.IsWellFormedUriString(_tempApiUrl, System.UriKind.Absolute);
         }
 
 
@@ -340,32 +476,46 @@ namespace AiTuber.Editor.Dify
         /// UIスレッドで実行され、リアルタイムでレスポンスを更新
         /// </summary>
         /// <param name="streamEvent">受信したストリームイベント</param>
-        private void OnStreamEventReceived(AiTuber.Services.Dify.Data.DifyStreamEvent streamEvent)
+        private void OnStreamEventReceived(DifyStreamEvent streamEvent)
         {
             if (streamEvent == null) return;
 
             _currentEventCount++;
 
-            // テキストメッセージの場合はリアルタイム追加
-            if (streamEvent.HasValidTextMessage)
+            // デバッグ：受信したイベントの詳細ログ
+            if (_tempDebugLogging)
             {
-                _streamingResponse.Append(streamEvent.answer);
+                Debug.Log($"[DifyEditor] 🔍 Received event #{_currentEventCount}:");
+                Debug.Log($"[DifyEditor]   EventType: {streamEvent.EventType}");
+                Debug.Log($"[DifyEditor]   IsMessageEvent: {streamEvent.IsMessageEvent}");
+                Debug.Log($"[DifyEditor]   Answer: '{streamEvent.Answer}'");
+                Debug.Log($"[DifyEditor]   ConversationId: {streamEvent.ConversationId}");
+            }
+
+            // テキストメッセージの場合はリアルタイム追加
+            if (streamEvent.IsMessageEvent && !string.IsNullOrEmpty(streamEvent.Answer))
+            {
+                _streamingResponse.Append(streamEvent.Answer);
                 _currentResponse = _streamingResponse.ToString();
                 
-                if (DifyEditorSettings.EnableDebugLogging)
+                if (_tempDebugLogging)
                 {
-                    Debug.Log($"[DifyEditor] 📝 Stream event #{_currentEventCount}: '{streamEvent.answer}' (Total: {_currentResponse.Length} chars)");
+                    Debug.Log($"[DifyEditor] 📝 Adding text: '{streamEvent.Answer}' (Total: {_currentResponse.Length} chars)");
                 }
             }
-            else if (DifyEditorSettings.EnableDebugLogging)
+            else if (_tempDebugLogging)
             {
-                Debug.Log($"[DifyEditor] 🎯 Stream event #{_currentEventCount}: {streamEvent.@event}");
+                var reason = !streamEvent.IsMessageEvent ? "not message event" : "empty answer";
+                Debug.Log($"[DifyEditor] 🎯 Skipping event: {streamEvent.EventType} ({reason})");
             }
 
             // EditorApplicationのコールバックでUI更新を予約
             EditorApplication.delayCall += () => {
-                if (!_isProcessing) return; // 処理終了後は更新しない
-                Repaint();
+                // ウィンドウが存在する限り更新（_isProcessingは非同期処理で変わるため除外）
+                if (this != null)
+                {
+                    Repaint();
+                }
             };
         }
 
@@ -374,25 +524,36 @@ namespace AiTuber.Editor.Dify
         #region API Operations
 
         /// <summary>
-        /// Difyサービスの初期化
+        /// DifyControllerの初期化
         /// </summary>
-        private void InitializeDifyService()
+        private void InitializeDifyController()
         {
-            if (!DifyEditorSettings.IsValid())
+            if (!IsConfigurationValid())
             {
-                _difyService = null;
+                _difyController = null;
                 return;
             }
 
-            var config = new DifyServiceConfig
+            try
             {
-                ApiKey = DifyEditorSettings.ApiKey,
-                ApiUrl = DifyEditorSettings.ApiUrl,
-                EnableAudioProcessing = false // エディタツールでは音声無効
-            };
-
-            var apiClient = DifyEditorSettings.CreateApiClient();
-            _difyService = new DifyService(apiClient, config);
+                switch (_clientMode)
+                {
+                    case ClientMode.Mock:
+                        _difyController = CreateMockController(_tempApiKey, _tempApiUrl, _tempDebugLogging);
+                        Debug.Log("[DifyEditor] Mock DifyController initialized (SSERecordings)");
+                        break;
+                        
+                    case ClientMode.Real:
+                        _difyController = CreateProductionController(_tempApiKey, _tempApiUrl, _tempDebugLogging);
+                        Debug.Log("[DifyEditor] Production DifyController initialized (Real HTTP)");
+                        break;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _difyController = null;
+                Debug.LogError($"[DifyEditor] Failed to initialize DifyController: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -407,15 +568,15 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyService();
+                InitializeDifyController();
                 
-                if (_difyService == null)
+                if (_difyController == null)
                 {
                     _currentResponse = "Error: Invalid configuration. Please check your settings.";
                     return;
                 }
                 
-                var isConnected = await _difyService.TestConnectionAsync(_cancellationTokenSource.Token);
+                var isConnected = await _difyController.TestConnectionAsync(_cancellationTokenSource.Token);
                 
                 _currentResponse = isConnected 
                     ? "✓ Connection successful! Dify API is reachable."
@@ -453,9 +614,9 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyService();
+                InitializeDifyController();
                 
-                if (_difyService == null)
+                if (_difyController == null)
                 {
                     _currentResponse = "Error: Invalid configuration. Please check your settings.";
                     return;
@@ -463,26 +624,24 @@ namespace AiTuber.Editor.Dify
                 
                 // デバッグ情報出力
                 Debug.Log($"[DifyEditor] Starting query with settings:");
-                Debug.Log($"[DifyEditor] API Key from EditorPrefs: '{DifyEditorSettings.ApiKey}'");
-                Debug.Log($"[DifyEditor] API Key from UI field: '{_tempApiKey}'");
-                Debug.Log($"[DifyEditor] API URL: {DifyEditorSettings.ApiUrl}");
+                Debug.Log($"[DifyEditor] API Key: {(!string.IsNullOrEmpty(_tempApiKey) ? "configured" : "not set")}");
+                Debug.Log($"[DifyEditor] API URL: {_tempApiUrl}");
                 Debug.Log($"[DifyEditor] Query: {_currentQuery}");
                 
                 var userId = $"editor-user-{System.DateTime.Now.Ticks}";
-                var result = await _difyService.ProcessUserQueryAsync(
+                var result = await _difyController.SendQueryStreamingAsync(
                     _currentQuery,
                     userId,
-                    conversationId: null,
-                    onStreamEvent: OnStreamEventReceived,
+                    onEventReceived: OnStreamEventReceived,
                     _cancellationTokenSource.Token);
                 
                 if (result.IsSuccess)
                 {
                     _currentResponse = result.TextResponse ?? "No response received";
                     
-                    if (DifyEditorSettings.EnableDebugLogging)
+                    if (_tempDebugLogging)
                     {
-                        Debug.Log($"[DifyEditor] Query successful. Events: {result.EventCount}, " +
+                        Debug.Log($"[DifyEditor] Query successful. " +
                                  $"Processing time: {result.ProcessingTimeMs}ms, " +
                                  $"Response length: {result.TextResponse?.Length ?? 0} chars");
                     }
@@ -562,6 +721,78 @@ namespace AiTuber.Editor.Dify
                     wordWrap = true,
                     fontSize = 12
                 };
+            }
+        }
+
+        #endregion
+
+        #region Factory Methods (Editor Only)
+
+        /// <summary>
+        /// Mock用DifyController作成（EditorWindow専用）
+        /// </summary>
+        private DifyController CreateMockController(string apiKey, string apiUrl, bool enableDebugLogging)
+        {
+            // Mock例外領域: SSERecordings再生
+            var recordingReader = new SSERecordingReader(_tempSSERecordingPath);
+            var simulator = new SSERecordingSimulator(1.0f);
+            var mockHttpClient = new MockHttpClient(recordingReader, simulator);
+
+            // Infrastructure Layer
+            var configuration = new DifyConfiguration(
+                apiKey,
+                apiUrl,
+                enableAudioProcessing: false, // EditorWindow用は音声無効
+                enableDebugLogging: enableDebugLogging);
+
+            var httpAdapter = new DifyHttpAdapter(mockHttpClient, configuration);
+
+            // Application Layer
+            var responseProcessor = new MockResponseProcessor();
+            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
+
+            // Presentation Layer
+            return new DifyController(useCase);
+        }
+
+        /// <summary>
+        /// Production用DifyController作成（EditorWindow専用）
+        /// </summary>
+        private DifyController CreateProductionController(string apiKey, string apiUrl, bool enableDebugLogging)
+        {
+            // Infrastructure Layer
+            var configuration = new DifyConfiguration(
+                apiKey,
+                apiUrl,
+                enableAudioProcessing: false, // EditorWindow用は音声無効
+                enableDebugLogging: enableDebugLogging);
+
+            var httpClient = new UnityWebRequestHttpClient(configuration);
+            var httpAdapter = new DifyHttpAdapter(httpClient, configuration);
+
+            // Application Layer
+            var responseProcessor = new MockResponseProcessor(); // EditorWindow用は軽量実装
+            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
+
+            // Presentation Layer
+            return new DifyController(useCase);
+        }
+
+        /// <summary>
+        /// EditorWindow用レスポンス処理サービス
+        /// </summary>
+        private class MockResponseProcessor : IResponseProcessor
+        {
+            public void ProcessAudioEvent(DifyStreamEvent streamEvent)
+            {
+                // Audio処理は無効（Editor用）
+                Debug.Log($"[MockResponseProcessor] Audio event ignored: {streamEvent.EventType}");
+            }
+
+            public void ProcessTextEvent(DifyStreamEvent streamEvent)
+            {
+                // Text処理の基本実装
+                Debug.Log($"[MockResponseProcessor] Text event processed: {streamEvent.EventType}");
             }
         }
 
