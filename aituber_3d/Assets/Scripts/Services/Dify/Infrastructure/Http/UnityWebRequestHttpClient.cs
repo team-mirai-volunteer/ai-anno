@@ -189,13 +189,17 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 using var unityRequest = new UnityWebRequest(url, "GET");
                 unityRequest.downloadHandler = new DownloadHandlerBuffer();
                 unityRequest.timeout = CONNECTION_TEST_TIMEOUT_SECONDS;
-
                 var operation = unityRequest.SendWebRequest();
                 await operation.ToUniTask(cancellationToken: cancellationToken);
 
                 // 成功もしくは認証エラー（サーバー応答あり）なら接続OK
                 return unityRequest.result == UnityWebRequest.Result.Success ||
-                       unityRequest.responseCode == 401; // Unauthorized = server is reachable
+                       unityRequest.responseCode == 401;
+            }
+            catch (UnityWebRequestException e)
+            {
+                // HTTP/1.1 405 Method Not Allowed
+                return e.ResponseCode == 405;
             }
             catch
             {
