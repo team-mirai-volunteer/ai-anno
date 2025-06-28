@@ -131,3 +131,13 @@ variable "hmac_secret_key_secret_id" {
   type        = string
 }
 
+variable "plugin_aws_region" {
+  description = "AWS region for S3 bucket"
+  type        = string
+}
+
+variable "plugin_s3_bucket" {
+  description = "AWS S3 bucket name for plugin storage"
+  type        = string
+}
+

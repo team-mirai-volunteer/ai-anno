@@ -281,3 +281,60 @@ resource "google_secret_manager_secret_iam_member" "vm_access_code_execution_api
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.vm_service_account_email}"
 }
+
+# AWS S3 access key for plugin storage
+resource "google_secret_manager_secret" "plugin_s3_access_key" {
+  secret_id = "${var.project_name}-plugin-s3-access-key-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "plugin_s3_access_key" {
+  secret      = google_secret_manager_secret.plugin_s3_access_key.id
+  secret_data = var.plugin_s3_access_key
+}
+
+# AWS S3 secret key for plugin storage
+resource "google_secret_manager_secret" "plugin_s3_secret_key" {
+  secret_id = "${var.project_name}-plugin-s3-secret-key-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "plugin_s3_secret_key" {
+  secret      = google_secret_manager_secret.plugin_s3_secret_key.id
+  secret_data = var.plugin_s3_secret_key
+}
+
+# Grant VM service account access to AWS S3 secrets
+resource "google_secret_manager_secret_iam_member" "vm_access_plugin_s3_access_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.plugin_s3_access_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "vm_access_plugin_s3_secret_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.plugin_s3_secret_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}

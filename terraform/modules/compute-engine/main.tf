@@ -36,6 +36,8 @@ resource "google_storage_bucket_object" "setup_script" {
     PLUGIN_STORAGE_BUCKET     = var.plugin_storage_bucket_name
     HMAC_ACCESS_KEY_SECRET_ID = var.hmac_access_key_secret_id
     HMAC_SECRET_KEY_SECRET_ID = var.hmac_secret_key_secret_id
+    PLUGIN_S3_BUCKET          = var.plugin_s3_bucket
+    PLUGIN_AWS_REGION         = var.plugin_aws_region
   })
 }
 

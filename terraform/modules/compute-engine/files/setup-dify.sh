@@ -27,9 +27,8 @@ DB_HOST="${DB_HOST}"                                        # Cloud SQL instance
 DB_NAME="${DB_NAME}"                                        # Database name
 DB_USER="${DB_USER}"                                        # Database username
 GOOGLE_STORAGE_BUCKET="${GOOGLE_STORAGE_BUCKET}"            # GCS bucket for Dify file uploads
-PLUGIN_STORAGE_BUCKET="${PLUGIN_STORAGE_BUCKET}"            # GCS bucket for plugin storage
-HMAC_ACCESS_KEY_SECRET_ID="${HMAC_ACCESS_KEY_SECRET_ID}"    # Secret Manager ID for HMAC access key
-HMAC_SECRET_KEY_SECRET_ID="${HMAC_SECRET_KEY_SECRET_ID}"    # Secret Manager ID for HMAC secret key
+PLUGIN_S3_BUCKET="${PLUGIN_S3_BUCKET}"                      # S3 bucket for plugin storage
+PLUGIN_AWS_REGION="${PLUGIN_AWS_REGION}"                    # AWS region for S3 bucket
 
 # Fetch secrets from Secret Manager
 echo "Fetching secrets from Secret Manager..."
@@ -43,6 +42,9 @@ INIT_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-
 REDIS_PASSWORD=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-redis-password-${ENVIRONMENT}" --project="${PROJECT_ID}")
 CODE_EXECUTION_API_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-code-execution-api-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 
+PLUGIN_S3_ACCESS_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-s3-access-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
+PLUGIN_S3_SECRET_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-s3-secret-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
+
 # Clone Dify 1.4.3 from git
 echo "Cloning Dify 1.4.3..."
 cd /opt
@@ -52,10 +54,6 @@ cd /opt/dify
 # Create necessary directories
 mkdir -p volumes/{app/storage,redis/data,plugin-daemon/data}
 
-# Fetch HMAC keys from Secret Manager for plugin-daemon
-echo "Fetching HMAC keys for plugin-daemon S3 compatibility..."
-S3_ACCESS_KEY=$(gcloud secrets versions access latest --secret="$HMAC_ACCESS_KEY_SECRET_ID" --project="${PROJECT_ID}")
-S3_SECRET_KEY=$(gcloud secrets versions access latest --secret="$HMAC_SECRET_KEY_SECRET_ID" --project="${PROJECT_ID}")
 
 # GCS Service Account JSON is already base64 encoded in Secret Manager
 GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-gcs-sa-${ENVIRONMENT}" --project="${PROJECT_ID}")
@@ -92,25 +90,16 @@ GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_
 # Celery Configuration
 CELERY_BROKER_URL=redis://:$REDIS_PASSWORD@redis:6379/1
 
-# Plugin Storage Configuration (S3 compatibility mode)
-PLUGIN_STORAGE_TYPE=local
-PLUGIN_S3_ENDPOINT=https://storage.googleapis.com
-PLUGIN_STORAGE_OSS_BUCKET=$PLUGIN_STORAGE_BUCKET
-PLUGIN_AWS_ACCESS_KEY=$S3_ACCESS_KEY
-PLUGIN_AWS_SECRET_KEY=$S3_SECRET_KEY
-PLUGIN_AWS_REGION=$REGION
+# Plugin Storage Configuration (S3 mode)
+# The GCS mode of the Dify Plugin Daemon is buggy, so we'll use S3 instead.
+PLUGIN_STORAGE_TYPE=s3
+PLUGIN_STORAGE_OSS_BUCKET=$PLUGIN_S3_BUCKET
+PLUGIN_AWS_ACCESS_KEY=$PLUGIN_S3_ACCESS_KEY
+PLUGIN_AWS_SECRET_KEY=$PLUGIN_S3_SECRET_KEY
+PLUGIN_AWS_REGION=$PLUGIN_AWS_REGION
 PLUGIN_S3_USE_PATH_STYLE=false
 
-# API URLs Configuration
-CONSOLE_API_URL=
-CONSOLE_WEB_URL=
-SERVICE_API_URL=
-APP_API_URL=
-APP_WEB_URL=
-FILES_URL=
-CONSOLE_CORS_ALLOW_ORIGINS=
-WEB_API_CORS_ALLOW_ORIGINS=
-
+# Since we have plugins that require manual upload:
 FORCE_VERIFYING_SIGNATURE=false
 EOF
 

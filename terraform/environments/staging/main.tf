@@ -99,6 +99,10 @@ module "compute_engine" {
   hmac_access_key_secret_id = module.storage.hmac_access_key_secret_id
   hmac_secret_key_secret_id = module.storage.hmac_secret_key_secret_id
 
+  # AWS S3 configuration for plugin storage
+  plugin_aws_region = var.plugin_aws_region
+  plugin_s3_bucket  = var.plugin_s3_bucket
+
   machine_type    = "e2-standard-8"  # 8 vCPUs, 32GB RAM for staging
   boot_disk_size  = 200
   boot_disk_type  = "pd-ssd"
@@ -125,6 +129,8 @@ module "secret_manager" {
   init_password             = var.init_password
   redis_password            = var.redis_password
   code_execution_api_key    = var.code_execution_api_key
+  plugin_s3_access_key      = var.plugin_s3_access_key
+  plugin_s3_secret_key      = var.plugin_s3_secret_key
 }
 
 module "load_balancer" {

@@ -141,3 +141,27 @@ variable "code_execution_api_key" {
   sensitive   = true
 }
 
+# AWS S3 variables for plugin storage
+variable "plugin_s3_access_key" {
+  description = "AWS S3 access key for plugin storage"
+  type        = string
+  sensitive   = true
+}
+
+variable "plugin_s3_secret_key" {
+  description = "AWS S3 secret key for plugin storage"
+  type        = string
+  sensitive   = true
+}
+
+variable "plugin_aws_region" {
+  description = "AWS region for S3 bucket"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "plugin_s3_bucket" {
+  description = "AWS S3 bucket name for plugin storage"
+  type        = string
+}
+
