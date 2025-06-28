@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AiTuber.Services.Dify.Application.Ports;
 using AiTuber.Services.Dify.Domain.Entities;
+using AiTuber.Services.Dify.Infrastructure.Http;
 
 #nullable enable
 
@@ -13,7 +14,7 @@ namespace AiTuber.Services.Dify.Application.UseCases
     /// Pure C# Application Layer、Clean Architecture準拠
     /// Legacy DifyServiceからリファクタリング済み
     /// </summary>
-    public class ProcessQueryUseCase
+    public class ProcessQueryUseCase : IProcessQueryUseCase
     {
         private readonly IDifyStreamingPort _streamingPort;
         private readonly IResponseProcessor _responseProcessor;
@@ -103,6 +104,25 @@ namespace AiTuber.Services.Dify.Application.UseCases
 
             // 外部コールバック呼び出し
             onEventReceived?.Invoke(streamEvent);
+        }
+
+        /// <summary>
+        /// 設定情報を取得
+        /// </summary>
+        /// <returns>Dify設定</returns>
+        public DifyConfiguration GetConfiguration()
+        {
+            return _streamingPort.GetConfiguration();
+        }
+
+        /// <summary>
+        /// 接続テスト
+        /// </summary>
+        /// <param name="cancellationToken">キャンセルトークン</param>
+        /// <returns>接続成功フラグ</returns>
+        public async Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
+        {
+            return await _streamingPort.TestConnectionAsync(cancellationToken);
         }
     }
 }

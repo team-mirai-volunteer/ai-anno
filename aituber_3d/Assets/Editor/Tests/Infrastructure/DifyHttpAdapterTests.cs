@@ -27,13 +27,16 @@ namespace AiTuber.Tests.Dify.Infrastructure
         public void SetUp()
         {
             _mockHttpClient = new MockHttpClient();
+            UnityEngine.Debug.Log($"[TEST] SetUp: MockHttpClient created");
             _config = new DifyConfiguration(
                 apiKey: "test-api-key-12345",
                 apiUrl: "https://api.dify.ai/v1/chat-messages",
                 enableAudioProcessing: true,
                 enableDebugLogging: true
             );
+            UnityEngine.Debug.Log($"[TEST] SetUp: DifyConfiguration created");
             _adapter = new DifyHttpAdapter(_mockHttpClient, _config);
+            UnityEngine.Debug.Log($"[TEST] SetUp: DifyHttpAdapter created");
         }
 
         #region Constructor Tests
@@ -76,63 +79,79 @@ namespace AiTuber.Tests.Dify.Infrastructure
         [UnityTest]
         public IEnumerator ストリーミング実行_有効なリクエスト_成功レスポンスを返す()
         {
-            // Arrange
+            // Arrange - 実際のDifyデータフォーマットで完全テスト
             var request = new DifyRequest("こんにちは", "test-user");
-            var mockSseData = "data: {\"event\":\"message\",\"answer\":\"こんにちは！\",\"conversation_id\":\"conv-123\",\"message_id\":\"msg-456\"}\n\n" +
-                             "data: {\"event\":\"message_end\",\"conversation_id\":\"conv-123\",\"message_id\":\"msg-456\"}\n\n";
+            var realConversationId = "1213080f-f863-4a53-9149-bbe05096f758";
+            var realMessageId = "9e5da094-804f-4d84-a68d-26a59f158231";
+            
+            // 実際のDifySSEフォーマット（実データから抽出）
+            var mockSseData = $"data: {{\"eventType\":\"message\",\"answer\":\"こんにちは\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
+                             $"data: {{\"eventType\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
             
             _mockHttpClient.SetupStreamingResponse(mockSseData);
 
-            // Act
+            // Act - 実際のDifyHttpAdapterを通した完全統合テスト
             QueryResponse result = null;
             var receivedEvents = new System.Collections.Generic.List<DifyStreamEvent>();
             
             yield return PerformAsyncOperation(
                 () => _adapter.ExecuteStreamingAsync(
                     request, 
-                    evt => receivedEvents.Add(evt), 
+                    evt => {
+                        UnityEngine.Debug.Log($"[TEST] Received event: {evt.EventType}");
+                        receivedEvents.Add(evt);
+                    }, 
                     CancellationToken.None),
                 r => result = r);
 
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.IsSuccess);
-            Assert.AreEqual("こんにちは！", result.TextResponse);
-            Assert.AreEqual("conv-123", result.ConversationId);
-            Assert.AreEqual("msg-456", result.MessageId);
-            Assert.AreEqual(2, receivedEvents.Count);
-            Assert.IsTrue(receivedEvents[0].IsMessageEvent);
-            Assert.IsTrue(receivedEvents[1].IsEndEvent);
+            // Assert - DifyHttpAdapterの実際の処理結果を検証
+            Assert.IsNotNull(result, "QueryResponse should not be null");
+            Assert.IsTrue(_mockHttpClient.WasCalled, "MockHttpClient should have been called");
+            Assert.IsTrue(result.IsSuccess, "Request should be successful");
+            Assert.AreEqual("こんにちは", result.TextResponse, "TextResponse should match");
+            Assert.AreEqual(realConversationId, result.ConversationId, "ConversationId should match");
+            Assert.AreEqual(realMessageId, result.MessageId, "MessageId should match");
+            Assert.AreEqual(2, receivedEvents.Count, "Should receive 2 events");
+            Assert.IsTrue(receivedEvents[0].IsMessageEvent, "First event should be message event");
+            Assert.IsTrue(receivedEvents[1].IsEndEvent, "Second event should be end event");
         }
 
         [UnityTest]
         public IEnumerator ストリーミング実行_音声データ含む_音声イベント通知()
         {
-            // Arrange
+            // Arrange - 実際のDifyの音声データで完全テスト
             var request = new DifyRequest("音声テスト", "test-user");
-            var audioData = Convert.ToBase64String(new byte[] { 0xFF, 0xF3, 0x01 }); // MP3 header
-            var mockSseData = $"data: {{\"event\":\"tts_message\",\"audio\":\"{audioData}\",\"conversation_id\":\"conv-123\"}}\n\n" +
-                             "data: {\"event\":\"message_end\",\"conversation_id\":\"conv-123\"}\n\n";
+            var realConversationId = "1213080f-f863-4a53-9149-bbe05096f758";
+            var realMessageId = "9e5da094-804f-4d84-a68d-26a59f158231";
+            var realAudioData = "//PExABatDnYAVnAADrrO3E88zvpN09NkEFGk0bzByvm62a6JljmKGYIJggmCCBgwEIWQLIFkDAAMAAwACzCABFNU6p1TqBpjororpFoOIqIqJEJiKkXY1yHLf5yuG3bct/7deN0/akYdhrC7FB1jtfh+3TvuregHMAAEAswXgQcSITEVIqRItY7X3ff9y2dtfh+WSh/H8hyWblb/uQ1hrjuQ5jK5f2np6enp7dyGGsKnUDRXQDoB0A6Rag7E2uNYZwzhrjuP5DkOP/G6enhty2drvYmsRdjEGuOQ5D+Q5LM68NuW5bluW/7vuQ7ksxlb/w/fhhh7E3Lh+nzrw25axF2MQZwwxdi7GIOI/7/v+5bW2dsTZ277+P4/j+P4/j+P5DkPv+5bW2drvXeu9iaxF2LsXYuxdi7F2LsTHVOqdd6713sTZ219rjkOQ5DkOQ1hYRFQtOWnLxoPorpFqDuPWcty4vlKH8nG5l/zIQzEARC8C6KKG4fyTEFNRTMuMTA";
+            
+            // 実際のDifySSEフォーマット（tts_messageイベント）
+            var mockSseData = $"data: {{\"eventType\":\"tts_message\",\"answer\":\"\",\"audio\":\"{realAudioData}\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
+                             $"data: {{\"eventType\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
             
             _mockHttpClient.SetupStreamingResponse(mockSseData);
 
-            // Act
+            // Act - 実際のDifyHttpAdapterを通した完全統合テスト
             QueryResponse result = null;
             var receivedEvents = new System.Collections.Generic.List<DifyStreamEvent>();
             
             yield return PerformAsyncOperation(
                 () => _adapter.ExecuteStreamingAsync(
                     request, 
-                    evt => receivedEvents.Add(evt), 
+                    evt => {
+                        UnityEngine.Debug.Log($"[TEST] Received audio event: {evt.EventType}");
+                        receivedEvents.Add(evt);
+                    }, 
                     CancellationToken.None),
                 r => result = r);
 
-            // Assert
-            Assert.IsTrue(result.IsSuccess);
-            Assert.IsTrue(result.HasAudioData);
-            Assert.AreEqual(2, receivedEvents.Count);
-            Assert.IsTrue(receivedEvents[0].IsAudioEvent);
-            Assert.IsTrue(receivedEvents[0].HasValidAudio);
+            // Assert - DifyHttpAdapterの実際の音声処理結果を検証
+            Assert.IsTrue(result.IsSuccess, "Audio request should be successful");
+            Assert.IsTrue(result.HasAudioData, "Result should contain audio data");
+            Assert.AreEqual(2, receivedEvents.Count, "Should receive 2 events (audio + end)");
+            Assert.IsTrue(receivedEvents[0].IsAudioEvent, "First event should be audio event");
+            Assert.IsTrue(receivedEvents[0].HasValidAudio, "Audio event should have valid audio data");
+            Assert.IsTrue(receivedEvents[1].IsEndEvent, "Second event should be end event");
         }
 
         [UnityTest]
@@ -164,17 +183,17 @@ namespace AiTuber.Tests.Dify.Infrastructure
         [UnityTest]
         public IEnumerator ストリーミング実行_キャンセルトークン_OperationCancelledException()
         {
-            // Arrange
+            // Arrange - 実際のDifyHttpAdapterでキャンセル処理をテスト
             var request = new DifyRequest("キャンセルテスト", "test-user");
             var cts = new CancellationTokenSource();
             
-            // Setup long running response to allow cancellation
-            _mockHttpClient.SetupStreamingResponse("data: {\"event\":\"message\",\"answer\":\"テスト\"}\n\n");
+            // MockHttpClientをセットアップ（実際には使用されない想定）
+            _mockHttpClient.SetupStreamingResponse("data: {\"eventType\":\"message\",\"answer\":\"テスト\"}\n\n");
             
-            // Cancel token immediately
+            // すぐにキャンセル
             cts.Cancel();
 
-            // Act & Assert
+            // Act & Assert - 実際のDifyHttpAdapterのキャンセル処理を検証
             yield return PerformAsyncOperationExpectingException<OperationCanceledException>(
                 () => _adapter.ExecuteStreamingAsync(request, null, cts.Token));
         }
@@ -305,6 +324,7 @@ namespace AiTuber.Tests.Dify.Infrastructure
         public string ErrorMessage { get; set; } = "Mock HTTP error";
         public string StreamingResponse { get; set; } = "";
         public bool ConnectionSuccess { get; set; } = true;
+        public bool WasCalled { get; private set; } = false;
 
         public void SetupStreamingResponse(string sseData)
         {
@@ -333,6 +353,8 @@ namespace AiTuber.Tests.Dify.Infrastructure
             System.Action<string> onDataReceived, 
             CancellationToken cancellationToken = default)
         {
+            WasCalled = true;
+            UnityEngine.Debug.Log($"[TEST] MockHttpClient called - Request URL: {request.Url}");
             cancellationToken.ThrowIfCancellationRequested();
 
             if (ShouldThrowError)
@@ -340,20 +362,27 @@ namespace AiTuber.Tests.Dify.Infrastructure
                 return new HttpResponse(false, ErrorMessage, "");
             }
 
-            // SSEデータをライン単位で送信シミュレート
+            // 少し待機してから処理
             await Task.Delay(10, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
             
+            // SSEデータを正しく分割して送信
             var lines = StreamingResponse.Split('\n');
+            UnityEngine.Debug.Log($"[TEST] Processing {lines.Length} lines");
+            
             foreach (var line in lines)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!string.IsNullOrEmpty(line))
+                var trimmedLine = line.Trim();
+                if (!string.IsNullOrEmpty(trimmedLine) && trimmedLine.StartsWith("data:"))
                 {
-                    onDataReceived?.Invoke(line);
+                    UnityEngine.Debug.Log($"[TEST] Sending SSE line: {trimmedLine}");
+                    onDataReceived?.Invoke(trimmedLine);
+                    // SSEデータ間に少し間隔を空ける
+                    await Task.Delay(5, cancellationToken);
                 }
             }
 
+            UnityEngine.Debug.Log("[TEST] MockHttpClient completed successfully");
             return new HttpResponse(true, "", StreamingResponse);
         }
 

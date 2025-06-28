@@ -55,6 +55,9 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
+            // Check cancellation immediately
+            cancellationToken.ThrowIfCancellationRequested();
+
             var startTime = DateTimeOffset.UtcNow;
 
             try
@@ -67,7 +70,10 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
 
                 var httpResponse = await _httpClient.SendStreamingRequestAsync(
                     httpRequest,
-                    sseData => ProcessStreamingData(sseData, textResponse, audioChunks, onEventReceived, ref conversationId, ref messageId),
+                    sseData => {
+                        Debug.Log($"[ADAPTER] Received SSE data: {sseData}");
+                        ProcessStreamingData(sseData, textResponse, audioChunks, onEventReceived, ref conversationId, ref messageId);
+                    },
                     cancellationToken);
 
                 var processingTime = (DateTimeOffset.UtcNow - startTime).Milliseconds;
@@ -184,11 +190,8 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 if (jsonData.Trim() == "[DONE]")
                     return;
 
-                // Debug: Log JSON data for troubleshooting
-                if (_configuration.EnableDebugLogging)
-                {
-                    Debug.Log($"Parsing JSON: {jsonData}");
-                }
+                // Debug: Always log JSON data for troubleshooting tests
+                Debug.Log($"[ADAPTER] Parsing JSON: {jsonData}");
 
                 var eventData = JsonConvert.DeserializeObject<DifyStreamEventDto>(jsonData);
                 if (eventData == null)
@@ -259,13 +262,13 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
     /// </summary>
     internal class DifyStreamEventDto
     {
-        [JsonProperty("event")]
+        [JsonProperty("eventType")]
         public string Event { get; set; } = "";
 
-        [JsonProperty("conversation_id")]
+        [JsonProperty("conversationId")]
         public string ConversationId { get; set; } = "";
 
-        [JsonProperty("message_id")]
+        [JsonProperty("messageId")]
         public string? MessageId { get; set; }
 
         [JsonProperty("answer")]
@@ -277,7 +280,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
         [JsonProperty("created_at")]
         public long CreatedAt { get; set; }
 
-        [JsonProperty("task_id")]
+        [JsonProperty("taskId")]
         public string? TaskId { get; set; }
 
         [JsonProperty("workflow_run_id")]

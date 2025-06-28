@@ -1,29 +1,27 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AiTuber.Services.Dify.Application.UseCases;
 using AiTuber.Services.Dify.Domain.Entities;
 using AiTuber.Services.Dify.Infrastructure.Http;
 
 #nullable enable
 
-namespace AiTuber.Services.Dify.Application.Ports
+namespace AiTuber.Services.Dify.Application.UseCases
 {
     /// <summary>
-    /// Difyストリーミング通信ポート
-    /// Infrastructure層への依存性逆転用インターフェース
-    /// Clean Architecture準拠
+    /// クエリ処理ユースケースインターフェース
+    /// Application層 Clean Architecture準拠
     /// </summary>
-    public interface IDifyStreamingPort
+    public interface IProcessQueryUseCase
     {
         /// <summary>
-        /// ストリーミングクエリを実行
+        /// クエリを実行
         /// </summary>
         /// <param name="request">Difyリクエスト</param>
-        /// <param name="onEventReceived">ストリームイベント受信コールバック</param>
+        /// <param name="onEventReceived">イベント受信時のコールバック</param>
         /// <param name="cancellationToken">キャンセルトークン</param>
         /// <returns>クエリレスポンス</returns>
-        Task<QueryResponse> ExecuteStreamingAsync(
+        Task<QueryResponse> ExecuteAsync(
             DifyRequest request,
             Action<DifyStreamEvent>? onEventReceived = null,
             CancellationToken cancellationToken = default);

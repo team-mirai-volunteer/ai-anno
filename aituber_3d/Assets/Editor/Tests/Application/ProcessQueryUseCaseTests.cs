@@ -7,6 +7,7 @@ using UnityEngine.TestTools;
 using AiTuber.Services.Dify.Application.UseCases;
 using AiTuber.Services.Dify.Application.Ports;
 using AiTuber.Services.Dify.Domain.Entities;
+using AiTuber.Services.Dify.Infrastructure.Http;
 
 namespace AiTuber.Tests.Dify.Application
 {
@@ -254,6 +255,17 @@ namespace AiTuber.Tests.Dify.Application
                 messageId: "mock-msg",
                 processingTimeMs: 100
             );
+        }
+
+        public DifyConfiguration GetConfiguration()
+        {
+            return new DifyConfiguration("mock-api-key", "https://mock.api/test", true);
+        }
+
+        public async Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(10, cancellationToken);
+            return !ShouldThrowError;
         }
     }
 
