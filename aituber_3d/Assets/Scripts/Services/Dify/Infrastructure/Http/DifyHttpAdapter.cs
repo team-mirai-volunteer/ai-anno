@@ -71,7 +71,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 var httpResponse = await _httpClient.SendStreamingRequestAsync(
                     httpRequest,
                     sseData => {
-                        ProcessStreamingData(sseData, textResponse, audioChunks, onEventReceived, ref conversationId, ref messageId);
+                        SSEDataProcessor.ProcessStreamingData(sseData, textResponse, audioChunks, onEventReceived, ref conversationId, ref messageId);
                     },
                     cancellationToken);
 
@@ -163,125 +163,5 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             return new HttpRequest(_configuration.ApiUrl, "POST", requestBody, headers);
         }
 
-        /// <summary>
-        /// ストリーミングデータを処理
-        /// </summary>
-        /// <param name="sseData">SSEデータライン</param>
-        /// <param name="textResponse">テキストレスポンス蓄積用</param>
-        /// <param name="audioChunks">音声チャンク蓄積用</param>
-        /// <param name="onEventReceived">イベント受信コールバック</param>
-        /// <param name="conversationId">会話ID</param>
-        /// <param name="messageId">メッセージID</param>
-        private void ProcessStreamingData(
-            string sseData,
-            StringBuilder textResponse,
-            System.Collections.Generic.List<byte[]> audioChunks,
-            Action<DifyStreamEvent>? onEventReceived,
-            ref string conversationId,
-            ref string messageId)
-        {
-            if (string.IsNullOrEmpty(sseData) || !sseData.StartsWith("data: "))
-                return;
-
-            try
-            {
-                var jsonData = sseData.Substring(6); // Remove "data: " prefix
-                if (jsonData.Trim() == "[DONE]")
-                    return;
-
-
-                var eventData = JsonConvert.DeserializeObject<DifyStreamEventDto>(jsonData);
-                if (eventData == null)
-                    return;
-
-                // Update conversation and message IDs
-                if (!string.IsNullOrEmpty(eventData.ConversationId))
-                    conversationId = eventData.ConversationId;
-                if (!string.IsNullOrEmpty(eventData.MessageId))
-                    messageId = eventData.MessageId;
-
-                // Create domain event based on event type
-                DifyStreamEvent? domainEvent = null;
-
-
-                switch (eventData.Event)
-                {
-                    case "message" when !string.IsNullOrEmpty(eventData.Answer) && !string.IsNullOrEmpty(eventData.ConversationId):
-                        textResponse.Append(eventData.Answer);
-                        domainEvent = DifyStreamEvent.CreateMessageEvent(
-                            eventData.Answer,
-                            eventData.ConversationId,
-                            eventData.MessageId ?? "");
-                        break;
-
-                    case "tts_message" when !string.IsNullOrEmpty(eventData.Audio) && !string.IsNullOrEmpty(eventData.ConversationId):
-                        try
-                        {
-                            var audioBytes = Convert.FromBase64String(eventData.Audio);
-                            audioChunks.Add(audioBytes);
-                            domainEvent = DifyStreamEvent.CreateAudioEvent(
-                                eventData.Audio,
-                                eventData.ConversationId);
-                        }
-                        catch (FormatException ex)
-                        {
-                            Debug.LogWarning($"Invalid Base64 audio data: {ex.Message}");
-                        }
-                        break;
-
-                    case "message_end" when !string.IsNullOrEmpty(eventData.ConversationId):
-                        domainEvent = DifyStreamEvent.CreateEndEvent(
-                            eventData.ConversationId,
-                            eventData.MessageId ?? "");
-                        break;
-                }
-
-                // Notify event if valid
-                if (domainEvent != null && domainEvent.IsValid())
-                {
-                    onEventReceived?.Invoke(domainEvent);
-                }
-            }
-            catch (JsonException ex)
-            {
-                Debug.LogWarning($"Failed to parse SSE JSON data: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                // Log warning instead of error to avoid test failures
-                Debug.LogWarning($"Skipping invalid streaming data: {ex.Message}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Dify SSE JSON レスポンス用データ転送オブジェクト
-    /// JsonConvert.DeserializeObject用の内部クラス
-    /// </summary>
-    internal class DifyStreamEventDto
-    {
-        [JsonProperty("event")]
-        public string Event { get; set; } = "";
-
-        [JsonProperty("conversation_id")]
-        public string ConversationId { get; set; } = "";
-
-        [JsonProperty("message_id")]
-        public string? MessageId { get; set; }
-
-        [JsonProperty("answer")]
-        public string? Answer { get; set; }
-
-        [JsonProperty("audio")]
-        public string? Audio { get; set; }
-
-        [JsonProperty("created_at")]
-        public long CreatedAt { get; set; }
-
-        [JsonProperty("taskId")]
-        public string? TaskId { get; set; }
-
-        [JsonProperty("workflow_run_id")]
-        public string? WorkflowRunId { get; set; }
     }
 }
