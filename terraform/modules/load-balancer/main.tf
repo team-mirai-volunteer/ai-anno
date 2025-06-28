@@ -11,9 +11,9 @@ resource "google_compute_global_address" "lb_ip" {
 }
 
 # SSL Certificate (managed by Google) - only if domain is provided and SSL is enabled
-resource "google_compute_managed_ssl_certificate" "ssl_cert-2" {
+resource "google_compute_managed_ssl_certificate" "ssl_cert" {
   count   = var.enable_ssl && var.domain_name != "" ? 1 : 0
-  name    = "${local.lb_name}-ssl-cert-2"
+  name    = "${local.lb_name}-ssl-cert"
   project = var.project_id
 
   managed {
@@ -99,7 +99,7 @@ resource "google_compute_target_https_proxy" "https_proxy" {
   name             = "${local.lb_name}-https-proxy"
   project          = var.project_id
   url_map          = google_compute_url_map.url_map.id
-  ssl_certificates = var.domain_name != "" ? [google_compute_managed_ssl_certificate.ssl_cert-2[0].id] : []
+  ssl_certificates = var.domain_name != "" ? [google_compute_managed_ssl_certificate.ssl_cert[0].id] : []
 }
 
 # HTTP proxy

@@ -32,10 +32,10 @@ output "health_check_id" {
 
 output "ssl_certificate_id" {
   description = "The ID of the SSL certificate (if SSL is enabled)"
-  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert-2[0].id : null
+  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert[0].id : null
 }
 
 output "ssl_certificate_name" {
   description = "The name of the SSL certificate (if SSL is enabled)"
-  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert-2[0].name : null
+  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert[0].name : null
 }
