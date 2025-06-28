@@ -22,7 +22,7 @@ resource "google_project_iam_member" "dify_gcs_storage_admin" {
 
 resource "google_project_iam_member" "dify_gcs_bucket_reader" {
   project = var.project_id
-  role    = "roles/storage.legacyBucketReader"
+  role    = "roles/storage.objectViewer"
   member  = "serviceAccount:${google_service_account.dify_gcs.email}"
 }
 
