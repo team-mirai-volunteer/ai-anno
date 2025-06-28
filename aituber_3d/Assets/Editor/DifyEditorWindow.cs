@@ -511,8 +511,11 @@ namespace AiTuber.Editor.Dify
 
             // EditorApplicationのコールバックでUI更新を予約
             EditorApplication.delayCall += () => {
-                if (!_isProcessing) return; // 処理終了後は更新しない
-                Repaint();
+                // ウィンドウが存在する限り更新（_isProcessingは非同期処理で変わるため除外）
+                if (this != null)
+                {
+                    Repaint();
+                }
             };
         }
 
