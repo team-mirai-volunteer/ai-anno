@@ -117,8 +117,8 @@ namespace AiTuber.Services.Dify.Mock
             if (File.Exists(fullProjectPath))
                 return fullProjectPath;
 
-            // そのまま返す（エラーは後で発生）
-            return relativePath;
+            // 見つからない場合は絶対パスを返す（FileNotFoundExceptionのため）
+            return Path.GetFullPath(relativePath);
         }
     }
 
