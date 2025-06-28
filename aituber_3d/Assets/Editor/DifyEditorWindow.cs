@@ -1,13 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 using System.Threading;
-using System.Threading.Tasks;
 using AiTuber.Services.Dify.Presentation.Controllers;
-using AiTuber.Services.Dify.Presentation;
 using AiTuber.Services.Dify.Application.UseCases;
-using AiTuber.Services.Dify.Application.Ports;
 using AiTuber.Services.Dify.Infrastructure.Http;
-using AiTuber.Services.Dify.InterfaceAdapters.Translators;
 using AiTuber.Services.Dify.Mock;
 using AiTuber.Services.Dify.Domain.Entities;
 
@@ -744,14 +740,8 @@ namespace AiTuber.Editor.Dify
                 apiUrl,
                 enableAudioProcessing: false, // EditorWindow用は音声無効
                 enableDebugLogging: enableDebugLogging);
-
             var httpAdapter = new DifyHttpAdapter(mockHttpClient, configuration);
-
-            // Application Layer
-            var responseProcessor = new MockResponseProcessor();
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
+            var useCase = new ProcessQueryUseCase(httpAdapter);
             return new DifyController(useCase);
         }
 
@@ -769,33 +759,9 @@ namespace AiTuber.Editor.Dify
 
             var httpClient = new UnityWebRequestHttpClient(configuration);
             var httpAdapter = new DifyHttpAdapter(httpClient, configuration);
-
-            // Application Layer
-            var responseProcessor = new MockResponseProcessor(); // EditorWindow用は軽量実装
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
+            var useCase = new ProcessQueryUseCase(httpAdapter);
             return new DifyController(useCase);
         }
-
-        /// <summary>
-        /// EditorWindow用レスポンス処理サービス
-        /// </summary>
-        private class MockResponseProcessor : IResponseProcessor
-        {
-            public void ProcessAudioEvent(DifyStreamEvent streamEvent)
-            {
-                // Audio処理は無効（Editor用）
-                Debug.Log($"[MockResponseProcessor] Audio event ignored: {streamEvent.EventType}");
-            }
-
-            public void ProcessTextEvent(DifyStreamEvent streamEvent)
-            {
-                // Text処理の基本実装
-                Debug.Log($"[MockResponseProcessor] Text event processed: {streamEvent.EventType}");
-            }
-        }
-
         #endregion
     }
 }

@@ -136,15 +136,6 @@ namespace AiTuber.Services.Dify.Presentation.Controllers
         }
 
         /// <summary>
-        /// 設定情報を取得
-        /// </summary>
-        /// <returns>Dify設定</returns>
-        public DifyConfiguration GetConfiguration()
-        {
-            return _processQueryUseCase.GetConfiguration();
-        }
-
-        /// <summary>
         /// 接続テスト
         /// </summary>
         /// <param name="cancellationToken">キャンセルトークン</param>

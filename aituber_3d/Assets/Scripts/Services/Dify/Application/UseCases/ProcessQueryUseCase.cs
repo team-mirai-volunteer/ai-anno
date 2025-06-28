@@ -17,7 +17,6 @@ namespace AiTuber.Services.Dify.Application.UseCases
     public class ProcessQueryUseCase : IProcessQueryUseCase
     {
         private readonly IDifyStreamingPort _streamingPort;
-        private readonly IResponseProcessor _responseProcessor;
 
         /// <summary>
         /// ProcessQueryUseCaseを作成
@@ -25,12 +24,9 @@ namespace AiTuber.Services.Dify.Application.UseCases
         /// <param name="streamingPort">ストリーミング通信ポート</param>
         /// <param name="responseProcessor">レスポンス処理サービス</param>
         /// <exception cref="ArgumentNullException">依存関係がnullの場合</exception>
-        public ProcessQueryUseCase(
-            IDifyStreamingPort streamingPort,
-            IResponseProcessor responseProcessor)
+        public ProcessQueryUseCase(IDifyStreamingPort streamingPort)
         {
             _streamingPort = streamingPort ?? throw new ArgumentNullException(nameof(streamingPort));
-            _responseProcessor = responseProcessor ?? throw new ArgumentNullException(nameof(responseProcessor));
         }
 
         /// <summary>
@@ -95,11 +91,9 @@ namespace AiTuber.Services.Dify.Application.UseCases
             // イベントタイプ別処理
             if (streamEvent.IsAudioEvent)
             {
-                _responseProcessor.ProcessAudioEvent(streamEvent);
             }
             else if (streamEvent.IsMessageEvent)
             {
-                _responseProcessor.ProcessTextEvent(streamEvent);
             }
 
             // 外部コールバック呼び出し

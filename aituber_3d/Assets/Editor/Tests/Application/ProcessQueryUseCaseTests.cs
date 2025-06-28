@@ -21,14 +21,12 @@ namespace AiTuber.Tests.Dify.Application
     {
         private ProcessQueryUseCase _useCase;
         private MockDifyStreamingPort _mockStreamingPort;
-        private MockResponseProcessor _mockResponseProcessor;
 
         [SetUp]
         public void SetUp()
         {
             _mockStreamingPort = new MockDifyStreamingPort();
-            _mockResponseProcessor = new MockResponseProcessor();
-            _useCase = new ProcessQueryUseCase(_mockStreamingPort, _mockResponseProcessor);
+            _useCase = new ProcessQueryUseCase(_mockStreamingPort);
         }
 
         #region Constructor Tests
@@ -40,7 +38,7 @@ namespace AiTuber.Tests.Dify.Application
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => 
-                new ProcessQueryUseCase(null, _mockResponseProcessor));
+                new ProcessQueryUseCase(null));
         }
 
         [Test]
@@ -48,7 +46,7 @@ namespace AiTuber.Tests.Dify.Application
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => 
-                new ProcessQueryUseCase(_mockStreamingPort, null));
+                new ProcessQueryUseCase(_mockStreamingPort));
         }
 
         #endregion
@@ -262,24 +260,5 @@ namespace AiTuber.Tests.Dify.Application
             return !ShouldThrowError;
         }
     }
-
-    /// <summary>
-    /// IResponseProcessor のモック実装
-    /// </summary>
-    public class MockResponseProcessor : IResponseProcessor
-    {
-        public int AudioProcessCallCount { get; private set; }
-
-        public void ProcessAudioEvent(DifyStreamEvent audioEvent)
-        {
-            AudioProcessCallCount++;
-        }
-
-        public void ProcessTextEvent(DifyStreamEvent textEvent)
-        {
-            // Mock implementation
-        }
-    }
-
     #endregion
 }

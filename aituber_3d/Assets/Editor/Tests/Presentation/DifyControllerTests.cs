@@ -174,18 +174,6 @@ namespace AiTuber.Tests.Dify.Presentation
 
         #region Configuration Tests
 
-        [Test]
-        public void GetConfiguration_設定情報を返す()
-        {
-            // Act
-            var config = _controller.GetConfiguration();
-
-            // Assert
-            Assert.IsNotNull(config);
-            Assert.AreEqual("test-api-key", config.ApiKey);
-            Assert.AreEqual("https://api.dify.ai/test", config.ApiUrl);
-        }
-
         [UnityTest]
         public IEnumerator TestConnection_接続成功_Trueを返す()
         {
