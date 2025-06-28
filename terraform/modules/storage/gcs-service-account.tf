@@ -20,4 +20,10 @@ resource "google_project_iam_member" "dify_gcs_storage_admin" {
   member  = "serviceAccount:${google_service_account.dify_gcs.email}"
 }
 
+resource "google_project_iam_member" "dify_gcs_bucket_reader" {
+  project = var.project_id
+  role    = "roles/storage.legacyBucketReader"
+  member  = "serviceAccount:${google_service_account.dify_gcs.email}"
+}
+
 # Outputs are defined in outputs.tf
