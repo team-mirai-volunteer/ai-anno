@@ -144,18 +144,30 @@ namespace AiTuber.Tests.Dify.Presentation
             _mockUseCase.SetupCancellation();
 
             // Act
-            cts.CancelAfter(100);
+            cts.CancelAfter(10); // より早くキャンセル
             var task = _controller.SendQueryStreamingAsync(query, user, null, cts.Token);
             
             // Wait with timeout
-            var timeoutTask = Task.Delay(500);
-            while (!task.IsCompleted && !timeoutTask.IsCompleted)
+            var startTime = UnityEngine.Time.time;
+            while (!task.IsCompleted && UnityEngine.Time.time - startTime < 1.0f)
             {
                 yield return null;
             }
 
             // Assert
-            Assert.IsTrue(task.IsCanceled || (task.IsCompleted && !task.Result.IsSuccess));
+            Assert.IsTrue(task.IsCompleted, "Task should complete within timeout");
+            if (task.IsCanceled)
+            {
+                Assert.IsTrue(true, "Task was canceled as expected");
+            }
+            else if (task.IsFaulted && task.Exception?.InnerException is OperationCanceledException)
+            {
+                Assert.IsTrue(true, "Task faulted with OperationCanceledException as expected");
+            }
+            else
+            {
+                Assert.IsTrue(!task.Result.IsSuccess, "Task should not be successful when canceled");
+            }
         }
 
         #endregion

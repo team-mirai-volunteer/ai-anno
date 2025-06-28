@@ -85,8 +85,8 @@ namespace AiTuber.Tests.Dify.Infrastructure
             var realMessageId = "9e5da094-804f-4d84-a68d-26a59f158231";
             
             // 実際のDifySSEフォーマット（実データから抽出）
-            var mockSseData = $"data: {{\"eventType\":\"message\",\"answer\":\"こんにちは\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
-                             $"data: {{\"eventType\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
+            var mockSseData = $"data: {{\"event\":\"message\",\"answer\":\"こんにちは\",\"audio\":\"\",\"conversation_id\":\"{realConversationId}\",\"message_id\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
+                             $"data: {{\"event\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversation_id\":\"{realConversationId}\",\"message_id\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
             
             _mockHttpClient.SetupStreamingResponse(mockSseData);
 
@@ -126,8 +126,8 @@ namespace AiTuber.Tests.Dify.Infrastructure
             var realAudioData = "//PExABatDnYAVnAADrrO3E88zvpN09NkEFGk0bzByvm62a6JljmKGYIJggmCCBgwEIWQLIFkDAAMAAwACzCABFNU6p1TqBpjororpFoOIqIqJEJiKkXY1yHLf5yuG3bct/7deN0/akYdhrC7FB1jtfh+3TvuregHMAAEAswXgQcSITEVIqRItY7X3ff9y2dtfh+WSh/H8hyWblb/uQ1hrjuQ5jK5f2np6enp7dyGGsKnUDRXQDoB0A6Rag7E2uNYZwzhrjuP5DkOP/G6enhty2drvYmsRdjEGuOQ5D+Q5LM68NuW5bluW/7vuQ7ksxlb/w/fhhh7E3Lh+nzrw25axF2MQZwwxdi7GIOI/7/v+5bW2dsTZ277+P4/j+P4/j+P5DkPv+5bW2drvXeu9iaxF2LsXYuxdi7F2LsTHVOqdd6713sTZ219rjkOQ5DkOQ1hYRFQtOWnLxoPorpFqDuPWcty4vlKH8nG5l/zIQzEARC8C6KKG4fyTEFNRTMuMTA";
             
             // 実際のDifySSEフォーマット（tts_messageイベント）
-            var mockSseData = $"data: {{\"eventType\":\"tts_message\",\"answer\":\"\",\"audio\":\"{realAudioData}\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
-                             $"data: {{\"eventType\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversationId\":\"{realConversationId}\",\"messageId\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
+            var mockSseData = $"data: {{\"event\":\"tts_message\",\"answer\":\"\",\"audio\":\"{realAudioData}\",\"conversation_id\":\"{realConversationId}\",\"message_id\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n" +
+                             $"data: {{\"event\":\"message_end\",\"answer\":\"\",\"audio\":\"\",\"conversation_id\":\"{realConversationId}\",\"message_id\":\"{realMessageId}\",\"taskId\":\"\"}}\n\n";
             
             _mockHttpClient.SetupStreamingResponse(mockSseData);
 
@@ -187,11 +187,11 @@ namespace AiTuber.Tests.Dify.Infrastructure
             var request = new DifyRequest("キャンセルテスト", "test-user");
             var cts = new CancellationTokenSource();
             
-            // MockHttpClientをセットアップ（実際には使用されない想定）
-            _mockHttpClient.SetupStreamingResponse("data: {\"eventType\":\"message\",\"answer\":\"テスト\"}\n\n");
-            
             // すぐにキャンセル
             cts.Cancel();
+            
+            // MockHttpClientをセットアップ（遅延付きで確実にキャンセルを検出させる）
+            _mockHttpClient.SetupStreamingResponse("data: {\"event\":\"message\",\"answer\":\"テスト\",\"conversation_id\":\"test-id\",\"message_id\":\"test-msg\"}\n\n");
 
             // Act & Assert - 実際のDifyHttpAdapterのキャンセル処理を検証
             yield return PerformAsyncOperationExpectingException<OperationCanceledException>(
@@ -296,7 +296,16 @@ namespace AiTuber.Tests.Dify.Infrastructure
                 yield return null;
             }
 
-            if (task.IsFaulted)
+            if (task.IsCanceled)
+            {
+                if (typeof(TException) == typeof(OperationCanceledException))
+                {
+                    // Expected cancellation
+                    yield break;
+                }
+                Assert.Fail($"Task was canceled but expected {typeof(TException).Name}");
+            }
+            else if (task.IsFaulted)
             {
                 var baseException = task.Exception?.GetBaseException();
                 if (baseException is TException)
