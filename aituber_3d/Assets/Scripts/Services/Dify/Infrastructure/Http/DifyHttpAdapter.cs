@@ -206,6 +206,9 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 // Create domain event based on event type
                 DifyStreamEvent? domainEvent = null;
 
+                // Debug: Log parsed event data
+                Debug.Log($"[ADAPTER] Event Type: '{eventData.Event}', Answer: '{eventData.Answer}', ConversationId: '{eventData.ConversationId}'");
+
                 switch (eventData.Event)
                 {
                     case "message" when !string.IsNullOrEmpty(eventData.Answer) && !string.IsNullOrEmpty(eventData.ConversationId):
@@ -241,7 +244,12 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 // Notify event if valid
                 if (domainEvent != null && domainEvent.IsValid())
                 {
+                    Debug.Log($"[ADAPTER] Invoking callback for event: {domainEvent.EventType}");
                     onEventReceived?.Invoke(domainEvent);
+                }
+                else
+                {
+                    Debug.Log($"[ADAPTER] No domain event created for: {eventData.Event} (Answer: '{eventData.Answer}', ConversationId: '{eventData.ConversationId}')");
                 }
             }
             catch (JsonException ex)
@@ -262,13 +270,13 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
     /// </summary>
     internal class DifyStreamEventDto
     {
-        [JsonProperty("eventType")]
+        [JsonProperty("event")]
         public string Event { get; set; } = "";
 
-        [JsonProperty("conversationId")]
+        [JsonProperty("conversation_id")]
         public string ConversationId { get; set; } = "";
 
-        [JsonProperty("messageId")]
+        [JsonProperty("message_id")]
         public string? MessageId { get; set; }
 
         [JsonProperty("answer")]

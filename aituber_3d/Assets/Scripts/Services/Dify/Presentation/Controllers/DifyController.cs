@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AiTuber.Services.Dify.Application.UseCases;
 using AiTuber.Services.Dify.Domain.Entities;
+using AiTuber.Services.Dify.Infrastructure.Http;
 using UnityEngine;
 
 #nullable enable
@@ -67,7 +68,7 @@ namespace AiTuber.Services.Dify.Presentation.Controllers
                     response.TextResponse,
                     response.ConversationId,
                     response.MessageId,
-                    response.ProcessingTimeMs);
+                    (int)response.ProcessingTimeMs);
             }
             catch (OperationCanceledException)
             {
@@ -121,7 +122,7 @@ namespace AiTuber.Services.Dify.Presentation.Controllers
                     response.TextResponse,
                     response.ConversationId,
                     response.MessageId,
-                    response.ProcessingTimeMs);
+                    (int)response.ProcessingTimeMs);
             }
             catch (OperationCanceledException)
             {
