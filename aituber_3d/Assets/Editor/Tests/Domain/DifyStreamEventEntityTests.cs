@@ -28,7 +28,6 @@ namespace AiTuber.Tests.Dify.Domain
                 answer, conversationId, messageId);
 
             // Assert
-            Assert.IsNotNull(streamEvent);
             Assert.AreEqual(eventType, streamEvent.EventType);
             Assert.AreEqual(answer, streamEvent.Answer);
             Assert.AreEqual(conversationId, streamEvent.ConversationId);

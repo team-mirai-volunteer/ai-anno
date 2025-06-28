@@ -25,7 +25,6 @@ namespace AiTuber.Tests.Dify.Domain
             var request = new DifyRequest(query, user);
 
             // Assert
-            Assert.IsNotNull(request);
             Assert.AreEqual(query, request.Query);
             Assert.AreEqual(user, request.User);
             Assert.AreEqual("streaming", request.ResponseMode);

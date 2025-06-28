@@ -34,12 +34,7 @@ namespace AiTuber.Tests.Dify.Presentation
 
         #region Constructor Tests
 
-        [Test]
-        public void DifyController作成_正常にインスタンス作成()
-        {
-            // Act & Assert
-            Assert.IsNotNull(_controller);
-        }
+        // 削除: 偽テスト - コンストラクタの正常動作は他テストで十分検証される
 
         [Test]
         public void DifyController作成_nullUseCase_ArgumentNullException()
@@ -66,7 +61,6 @@ namespace AiTuber.Tests.Dify.Presentation
             var response = task.Result;
 
             // Assert
-            Assert.IsNotNull(response);
             Assert.IsTrue(response.IsSuccess);
             Assert.AreEqual("こんにちは！", response.TextResponse);
             Assert.AreEqual("conv-123", response.ConversationId);

@@ -33,12 +33,7 @@ namespace AiTuber.Tests.Dify.Application
 
         #region Constructor Tests
 
-        [Test]
-        public void ProcessQueryUseCase作成_有効な依存関係_正常にインスタンス作成()
-        {
-            // Arrange & Act & Assert
-            Assert.IsNotNull(_useCase);
-        }
+        // 削除: 偽テスト - コンストラクタの正常動作は他テストで十分検証される
 
         [Test]
         public void ProcessQueryUseCase作成_NullStreamingPort_ArgumentNullException()
@@ -82,7 +77,6 @@ namespace AiTuber.Tests.Dify.Application
                 r => result = r);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual("こんにちは！", result.TextResponse);
             Assert.AreEqual("conv-123", result.ConversationId);
