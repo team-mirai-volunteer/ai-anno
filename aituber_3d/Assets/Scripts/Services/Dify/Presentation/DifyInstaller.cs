@@ -60,10 +60,6 @@ namespace AiTuber.Services.Dify.Presentation
                 InitializeDependencies();
                 IsInitialized = true;
                 
-                if (_enableDebugLogging)
-                {
-                    Debug.Log($"[DifyInstaller] Initialized successfully. Mode: {(_useMockForTesting ? "Mock" : "Real")}");
-                }
             }
             catch (Exception ex)
             {
@@ -130,10 +126,6 @@ namespace AiTuber.Services.Dify.Presentation
             // Presentation Layer
             Controller = new DifyController(useCase);
 
-            if (_enableDebugLogging)
-            {
-                Debug.Log("[DifyInstaller] Mock implementation initialized (SSERecordings)");
-            }
         }
 
         /// <summary>
@@ -159,10 +151,6 @@ namespace AiTuber.Services.Dify.Presentation
             // Presentation Layer
             Controller = new DifyController(useCase);
 
-            if (_enableDebugLogging)
-            {
-                Debug.Log("[DifyInstaller] Production implementation initialized (Real HTTP)");
-            }
         }
 
         #endregion
@@ -209,13 +197,11 @@ namespace AiTuber.Services.Dify.Presentation
             public void ProcessAudioEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
             {
                 // Audio処理は無効（Mock用）
-                Debug.Log($"[MockResponseProcessor] Audio event ignored: {streamEvent.EventType}");
             }
 
             public void ProcessTextEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
             {
                 // Text処理の基本実装
-                Debug.Log($"[MockResponseProcessor] Text event processed: {streamEvent.EventType}");
             }
         }
 
@@ -240,7 +226,6 @@ namespace AiTuber.Services.Dify.Presentation
                     var audioBytes = Convert.FromBase64String(streamEvent.Audio);
                     
                     // 実際の音声再生システムへ渡す（実装は別モジュール）
-                    Debug.Log($"[DefaultResponseProcessor] Processing audio data: {audioBytes.Length} bytes");
                     
                     // TODO: AudioManager.PlayAudioClip(audioBytes) 等の実装
                 }
@@ -256,8 +241,6 @@ namespace AiTuber.Services.Dify.Presentation
                     return;
 
                 // 実際のテキスト表示システムへ渡す
-                Debug.Log($"[DefaultResponseProcessor] Text response: {streamEvent.Answer}");
-                
                 // TODO: UIManager.DisplayText(streamEvent.Answer) 等の実装
             }
         }

@@ -71,7 +71,6 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 var httpResponse = await _httpClient.SendStreamingRequestAsync(
                     httpRequest,
                     sseData => {
-                        Debug.Log($"[ADAPTER] Received SSE data: {sseData}");
                         ProcessStreamingData(sseData, textResponse, audioChunks, onEventReceived, ref conversationId, ref messageId);
                     },
                     cancellationToken);
@@ -190,8 +189,6 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 if (jsonData.Trim() == "[DONE]")
                     return;
 
-                // Debug: Always log JSON data for troubleshooting tests
-                Debug.Log($"[ADAPTER] Parsing JSON: {jsonData}");
 
                 var eventData = JsonConvert.DeserializeObject<DifyStreamEventDto>(jsonData);
                 if (eventData == null)
@@ -206,8 +203,6 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 // Create domain event based on event type
                 DifyStreamEvent? domainEvent = null;
 
-                // Debug: Log parsed event data
-                Debug.Log($"[ADAPTER] Event Type: '{eventData.Event}', Answer: '{eventData.Answer}', ConversationId: '{eventData.ConversationId}'");
 
                 switch (eventData.Event)
                 {
@@ -244,12 +239,7 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
                 // Notify event if valid
                 if (domainEvent != null && domainEvent.IsValid())
                 {
-                    Debug.Log($"[ADAPTER] Invoking callback for event: {domainEvent.EventType}");
                     onEventReceived?.Invoke(domainEvent);
-                }
-                else
-                {
-                    Debug.Log($"[ADAPTER] No domain event created for: {eventData.Event} (Answer: '{eventData.Answer}', ConversationId: '{eventData.ConversationId}')");
                 }
             }
             catch (JsonException ex)

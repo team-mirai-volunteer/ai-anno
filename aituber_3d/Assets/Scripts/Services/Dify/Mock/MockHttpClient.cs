@@ -46,8 +46,6 @@ namespace AiTuber.Services.Dify.Mock
             Action<string>? onDataReceived, 
             CancellationToken cancellationToken = default)
         {
-            UnityEngine.Debug.Log($"[MockHttpClient] SendStreamingRequestAsync called");
-            
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
@@ -60,8 +58,6 @@ namespace AiTuber.Services.Dify.Mock
                 var events = _recordingReader.GetAllEvents();
                 var responseBuilder = new StringBuilder();
                 var baseTime = DateTimeOffset.UtcNow;
-
-                UnityEngine.Debug.Log($"[MockHttpClient] Starting streaming with {events.Count} events");
 
                 // 1,179イベント完全再現ループ
                 foreach (var recordingEvent in events)
@@ -82,7 +78,6 @@ namespace AiTuber.Services.Dify.Mock
                     if (onDataReceived != null)
                     {
                         var sseMessage = $"data: {sseData}\n\n";
-                        UnityEngine.Debug.Log($"[MockHttpClient] Sending SSE: {sseMessage}");
                         onDataReceived(sseMessage);
                     }
                     

@@ -39,8 +39,6 @@ namespace AiTuber.Services.Dify.Mock
             // Unity AssetsのStreamingAssetsまたは相対パス解決
             var fullPath = ResolveFilePath(filePath);
             
-            UnityEngine.Debug.Log($"[SSERecordingReader] Resolving path: {filePath} -> {fullPath}");
-            
             if (!File.Exists(fullPath))
             {
                 UnityEngine.Debug.LogError($"[SSERecordingReader] File not found: {fullPath}");
@@ -51,8 +49,6 @@ namespace AiTuber.Services.Dify.Mock
             var jsonContent = File.ReadAllText(fullPath);
             _recordingData = JsonConvert.DeserializeObject<SSERecordingData>(jsonContent) 
                 ?? throw new InvalidOperationException("Failed to parse SSE recording data");
-                
-            UnityEngine.Debug.Log($"[SSERecordingReader] Loaded {_recordingData.EventCount} events, duration: {_recordingData.TotalDurationMs}ms");
         }
 
         /// <summary>
