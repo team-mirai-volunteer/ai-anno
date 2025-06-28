@@ -63,44 +63,53 @@ GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$(gcloud secrets versions access late
 # Copy the default .env.example
 cp docker/.env.example docker/.env
 
-# Export environment variables that will be used by docker compose
-export DB_USERNAME=$DB_USER
-export DB_PASSWORD=$DB_PASSWORD
-export DB_HOST=$DB_HOST
-export DB_PORT=5432
-export DB_DATABASE=$DB_NAME
-export PGUSER=$DB_USER
-export POSTGRES_PASSWORD=$DB_PASSWORD
-export POSTGRES_DB=$DB_NAME
-export SECRET_KEY=$SECRET_KEY
-export INIT_PASSWORD=$INIT_PASSWORD
-export REDIS_PASSWORD=$REDIS_PASSWORD
-export PLUGIN_DAEMON_KEY=$PLUGIN_DAEMON_KEY
-export PLUGIN_DIFY_INNER_API_KEY=$PLUGIN_DIFY_INNER_API_KEY
-export CODE_EXECUTION_API_KEY=$CODE_EXECUTION_API_KEY
-export GOOGLE_STORAGE_BUCKET_NAME=$GOOGLE_STORAGE_BUCKET_NAME
-export GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64
+# Append environment variables to .env file
+cat >> docker/.env << EOF
 
-# Update CELERY_BROKER_URL with Redis password
-export CELERY_BROKER_URL="redis://:$REDIS_PASSWORD@redis:6379/1"
+# Database Configuration
+DB_USERNAME=$DB_USER
+DB_PASSWORD=$DB_PASSWORD
+DB_HOST=$DB_HOST
+DB_PORT=5432
+DB_DATABASE=$DB_NAME
+PGUSER=$DB_USER
+POSTGRES_PASSWORD=$DB_PASSWORD
+POSTGRES_DB=$DB_NAME
 
-# For plugin daemon S3 compatibility mode
-export PLUGIN_STORAGE_TYPE=google-storage
-export PLUGIN_S3_ENDPOINT=https://storage.googleapis.com
-export PLUGIN_STORAGE_OSS_BUCKET=$PLUGIN_STORAGE_BUCKET
-export PLUGIN_AWS_ACCESS_KEY=$S3_ACCESS_KEY
-export PLUGIN_AWS_SECRET_KEY=$S3_SECRET_KEY
-export PLUGIN_AWS_REGION=$REGION
-export PLUGIN_S3_USE_PATH_STYLE=false
+# Dify Configuration
+SECRET_KEY=$SECRET_KEY
+INIT_PASSWORD=$INIT_PASSWORD
+REDIS_PASSWORD=$REDIS_PASSWORD
+PLUGIN_DAEMON_KEY=$PLUGIN_DAEMON_KEY
+PLUGIN_DIFY_INNER_API_KEY=$PLUGIN_DIFY_INNER_API_KEY
+CODE_EXECUTION_API_KEY=$CODE_EXECUTION_API_KEY
 
-export CONSOLE_API_URL=https://stg-ai-anno.ngo-go.com
-export CONSOLE_WEB_URL=https://stg-ai-anno.ngo-go.com
-export SERVICE_API_URL=https://stg-ai-anno.ngo-go.com
-export APP_API_URL=https://stg-ai-anno.ngo-go.com
-export APP_WEB_URL=https://stg-ai-anno.ngo-go.com
-export FILES_URL=https://stg-ai-anno.ngo-go.com
-export CONSOLE_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
-export WEB_API_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+# Storage Configuration
+GOOGLE_STORAGE_BUCKET_NAME=$GOOGLE_STORAGE_BUCKET
+GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64=$GOOGLE_STORAGE_SERVICE_ACCOUNT_JSON_BASE64
+
+# Celery Configuration
+CELERY_BROKER_URL=redis://:$REDIS_PASSWORD@redis:6379/1
+
+# Plugin Storage Configuration (S3 compatibility mode)
+PLUGIN_STORAGE_TYPE=google-storage
+PLUGIN_S3_ENDPOINT=https://storage.googleapis.com
+PLUGIN_STORAGE_OSS_BUCKET=$PLUGIN_STORAGE_BUCKET
+PLUGIN_AWS_ACCESS_KEY=$S3_ACCESS_KEY
+PLUGIN_AWS_SECRET_KEY=$S3_SECRET_KEY
+PLUGIN_AWS_REGION=$REGION
+PLUGIN_S3_USE_PATH_STYLE=false
+
+# API URLs Configuration
+CONSOLE_API_URL=https://stg-ai-anno.ngo-go.com
+CONSOLE_WEB_URL=https://stg-ai-anno.ngo-go.com
+SERVICE_API_URL=https://stg-ai-anno.ngo-go.com
+APP_API_URL=https://stg-ai-anno.ngo-go.com
+APP_WEB_URL=https://stg-ai-anno.ngo-go.com
+FILES_URL=https://stg-ai-anno.ngo-go.com
+CONSOLE_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+WEB_API_CORS_ALLOW_ORIGINS=https://stg-ai-anno.ngo-go.com
+EOF
 
 # Set permissions
 chmod 600 docker/.env
