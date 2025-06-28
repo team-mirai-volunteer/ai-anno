@@ -1,5 +1,4 @@
-using System;
-using System.Text;
+using AiTuber.Services.Dify.Domain.Services;
 
 #nullable enable
 
@@ -7,258 +6,133 @@ namespace AiTuber.Services.Dify.Domain.Entities
 {
     /// <summary>
     /// Dify Server-Sent Events ストリームイベントエンティティ
-    /// Pure C# Domain Entity、Clean Architecture準拠
-    /// Legacy DifyStreamEventからリファクタリング済み
+    /// リファクタリング済み - 責任分離によるClean Architecture準拠
     /// </summary>
     public class DifyStreamEvent
     {
         /// <summary>
-        /// イベント種別
+        /// イベントコアデータ
         /// </summary>
-        public string EventType { get; private set; }
+        public DifyStreamEventCore Core { get; }
 
         /// <summary>
-        /// 会話ID
+        /// DifyStreamEventを作成
         /// </summary>
-        public string ConversationId { get; private set; }
+        /// <param name="core">イベントコアデータ</param>
+        internal DifyStreamEvent(DifyStreamEventCore core)
+        {
+            Core = core ?? throw new System.ArgumentNullException(nameof(core));
+        }
 
         /// <summary>
-        /// メッセージID（オプション）
+        /// イベント種別（後方互換性）
         /// </summary>
-        public string? MessageId { get; private set; }
+        public string EventType => Core.EventType;
 
         /// <summary>
-        /// テキストメッセージ内容（部分的なストリーミングデータ）
+        /// 会話ID（後方互換性）
         /// </summary>
-        public string? Answer { get; private set; }
+        public string ConversationId => Core.ConversationId;
 
         /// <summary>
-        /// Base64エンコードされた音声データ
+        /// メッセージID（後方互換性）
         /// </summary>
-        public string? Audio { get; private set; }
+        public string? MessageId => Core.MessageId;
 
         /// <summary>
-        /// イベント作成時刻（Unix timestamp）
+        /// テキストメッセージ内容（後方互換性）
         /// </summary>
-        public long CreatedAt { get; private set; }
+        public string? Answer => Core.Answer;
 
         /// <summary>
-        /// タスクID（オプション）
+        /// Base64エンコードされた音声データ（後方互換性）
         /// </summary>
-        public string? TaskId { get; private set; }
+        public string? Audio => Core.Audio;
 
         /// <summary>
-        /// ワークフロー実行ID（オプション）
+        /// イベント作成時刻（後方互換性）
         /// </summary>
-        public string? WorkflowRunId { get; private set; }
+        public long CreatedAt => Core.CreatedAt;
 
         /// <summary>
-        /// プライベートコンストラクタ（Factory Methodパターン）
+        /// タスクID（後方互換性）
         /// </summary>
-        private DifyStreamEvent(
+        public string? TaskId => Core.TaskId;
+
+        /// <summary>
+        /// ワークフロー実行ID（後方互換性）
+        /// </summary>
+        public string? WorkflowRunId => Core.WorkflowRunId;
+
+        /// <summary>
+        /// メッセージイベントかどうかを判定（後方互換性）
+        /// </summary>
+        public bool IsMessageEvent => DifyStreamEventValidator.IsMessageEvent(this);
+
+        /// <summary>
+        /// 音声イベントかどうかを判定（後方互換性）
+        /// </summary>
+        public bool IsAudioEvent => DifyStreamEventValidator.IsAudioEvent(this);
+
+        /// <summary>
+        /// 終了イベントかどうかを判定（後方互換性）
+        /// </summary>
+        public bool IsEndEvent => DifyStreamEventValidator.IsEndEvent(this);
+
+        /// <summary>
+        /// 有効な音声データを持っているか判定（後方互換性）
+        /// </summary>
+        public bool HasValidAudio => DifyStreamEventValidator.HasValidAudio(this);
+
+        /// <summary>
+        /// イベントの妥当性を検証（後方互換性）
+        /// </summary>
+        /// <returns>有効な場合true</returns>
+        public bool IsValid() => DifyStreamEventValidator.IsValid(this);
+
+        #region Factory Methods (後方互換性)
+
+        /// <summary>
+        /// メッセージイベントを作成（後方互換性）
+        /// </summary>
+        public static DifyStreamEvent CreateMessageEvent(string answer, string conversationId, string messageId)
+            => DifyStreamEventFactory.CreateMessageEvent(answer, conversationId, messageId);
+
+        /// <summary>
+        /// 音声イベントを作成（後方互換性）
+        /// </summary>
+        public static DifyStreamEvent CreateAudioEvent(string audioData, string conversationId, string messageId)
+            => DifyStreamEventFactory.CreateAudioEvent(audioData, conversationId, messageId);
+
+        /// <summary>
+        /// 音声イベントを作成（MessageID省略版、後方互換性）
+        /// </summary>
+        public static DifyStreamEvent CreateAudioEvent(string audioData, string conversationId)
+            => DifyStreamEventFactory.CreateAudioEvent(audioData, conversationId);
+
+        /// <summary>
+        /// 終了イベントを作成（後方互換性）
+        /// </summary>
+        public static DifyStreamEvent CreateEndEvent(string conversationId, string? messageId = null)
+            => DifyStreamEventFactory.CreateEndEvent(conversationId, messageId);
+
+        /// <summary>
+        /// カスタムイベントを作成（後方互換性）
+        /// </summary>
+        public static DifyStreamEvent CreateCustomEvent(
             string eventType,
             string conversationId,
             string? messageId = null,
-            string? answer = null,
-            string? audio = null,
-            long createdAt = 0,
             string? taskId = null,
             string? workflowRunId = null)
-        {
-            EventType = eventType;
-            ConversationId = conversationId;
-            MessageId = messageId;
-            Answer = answer;
-            Audio = audio;
-            CreatedAt = createdAt == 0 ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : createdAt;
-            TaskId = taskId;
-            WorkflowRunId = workflowRunId;
-        }
+            => DifyStreamEventFactory.CreateCustomEvent(eventType, conversationId, messageId, taskId, workflowRunId);
 
         /// <summary>
-        /// メッセージイベントを作成
+        /// JSON文字列からDifyStreamEventを作成（後方互換性）
         /// </summary>
-        /// <param name="answer">メッセージ内容</param>
-        /// <param name="conversationId">会話ID</param>
-        /// <param name="messageId">メッセージID</param>
-        /// <returns>メッセージイベント</returns>
-        /// <exception cref="ArgumentException">無効なパラメータが指定された場合</exception>
-        public static DifyStreamEvent CreateMessageEvent(
-            string answer, 
-            string conversationId, 
-            string messageId)
-        {
-            if (string.IsNullOrWhiteSpace(answer))
-                throw new ArgumentException("Answer cannot be null or empty", nameof(answer));
-            
-            if (string.IsNullOrWhiteSpace(conversationId))
-                throw new ArgumentException("ConversationId cannot be null or empty", nameof(conversationId));
-            
-            if (string.IsNullOrWhiteSpace(messageId))
-                throw new ArgumentException("MessageId cannot be null or empty", nameof(messageId));
+        public static DifyStreamEvent? ParseJsonToDifyStreamEvent(string jsonData)
+            => DifyStreamEventFactory.ParseFromJson(jsonData);
 
-            return new DifyStreamEvent(
-                eventType: "message",
-                conversationId: conversationId,
-                messageId: messageId,
-                answer: answer.Trim()
-            );
-        }
-
-        /// <summary>
-        /// 音声イベントを作成
-        /// </summary>
-        /// <param name="audioData">Base64エンコードされた音声データ</param>
-        /// <param name="conversationId">会話ID</param>
-        /// <returns>音声イベント</returns>
-        /// <exception cref="ArgumentException">無効なパラメータが指定された場合</exception>
-        public static DifyStreamEvent CreateAudioEvent(string audioData, string conversationId)
-        {
-            if (string.IsNullOrWhiteSpace(audioData))
-                throw new ArgumentException("AudioData cannot be null or empty", nameof(audioData));
-            
-            if (string.IsNullOrWhiteSpace(conversationId))
-                throw new ArgumentException("ConversationId cannot be null or empty", nameof(conversationId));
-
-            return new DifyStreamEvent(
-                eventType: "tts_message",
-                conversationId: conversationId,
-                audio: audioData
-            );
-        }
-
-        /// <summary>
-        /// 終了イベントを作成
-        /// </summary>
-        /// <param name="conversationId">会話ID</param>
-        /// <param name="messageId">メッセージID</param>
-        /// <returns>終了イベント</returns>
-        public static DifyStreamEvent CreateEndEvent(string conversationId, string messageId)
-        {
-            if (string.IsNullOrWhiteSpace(conversationId))
-                throw new ArgumentException("ConversationId cannot be null or empty", nameof(conversationId));
-
-            return new DifyStreamEvent(
-                eventType: "message_end",
-                conversationId: conversationId,
-                messageId: messageId
-            );
-        }
-
-        /// <summary>
-        /// メッセージイベントかどうか
-        /// </summary>
-        public bool IsMessageEvent => EventType == "message";
-
-        /// <summary>
-        /// 音声イベントかどうか
-        /// </summary>
-        public bool IsAudioEvent => EventType == "tts_message";
-
-        /// <summary>
-        /// 終了イベントかどうか
-        /// </summary>
-        public bool IsEndEvent => EventType == "message_end";
-
-        /// <summary>
-        /// 有効な音声データを持っているかどうか
-        /// </summary>
-        public bool HasValidAudio => !string.IsNullOrWhiteSpace(Audio) && IsValidBase64(Audio);
-
-        /// <summary>
-        /// ストリームイベントの基本バリデーション
-        /// </summary>
-        /// <returns>必須フィールドが正しく設定されている場合true</returns>
-        public bool IsValid()
-        {
-            if (string.IsNullOrWhiteSpace(EventType) || string.IsNullOrWhiteSpace(ConversationId))
-                return false;
-
-            return EventType switch
-            {
-                "message" => !string.IsNullOrWhiteSpace(Answer) && !string.IsNullOrWhiteSpace(MessageId),
-                "tts_message" => !string.IsNullOrWhiteSpace(Audio),
-                "message_end" => !string.IsNullOrWhiteSpace(MessageId),
-                _ => true // 他のイベントタイプも許可
-            };
-        }
-
-        /// <summary>
-        /// Base64文字列の妥当性チェック
-        /// </summary>
-        /// <param name="base64String">チェック対象の文字列</param>
-        /// <returns>有効なBase64文字列の場合true</returns>
-        private static bool IsValidBase64(string base64String)
-        {
-            if (string.IsNullOrWhiteSpace(base64String))
-                return false;
-
-            try
-            {
-                Convert.FromBase64String(base64String);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Legacy API互換形式に変換
-        /// Infrastructure層での利用向け
-        /// </summary>
-        /// <returns>Legacy形式のデータ転送オブジェクト</returns>
-        public DifyStreamEventDto ToDto()
-        {
-            return new DifyStreamEventDto
-            {
-                Event = EventType,
-                ConversationId = ConversationId,
-                MessageId = MessageId,
-                Answer = Answer,
-                Audio = Audio,
-                CreatedAt = CreatedAt,
-                TaskId = TaskId,
-                WorkflowRunId = WorkflowRunId
-            };
-        }
-
-        /// <summary>
-        /// 等価性比較（record型の機能を模倣）
-        /// </summary>
-        public override bool Equals(object? obj)
-        {
-            return obj is DifyStreamEvent other &&
-                   EventType == other.EventType &&
-                   ConversationId == other.ConversationId &&
-                   MessageId == other.MessageId &&
-                   Answer == other.Answer &&
-                   Audio == other.Audio;
-        }
-
-        /// <summary>
-        /// ハッシュコード計算（record型の機能を模倣）
-        /// </summary>
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(EventType, ConversationId, MessageId, Answer, Audio);
-        }
-    }
-
-    /// <summary>
-    /// Legacy API互換用データ転送オブジェクト
-    /// Infrastructure層でのシリアライゼーション用
-    /// </summary>
-    public class DifyStreamEventDto
-    {
-        public string Event { get; set; } = "";
-        public string ConversationId { get; set; } = "";
-        public string? MessageId { get; set; }
-        public string? Answer { get; set; }
-        public string? Audio { get; set; }
-        public long CreatedAt { get; set; }
-        public string? TaskId { get; set; }
-        public string? WorkflowRunId { get; set; }
+        #endregion
     }
 }
