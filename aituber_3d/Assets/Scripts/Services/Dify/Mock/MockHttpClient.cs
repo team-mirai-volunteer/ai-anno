@@ -69,8 +69,8 @@ namespace AiTuber.Services.Dify.Mock
                     // キャンセル確認
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    // タイミング再現待機
-                    await _simulator.WaitForEventTimingAsync(
+                    // タイミング再現待機 (EditMode対応でTask.Delay使用)
+                    await WaitForEventTimingTaskAsync(
                         baseTime, 
                         recordingEvent.Timestamp, 
                         cancellationToken);
@@ -163,6 +163,34 @@ namespace AiTuber.Services.Dify.Mock
             };
 
             return JsonConvert.SerializeObject(sseObject, jsonSettings);
+        }
+
+        /// <summary>
+        /// EditMode対応のタイミング待機 (Task.Delay使用)
+        /// </summary>
+        /// <param name="baseTime">録画開始基準時刻</param>
+        /// <param name="eventTimestamp">イベントタイムスタンプ（ミリ秒）</param>
+        /// <param name="cancellationToken">キャンセルトークン</param>
+        /// <returns>待機タスク</returns>
+        private async Task WaitForEventTimingTaskAsync(
+            DateTimeOffset baseTime, 
+            double eventTimestamp, 
+            CancellationToken cancellationToken = default)
+        {
+            // 再生速度を考慮したタイミング計算
+            var adjustedTimestamp = eventTimestamp / _simulator.GetPlaybackSpeed();
+            var targetTime = baseTime.AddMilliseconds(adjustedTimestamp);
+            var currentTime = DateTimeOffset.UtcNow;
+            
+            // 遅延時間計算
+            var delay = targetTime - currentTime;
+            
+            // 既に時刻を過ぎている場合は待機しない
+            if (delay <= TimeSpan.Zero)
+                return;
+            
+            // Task.Delayによる非ブロッキング遅延 (EditMode対応)
+            await Task.Delay(delay, cancellationToken);
         }
     }
 }
