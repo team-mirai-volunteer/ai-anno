@@ -52,71 +52,118 @@ namespace AiTuber.Services.Dify.Infrastructure.Http
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            // キャンセル即座確認
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
                 using var unityRequest = CreateUnityWebRequest(request);
                 var operation = unityRequest.SendWebRequest();
-
-                // Legacy実装パターン踏襲: lastProcessedLength による差分処理
-                var lastProcessedLength = 0;
                 var responseBuilder = new StringBuilder();
 
-                // リアルタイムストリーミング処理ループ
-                while (!operation.isDone && !cancellationToken.IsCancellationRequested)
-                {
-                    var currentData = unityRequest.downloadHandler.text ?? "";
-                    
-                    // 新着データ検出時の即座処理
-                    if (currentData.Length > lastProcessedLength)
-                    {
-                        var newData = currentData.Substring(lastProcessedLength);
-                        lastProcessedLength = currentData.Length;
-                        
-                        // 新着データを即座にコールバック
-                        ProcessNewStreamData(newData, onDataReceived);
-                        responseBuilder.Append(newData);
-                    }
-                    
-                    // 非ブロッキング待機（Unity 1フレーム）
-                    await UniTask.Yield();
-                }
+                await ProcessStreamingLoop(unityRequest, operation, responseBuilder, onDataReceived, cancellationToken);
 
-                // キャンセル確認
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 最終データ処理（リクエスト完了後の残りデータ）
-                var finalData = unityRequest.downloadHandler.text ?? "";
-                if (finalData.Length > lastProcessedLength)
-                {
-                    var remainingData = finalData.Substring(lastProcessedLength);
-                    ProcessNewStreamData(remainingData, onDataReceived);
-                    responseBuilder.Append(remainingData);
-                }
-
-                // レスポンス結果判定
-                var isSuccess = unityRequest.result == UnityWebRequest.Result.Success;
-                var errorMessage = isSuccess ? "" : unityRequest.error ?? "Unknown error";
-                
-                return new HttpResponse(
-                    isSuccess,
-                    errorMessage,
-                    responseBuilder.ToString());
+                return CreateHttpResponse(unityRequest, responseBuilder.ToString());
             }
             catch (OperationCanceledException)
             {
-                throw; // キャンセル例外は再スロー
+                throw;
             }
             catch (Exception ex)
             {
                 UnityEngine.Debug.LogError($"[UnityWebRequest] Exception occurred: {ex.Message}");
-                return new HttpResponse(
-                    false,
-                    $"Streaming request failed: {ex.Message}",
-                    "");
+                return new HttpResponse(false, $"Streaming request failed: {ex.Message}", "");
             }
+        }
+
+        /// <summary>
+        /// ストリーミングループ処理
+        /// </summary>
+        /// <param name="unityRequest">UnityWebRequest</param>
+        /// <param name="operation">非同期操作</param>
+        /// <param name="responseBuilder">レスポンス蓄積用</param>
+        /// <param name="onDataReceived">データ受信コールバック</param>
+        /// <param name="cancellationToken">キャンセルトークン</param>
+        private async Task ProcessStreamingLoop(
+            UnityWebRequest unityRequest,
+            UnityWebRequestAsyncOperation operation,
+            StringBuilder responseBuilder,
+            Action<string>? onDataReceived,
+            CancellationToken cancellationToken)
+        {
+            var lastProcessedLength = 0;
+
+            while (!operation.isDone && !cancellationToken.IsCancellationRequested)
+            {
+                lastProcessedLength = ProcessCurrentData(unityRequest, lastProcessedLength, responseBuilder, onDataReceived);
+                await UniTask.Yield();
+            }
+
+            ProcessFinalData(unityRequest, lastProcessedLength, responseBuilder, onDataReceived);
+        }
+
+        /// <summary>
+        /// 現在のデータを処理
+        /// </summary>
+        /// <param name="unityRequest">UnityWebRequest</param>
+        /// <param name="lastProcessedLength">最後に処理した長さ</param>
+        /// <param name="responseBuilder">レスポンス蓄積用</param>
+        /// <param name="onDataReceived">データ受信コールバック</param>
+        /// <returns>更新された処理済み長さ</returns>
+        private int ProcessCurrentData(
+            UnityWebRequest unityRequest,
+            int lastProcessedLength,
+            StringBuilder responseBuilder,
+            Action<string>? onDataReceived)
+        {
+            var currentData = unityRequest.downloadHandler.text ?? "";
+            
+            if (currentData.Length > lastProcessedLength)
+            {
+                var newData = currentData.Substring(lastProcessedLength);
+                ProcessNewStreamData(newData, onDataReceived);
+                responseBuilder.Append(newData);
+                return currentData.Length;
+            }
+            
+            return lastProcessedLength;
+        }
+
+        /// <summary>
+        /// 最終データを処理
+        /// </summary>
+        /// <param name="unityRequest">UnityWebRequest</param>
+        /// <param name="lastProcessedLength">最後に処理した長さ</param>
+        /// <param name="responseBuilder">レスポンス蓄積用</param>
+        /// <param name="onDataReceived">データ受信コールバック</param>
+        private void ProcessFinalData(
+            UnityWebRequest unityRequest,
+            int lastProcessedLength,
+            StringBuilder responseBuilder,
+            Action<string>? onDataReceived)
+        {
+            var finalData = unityRequest.downloadHandler.text ?? "";
+            if (finalData.Length > lastProcessedLength)
+            {
+                var remainingData = finalData.Substring(lastProcessedLength);
+                ProcessNewStreamData(remainingData, onDataReceived);
+                responseBuilder.Append(remainingData);
+            }
+        }
+
+        /// <summary>
+        /// HTTPレスポンスを作成
+        /// </summary>
+        /// <param name="unityRequest">UnityWebRequest</param>
+        /// <param name="responseContent">レスポンス内容</param>
+        /// <returns>HTTPレスポンス</returns>
+        private HttpResponse CreateHttpResponse(UnityWebRequest unityRequest, string responseContent)
+        {
+            var isSuccess = unityRequest.result == UnityWebRequest.Result.Success;
+            var errorMessage = isSuccess ? "" : unityRequest.error ?? "Unknown error";
+            
+            return new HttpResponse(isSuccess, errorMessage, responseContent);
         }
 
         /// <summary>
