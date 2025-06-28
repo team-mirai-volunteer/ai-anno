@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #nullable enable
 
@@ -8,8 +7,6 @@ namespace AiTuber.Services.Dify.Domain.Entities
 {
     /// <summary>
     /// Dify Chat Messages APIリクエストエンティティ
-    /// Pure C# Domain Entity、Clean Architecture準拠
-    /// Legacy DifyApiRequestからリファクタリング済み
     /// </summary>
     public class DifyRequest
     {
@@ -31,17 +28,12 @@ namespace AiTuber.Services.Dify.Domain.Entities
         /// <summary>
         /// レスポンスモード（常に "streaming"）
         /// </summary>
-        public string ResponseMode { get; }
+        public readonly string ResponseMode = "streaming";
 
         /// <summary>
         /// 入力パラメータ（通常は空）
         /// </summary>
         public IReadOnlyDictionary<string, object> Inputs { get; }
-
-        /// <summary>
-        /// 添付ファイル（現在未使用）
-        /// </summary>
-        public IReadOnlyList<object> Files { get; }
 
         /// <summary>
         /// DifyRequestエンティティを作成
@@ -61,9 +53,7 @@ namespace AiTuber.Services.Dify.Domain.Entities
             Query = query.Trim();
             User = user.Trim();
             ConversationId = conversationId ?? "";
-            ResponseMode = "streaming";
             Inputs = new Dictionary<string, object>();
-            Files = Array.Empty<object>();
         }
 
         /// <summary>
@@ -76,57 +66,5 @@ namespace AiTuber.Services.Dify.Domain.Entities
                    !string.IsNullOrWhiteSpace(User) &&
                    !string.IsNullOrWhiteSpace(ResponseMode);
         }
-
-        /// <summary>
-        /// Legacy API互換形式に変換
-        /// Infrastructure層での利用向け
-        /// </summary>
-        /// <returns>API送信用のデータ転送オブジェクト</returns>
-        public DifyApiRequestDto ToApiRequest()
-        {
-            return new DifyApiRequestDto
-            {
-                Query = Query,
-                User = User,
-                ConversationId = ConversationId,
-                ResponseMode = ResponseMode,
-                Inputs = new Dictionary<string, object>(Inputs),
-                Files = Files.ToArray()
-            };
-        }
-
-        /// <summary>
-        /// 等価性比較（record型の機能を模倣）
-        /// </summary>
-        public override bool Equals(object? obj)
-        {
-            return obj is DifyRequest other &&
-                   Query == other.Query &&
-                   User == other.User &&
-                   ConversationId == other.ConversationId &&
-                   ResponseMode == other.ResponseMode;
-        }
-
-        /// <summary>
-        /// ハッシュコード計算（record型の機能を模倣）
-        /// </summary>
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Query, User, ConversationId, ResponseMode);
-        }
-    }
-
-    /// <summary>
-    /// API送信用データ転送オブジェクト
-    /// Infrastructure層でのシリアライゼーション用
-    /// </summary>
-    public class DifyApiRequestDto
-    {
-        public string Query { get; set; } = "";
-        public string User { get; set; } = "";
-        public string ConversationId { get; set; } = "";
-        public string ResponseMode { get; set; } = "streaming";
-        public Dictionary<string, object> Inputs { get; set; } = new();
-        public object[] Files { get; set; } = Array.Empty<object>();
     }
 }

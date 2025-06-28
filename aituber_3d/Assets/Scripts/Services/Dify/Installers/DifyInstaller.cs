@@ -2,13 +2,12 @@ using UnityEngine;
 using AiTuber.Services.Dify.Application.UseCases;
 using AiTuber.Services.Dify.Infrastructure.Http;
 using AiTuber.Services.Dify.InterfaceAdapters.Translators;
-using AiTuber.Services.Dify.Presentation.Controllers;
 using AiTuber.Services.Dify.Mock;
 using System;
 
 #nullable enable
 
-namespace AiTuber.Services.Dify.Presentation
+namespace AiTuber.Services.Dify.Installer
 {
     /// <summary>
     /// Unity標準DI - MonoBehaviour Installer
@@ -32,12 +31,6 @@ namespace AiTuber.Services.Dify.Presentation
         #endregion
 
         #region Public Properties
-
-        /// <summary>
-        /// 依存注入済みDifyController
-        /// 外部システムからの参照用
-        /// </summary>
-        public DifyController? Controller { get; private set; }
 
         /// <summary>
         /// インストーラーの初期化完了状態
@@ -72,7 +65,6 @@ namespace AiTuber.Services.Dify.Presentation
         /// </summary>
         private void OnDestroy()
         {
-            Controller = null;
             IsInitialized = false;
         }
 
@@ -117,11 +109,7 @@ namespace AiTuber.Services.Dify.Presentation
                 enableDebugLogging: _enableDebugLogging);
 
             var httpAdapter = new DifyHttpAdapter(mockHttpClient, configuration);
-
             var useCase = new ProcessQueryUseCase(httpAdapter);
-
-            // Presentation Layer
-            Controller = new DifyController(useCase);
 
         }
 
@@ -141,7 +129,6 @@ namespace AiTuber.Services.Dify.Presentation
             var httpClient = new UnityWebRequestHttpClient(configuration);
             var httpAdapter = new DifyHttpAdapter(httpClient, configuration);
             var useCase = new ProcessQueryUseCase(httpAdapter);
-            Controller = new DifyController(useCase);
         }
 
         #endregion
