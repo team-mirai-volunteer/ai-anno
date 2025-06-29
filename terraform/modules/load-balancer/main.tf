@@ -28,15 +28,20 @@ resource "google_compute_managed_ssl_certificate" "ssl_cert" {
 resource "google_compute_health_check" "health_check" {
   name                = "${local.lb_name}-health-check"
   project             = var.project_id
-  check_interval_sec  = 30    # 開発中のため間隔を延長
-  timeout_sec         = 20    # タイムアウトを延長
-  healthy_threshold   = 1     # すぐに健全と判定
-  unhealthy_threshold = 10    # 不健全判定を遅らせる
+  check_interval_sec  = 30    # 適切な間隔でチェック
+  timeout_sec         = 10    # タイムアウト10秒
+  healthy_threshold   = 2     # 2回連続で成功したら健全と判定
+  unhealthy_threshold = 3     # 3回連続で失敗したら不健全と判定
 
   # HTTPヘルスチェックを使用
   http_health_check {
     port         = var.health_check_port
     request_path = var.health_check_path
+  }
+
+  # ログを有効化してデバッグを容易に
+  log_config {
+    enable = true
   }
 }
 
@@ -50,6 +55,9 @@ resource "google_compute_backend_service" "backend" {
   health_checks         = [google_compute_health_check.health_check.id]
   load_balancing_scheme = "EXTERNAL"
   session_affinity      = var.session_affinity
+  
+  # インスタンスの切り替え時にセッションを維持
+  affinity_cookie_ttl_sec = var.session_affinity != "NONE" ? 3600 : null
 
   backend {
     group           = var.instance_group_url
@@ -57,6 +65,9 @@ resource "google_compute_backend_service" "backend" {
     capacity_scaler = 1.0
     max_utilization = 0.8
   }
+
+  # コネクションドレイン設定（グレースフルな終了）
+  connection_draining_timeout_sec = 300  # 5分間のドレインタイム
 
   # Enable CDN if requested
   dynamic "cdn_policy" {
