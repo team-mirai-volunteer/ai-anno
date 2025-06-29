@@ -2,6 +2,22 @@ locals {
   environment = "staging"
 }
 
+# Generate random keys for internal use
+resource "random_password" "plugin_daemon_key" {
+  length  = 32
+  special = true
+}
+
+resource "random_password" "plugin_dify_inner_api_key" {
+  length  = 32
+  special = true
+}
+
+resource "random_password" "dify_inner_api_key" {
+  length  = 32
+  special = true
+}
+
 module "cloud_build" {
   source = "../../modules/cloud-build"
 
@@ -114,10 +130,10 @@ module "secret_manager" {
   database_password        = module.cloud_sql.database_password
   dify_secret_key          = var.dify_secret_key
   gcs_service_account_json = module.storage.gcs_service_account_json
-  plugin_daemon_key        = var.dify_plugin_daemon_key
-  plugin_inner_api_key     = var.dify_plugin_dify_inner_api_key
+  plugin_daemon_key        = random_password.plugin_daemon_key.result
+  plugin_inner_api_key     = random_password.plugin_dify_inner_api_key.result
   server_key               = var.dify_server_key
-  dify_inner_api_key       = var.dify_inner_api_key
+  dify_inner_api_key       = random_password.dify_inner_api_key.result
   vm_service_account_email = module.compute_engine.service_account_email
   init_password            = var.init_password
   redis_password           = var.redis_password
