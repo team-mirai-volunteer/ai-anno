@@ -15,15 +15,7 @@ dify_inner_api_key             = "your-inner-api-key"
 mail_type              = "smtp"
 mail_default_send_from = "noreply@example.com"
 
-# SSH Configuration
-ssh_keys = "username:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB... user@example.com"
-ssh_source_ranges = ["0.0.0.0/0"]  # Restrict this to your IP ranges for security
-iap_ssh_users = [
-  "user:your-email@example.com"
-]
-
 # Load Balancer Configuration
-
 # For HTTP-only access (no domain required)
 enable_ssl = false
 enable_cdn = false

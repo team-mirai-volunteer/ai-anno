@@ -80,22 +80,6 @@ resource "google_compute_firewall" "dify_allow_https" {
   target_tags   = ["allow-https"]
 }
 
-resource "google_compute_firewall" "dify_allow_ssh" {
-  count   = length(var.ssh_source_ranges) > 0 ? 1 : 0
-  name    = "${var.project_name}-dify-allow-ssh-${var.environment}"
-  network = var.network_name
-  project = var.project_id
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  # Restrict SSH access to specific IP ranges for security
-  source_ranges = var.ssh_source_ranges
-  target_tags   = ["allow-ssh"]
-}
-
 # IAM bindings for VM service account
 resource "google_storage_bucket_iam_member" "vm_uploads_read" {
   bucket = var.uploads_bucket_name
