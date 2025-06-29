@@ -99,18 +99,6 @@ variable "init_password" {
   sensitive   = true
 }
 
-variable "redis_password" {
-  description = "Redis password"
-  type        = string
-  sensitive   = true
-}
-
-variable "code_execution_api_key" {
-  description = "Code execution API key"
-  type        = string
-  sensitive   = true
-}
-
 # AWS S3 variables for plugin storage
 variable "plugin_s3_access_key" {
   description = "AWS S3 access key for plugin storage"

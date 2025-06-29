@@ -18,6 +18,16 @@ resource "random_password" "dify_inner_api_key" {
   special = true
 }
 
+resource "random_password" "redis_password" {
+  length  = 32
+  special = true
+}
+
+resource "random_password" "code_execution_api_key" {
+  length  = 32
+  special = true
+}
+
 module "cloud_build" {
   source = "../../modules/cloud-build"
 
@@ -136,8 +146,8 @@ module "secret_manager" {
   dify_inner_api_key       = random_password.dify_inner_api_key.result
   vm_service_account_email = module.compute_engine.service_account_email
   init_password            = var.init_password
-  redis_password           = var.redis_password
-  code_execution_api_key   = var.code_execution_api_key
+  redis_password           = random_password.redis_password.result
+  code_execution_api_key   = random_password.code_execution_api_key.result
   plugin_s3_access_key     = var.plugin_s3_access_key
   plugin_s3_secret_key     = var.plugin_s3_secret_key
 }
