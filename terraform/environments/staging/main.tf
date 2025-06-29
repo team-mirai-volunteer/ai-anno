@@ -5,27 +5,27 @@ locals {
 # Generate random keys for internal use
 resource "random_password" "plugin_daemon_key" {
   length  = 32
-  special = true
+  special = false
 }
 
 resource "random_password" "plugin_dify_inner_api_key" {
   length  = 32
-  special = true
+  special = false
 }
 
 resource "random_password" "dify_inner_api_key" {
   length  = 32
-  special = true
+  special = false
 }
 
 resource "random_password" "redis_password" {
   length  = 32
-  special = true
+  special = false
 }
 
 resource "random_password" "code_execution_api_key" {
   length  = 32
-  special = true
+  special = false
 }
 
 module "cloud_build" {

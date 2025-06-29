@@ -1,6 +1,6 @@
 resource "random_password" "db_password" {
   length  = 32
-  special = true
+  special = false
 }
 
 resource "google_sql_database_instance" "main" {
