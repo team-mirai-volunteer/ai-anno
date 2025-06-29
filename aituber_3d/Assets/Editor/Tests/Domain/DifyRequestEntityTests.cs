@@ -86,27 +86,6 @@ namespace AiTuber.Tests.Dify.Domain
             // Assert
             Assert.IsTrue(result);
         }
-
-        [Test]
-        public void ToApiRequest_有効なデータ_正しいJSON形式に変換()
-        {
-            // Arrange
-            var query = "テスト質問";
-            var user = "test-user";
-            var conversationId = "conv-123";
-            var request = new DifyRequest(query, user, conversationId);
-
-            // Act
-            var apiRequest = request.ToApiRequest();
-
-            // Assert
-            Assert.IsNotNull(apiRequest);
-            Assert.AreEqual(query, apiRequest.Query);
-            Assert.AreEqual(user, apiRequest.User);
-            Assert.AreEqual(conversationId, apiRequest.ConversationId);
-            Assert.AreEqual("streaming", apiRequest.ResponseMode);
-        }
-
         #endregion
 
         #region Equality Tests

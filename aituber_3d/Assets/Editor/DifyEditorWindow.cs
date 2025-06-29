@@ -1,13 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 using System.Threading;
-using System.Threading.Tasks;
-using AiTuber.Services.Dify.Presentation.Controllers;
-using AiTuber.Services.Dify.Presentation;
 using AiTuber.Services.Dify.Application.UseCases;
-using AiTuber.Services.Dify.Application.Ports;
 using AiTuber.Services.Dify.Infrastructure.Http;
-using AiTuber.Services.Dify.InterfaceAdapters.Translators;
 using AiTuber.Services.Dify.Mock;
 using AiTuber.Services.Dify.Domain.Entities;
 
@@ -43,7 +38,7 @@ namespace AiTuber.Editor.Dify
         private ClientMode _clientMode = ClientMode.Mock;
 
         // Clean Architecture サービス関連
-        private DifyController? _difyController;
+        private IProcessQueryUseCase? _processQueryUseCase;
         private CancellationTokenSource? _cancellationTokenSource;
 
         // UI スタイリング
@@ -150,7 +145,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     EditorPrefs.SetString("DifyEditor.ApiKey", _tempApiKey);
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 if (!string.IsNullOrEmpty(_tempApiKey) && !_tempApiKey.StartsWith("app-"))
@@ -167,7 +162,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     EditorPrefs.SetString("DifyEditor.ApiUrl", _tempApiUrl);
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 EditorGUILayout.Space(5);
@@ -222,7 +217,7 @@ namespace AiTuber.Editor.Dify
                 if (EditorGUI.EndChangeCheck())
                 {
                     // モード変更時にコントローラーを再初期化
-                    InitializeDifyController();
+                    InitializeDifyUseCase();
                 }
                 
                 EditorGUILayout.Space(5);
@@ -246,7 +241,7 @@ namespace AiTuber.Editor.Dify
                         if (EditorGUI.EndChangeCheck())
                         {
                             EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                            InitializeDifyController();
+                            InitializeDifyUseCase();
                         }
                         
                         using (new EditorGUILayout.HorizontalScope())
@@ -267,7 +262,7 @@ namespace AiTuber.Editor.Dify
                                         _tempSSERecordingPath = selectedPath; // 絶対パスのまま
                                     }
                                     EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                                    InitializeDifyController();
+                                    InitializeDifyUseCase();
                                 }
                             }
                             
@@ -275,7 +270,7 @@ namespace AiTuber.Editor.Dify
                             {
                                 _tempSSERecordingPath = "SSERecordings/dify_sse_recording.json";
                                 EditorPrefs.SetString("DifyEditor.SSERecordingPath", _tempSSERecordingPath);
-                                InitializeDifyController();
+                                InitializeDifyUseCase();
                             }
                         }
                         
@@ -524,13 +519,13 @@ namespace AiTuber.Editor.Dify
         #region API Operations
 
         /// <summary>
-        /// DifyControllerの初期化
+        /// UseCaseの初期化
         /// </summary>
-        private void InitializeDifyController()
+        private void InitializeDifyUseCase()
         {
             if (!IsConfigurationValid())
             {
-                _difyController = null;
+                _processQueryUseCase = null;
                 return;
             }
 
@@ -539,19 +534,19 @@ namespace AiTuber.Editor.Dify
                 switch (_clientMode)
                 {
                     case ClientMode.Mock:
-                        _difyController = CreateMockController(_tempApiKey, _tempApiUrl, _tempDebugLogging);
+                        _processQueryUseCase = CreateMockUseCase(_tempApiKey, _tempApiUrl, _tempDebugLogging);
                         Debug.Log("[DifyEditor] Mock DifyController initialized (SSERecordings)");
                         break;
                         
                     case ClientMode.Real:
-                        _difyController = CreateProductionController(_tempApiKey, _tempApiUrl, _tempDebugLogging);
+                        _processQueryUseCase = CreateProductionUseCase(_tempApiKey, _tempApiUrl, _tempDebugLogging);
                         Debug.Log("[DifyEditor] Production DifyController initialized (Real HTTP)");
                         break;
                 }
             }
             catch (System.Exception ex)
             {
-                _difyController = null;
+                _processQueryUseCase = null;
                 Debug.LogError($"[DifyEditor] Failed to initialize DifyController: {ex.Message}");
             }
         }
@@ -568,15 +563,9 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyController();
-                
-                if (_difyController == null)
-                {
-                    _currentResponse = "Error: Invalid configuration. Please check your settings.";
-                    return;
-                }
-                
-                var isConnected = await _difyController.TestConnectionAsync(_cancellationTokenSource.Token);
+                InitializeDifyUseCase();
+                                
+                var isConnected = await _processQueryUseCase.TestConnectionAsync(_cancellationTokenSource.Token);
                 
                 _currentResponse = isConnected 
                     ? "✓ Connection successful! Dify API is reachable."
@@ -614,9 +603,9 @@ namespace AiTuber.Editor.Dify
             
             try
             {
-                InitializeDifyController();
+                InitializeDifyUseCase();
                 
-                if (_difyController == null)
+                if (_processQueryUseCase == null)
                 {
                     _currentResponse = "Error: Invalid configuration. Please check your settings.";
                     return;
@@ -629,16 +618,12 @@ namespace AiTuber.Editor.Dify
                 Debug.Log($"[DifyEditor] Query: {_currentQuery}");
                 
                 var userId = $"editor-user-{System.DateTime.Now.Ticks}";
-                var result = await _difyController.SendQueryStreamingAsync(
-                    _currentQuery,
-                    userId,
-                    onEventReceived: OnStreamEventReceived,
-                    _cancellationTokenSource.Token);
-                
+                var request = new DifyRequest(_currentQuery, userId);
+                var result = await _processQueryUseCase.ExecuteAsync(request, OnStreamEventReceived, _cancellationTokenSource.Token);
                 if (result.IsSuccess)
                 {
                     _currentResponse = result.TextResponse ?? "No response received";
-                    
+
                     if (_tempDebugLogging)
                     {
                         Debug.Log($"[DifyEditor] Query successful. " +
@@ -729,15 +714,10 @@ namespace AiTuber.Editor.Dify
         #region Factory Methods (Editor Only)
 
         /// <summary>
-        /// Mock用DifyController作成（EditorWindow専用）
+        /// Mock用DifyUseCase作成（EditorWindow専用）
         /// </summary>
-        private DifyController CreateMockController(string apiKey, string apiUrl, bool enableDebugLogging)
+        private IProcessQueryUseCase CreateMockUseCase(string apiKey, string apiUrl, bool enableDebugLogging)
         {
-            // Mock例外領域: SSERecordings再生
-            var recordingReader = new SSERecordingReader(_tempSSERecordingPath);
-            var simulator = new SSERecordingSimulator(1.0f);
-            var mockHttpClient = new MockHttpClient(recordingReader, simulator);
-
             // Infrastructure Layer
             var configuration = new DifyConfiguration(
                 apiKey,
@@ -745,20 +725,19 @@ namespace AiTuber.Editor.Dify
                 enableAudioProcessing: false, // EditorWindow用は音声無効
                 enableDebugLogging: enableDebugLogging);
 
+            // Mock例外領域: SSERecordings再生
+            var recordingReader = new SSERecordingReader(_tempSSERecordingPath);
+            var simulator = new SSERecordingSimulator(1.0f);
+
+            var mockHttpClient = new MockHttpClient(recordingReader, simulator);
             var httpAdapter = new DifyHttpAdapter(mockHttpClient, configuration);
-
-            // Application Layer
-            var responseProcessor = new MockResponseProcessor();
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
-            return new DifyController(useCase);
+            return new ProcessQueryUseCase(httpAdapter);
         }
 
         /// <summary>
-        /// Production用DifyController作成（EditorWindow専用）
+        /// Production用DifyUseCase作成（EditorWindow専用）
         /// </summary>
-        private DifyController CreateProductionController(string apiKey, string apiUrl, bool enableDebugLogging)
+        private IProcessQueryUseCase CreateProductionUseCase(string apiKey, string apiUrl, bool enableDebugLogging)
         {
             // Infrastructure Layer
             var configuration = new DifyConfiguration(
@@ -769,33 +748,8 @@ namespace AiTuber.Editor.Dify
 
             var httpClient = new UnityWebRequestHttpClient(configuration);
             var httpAdapter = new DifyHttpAdapter(httpClient, configuration);
-
-            // Application Layer
-            var responseProcessor = new MockResponseProcessor(); // EditorWindow用は軽量実装
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
-            return new DifyController(useCase);
+            return new ProcessQueryUseCase(httpAdapter);
         }
-
-        /// <summary>
-        /// EditorWindow用レスポンス処理サービス
-        /// </summary>
-        private class MockResponseProcessor : IResponseProcessor
-        {
-            public void ProcessAudioEvent(DifyStreamEvent streamEvent)
-            {
-                // Audio処理は無効（Editor用）
-                Debug.Log($"[MockResponseProcessor] Audio event ignored: {streamEvent.EventType}");
-            }
-
-            public void ProcessTextEvent(DifyStreamEvent streamEvent)
-            {
-                // Text処理の基本実装
-                Debug.Log($"[MockResponseProcessor] Text event processed: {streamEvent.EventType}");
-            }
-        }
-
         #endregion
     }
 }

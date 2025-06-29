@@ -126,51 +126,5 @@ namespace AiTuber.Services.Dify.Application.UseCases
                 errorMessage: errorMessage
             );
         }
-
-        /// <summary>
-        /// 音声データを追加
-        /// </summary>
-        /// <param name="audioChunk">追加する音声データ</param>
-        public void AddAudioChunk(byte[] audioChunk)
-        {
-            if (audioChunk == null || audioChunk.Length == 0) return;
-
-            var chunks = new List<byte[]>(AudioChunks) { audioChunk };
-            AudioChunks = chunks;
-        }
-
-        /// <summary>
-        /// Legacy形式に変換
-        /// Infrastructure層での利用向け
-        /// </summary>
-        /// <returns>Legacy互換のデータ転送オブジェクト</returns>
-        public QueryResponseDto ToDto()
-        {
-            return new QueryResponseDto
-            {
-                IsSuccess = IsSuccess,
-                TextResponse = TextResponse,
-                ConversationId = ConversationId,
-                MessageId = MessageId,
-                ProcessingTimeMs = ProcessingTimeMs,
-                ErrorMessage = ErrorMessage,
-                AudioChunks = AudioChunks.ToArray()
-            };
-        }
-    }
-
-    /// <summary>
-    /// Legacy API互換用データ転送オブジェクト
-    /// Infrastructure層でのシリアライゼーション用
-    /// </summary>
-    public class QueryResponseDto
-    {
-        public bool IsSuccess { get; set; }
-        public string TextResponse { get; set; } = "";
-        public string ConversationId { get; set; } = "";
-        public string MessageId { get; set; } = "";
-        public long ProcessingTimeMs { get; set; }
-        public string? ErrorMessage { get; set; }
-        public byte[][] AudioChunks { get; set; } = Array.Empty<byte[]>();
     }
 }

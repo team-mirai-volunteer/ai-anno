@@ -1,15 +1,13 @@
 using UnityEngine;
 using AiTuber.Services.Dify.Application.UseCases;
-using AiTuber.Services.Dify.Application.Ports;
 using AiTuber.Services.Dify.Infrastructure.Http;
 using AiTuber.Services.Dify.InterfaceAdapters.Translators;
-using AiTuber.Services.Dify.Presentation.Controllers;
 using AiTuber.Services.Dify.Mock;
 using System;
 
 #nullable enable
 
-namespace AiTuber.Services.Dify.Presentation
+namespace AiTuber.Services.Dify.Installer
 {
     /// <summary>
     /// Unity標準DI - MonoBehaviour Installer
@@ -33,12 +31,6 @@ namespace AiTuber.Services.Dify.Presentation
         #endregion
 
         #region Public Properties
-
-        /// <summary>
-        /// 依存注入済みDifyController
-        /// 外部システムからの参照用
-        /// </summary>
-        public DifyController? Controller { get; private set; }
 
         /// <summary>
         /// インストーラーの初期化完了状態
@@ -73,7 +65,6 @@ namespace AiTuber.Services.Dify.Presentation
         /// </summary>
         private void OnDestroy()
         {
-            Controller = null;
             IsInitialized = false;
         }
 
@@ -118,13 +109,7 @@ namespace AiTuber.Services.Dify.Presentation
                 enableDebugLogging: _enableDebugLogging);
 
             var httpAdapter = new DifyHttpAdapter(mockHttpClient, configuration);
-
-            // Application Layer - Mock用軽量実装
-            var responseProcessor = new MockResponseProcessor();
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
-            Controller = new DifyController(useCase);
+            var useCase = new ProcessQueryUseCase(httpAdapter);
 
         }
 
@@ -143,14 +128,7 @@ namespace AiTuber.Services.Dify.Presentation
 
             var httpClient = new UnityWebRequestHttpClient(configuration);
             var httpAdapter = new DifyHttpAdapter(httpClient, configuration);
-
-            // Application Layer - 本番用レスポンス処理
-            var responseProcessor = new DefaultResponseProcessor();
-            var useCase = new ProcessQueryUseCase(httpAdapter, responseProcessor);
-
-            // Presentation Layer
-            Controller = new DifyController(useCase);
-
+            var useCase = new ProcessQueryUseCase(httpAdapter);
         }
 
         #endregion
@@ -181,67 +159,6 @@ namespace AiTuber.Services.Dify.Presentation
             if (_mockPlaybackSpeed <= 0)
             {
                 throw new InvalidOperationException("Mock playback speed must be positive.");
-            }
-        }
-
-        #endregion
-
-        #region Mock Response Processor
-
-        /// <summary>
-        /// Mock用レスポンス処理サービス
-        /// テスト・開発用の軽量実装
-        /// </summary>
-        private class MockResponseProcessor : IResponseProcessor
-        {
-            public void ProcessAudioEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
-            {
-                // Audio処理は無効（Mock用）
-            }
-
-            public void ProcessTextEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
-            {
-                // Text処理の基本実装
-            }
-        }
-
-        #endregion
-
-        #region Default Response Processor
-
-        /// <summary>
-        /// 本番用レスポンス処理サービス
-        /// 実際の音声・テキスト処理を実装
-        /// </summary>
-        private class DefaultResponseProcessor : IResponseProcessor
-        {
-            public void ProcessAudioEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
-            {
-                if (string.IsNullOrEmpty(streamEvent.Audio))
-                    return;
-
-                try
-                {
-                    // Base64音声データをデコード
-                    var audioBytes = Convert.FromBase64String(streamEvent.Audio);
-                    
-                    // 実際の音声再生システムへ渡す（実装は別モジュール）
-                    
-                    // TODO: AudioManager.PlayAudioClip(audioBytes) 等の実装
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[DefaultResponseProcessor] Audio processing failed: {ex.Message}");
-                }
-            }
-
-            public void ProcessTextEvent(AiTuber.Services.Dify.Domain.Entities.DifyStreamEvent streamEvent)
-            {
-                if (string.IsNullOrEmpty(streamEvent.Answer))
-                    return;
-
-                // 実際のテキスト表示システムへ渡す
-                // TODO: UIManager.DisplayText(streamEvent.Answer) 等の実装
             }
         }
 

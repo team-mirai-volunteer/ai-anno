@@ -10,7 +10,6 @@ namespace AiTuber.Services.Dify.Application.UseCases
 {
     /// <summary>
     /// クエリ処理ユースケースインターフェース
-    /// Application層 Clean Architecture準拠
     /// </summary>
     public interface IProcessQueryUseCase
     {
