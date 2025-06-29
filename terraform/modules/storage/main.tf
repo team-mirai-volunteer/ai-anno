@@ -74,28 +74,3 @@ resource "google_storage_bucket" "backups" {
     enabled = true
   }
 }
-
-resource "google_storage_bucket" "plugin_storage" {
-  name          = "${var.project_id}-${var.project_name}-plugins-${var.environment}"
-  location      = var.region
-  project       = var.project_id
-  force_destroy = var.force_destroy
-
-  uniform_bucket_level_access = true
-
-  dynamic "lifecycle_rule" {
-    for_each = var.plugin_retention_days > 0 ? [1] : []
-    content {
-      condition {
-        age = var.plugin_retention_days
-      }
-      action {
-        type = "Delete"
-      }
-    }
-  }
-
-  versioning {
-    enabled = false
-  }
-}
