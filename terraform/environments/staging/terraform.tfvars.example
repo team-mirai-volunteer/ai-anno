@@ -28,7 +28,7 @@ enable_cdn = false
 # enable_cdn  = true  # Optional: Enable CDN for better performance
 
 # Health check configuration
-health_check_path = "/health"  # Custom health endpoint added to nginx
+health_check_path = "/console/api/ping"  # Dify health check endpoint
 health_check_port = 80
 
 # Backend configuration

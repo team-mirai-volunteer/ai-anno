@@ -34,16 +34,11 @@ resource "google_compute_health_check" "health_check" {
   healthy_threshold   = 1     # すぐに健全と判定
   unhealthy_threshold = 10    # 不健全判定を遅らせる
 
-  # 開発中のため、TCPヘルスチェックに変更（HTTPよりも寛容）
-  tcp_health_check {
-    port = var.health_check_port
+  # HTTPヘルスチェックを使用
+  http_health_check {
+    port         = var.health_check_port
+    request_path = var.health_check_path
   }
-  
-  # TODO: アプリケーション開発完了後にHTTPヘルスチェックに戻す
-  # http_health_check {
-  #   port         = var.health_check_port
-  #   request_path = var.health_check_path
-  # }
 }
 
 # Backend service configuration

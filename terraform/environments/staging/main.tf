@@ -166,9 +166,9 @@ module "load_balancer" {
   domain_name         = var.domain_name
   enable_ssl          = var.enable_ssl
   enable_cdn          = var.enable_cdn
-  health_check_path   = var.health_check_path
-  health_check_port   = var.health_check_port
-  backend_timeout_sec = var.backend_timeout_sec
-  session_affinity    = var.session_affinity
+  health_check_path   = "/console/api/ping"  # Dify health check endpoint
+  health_check_port   = 80
+  backend_timeout_sec = 30
+  session_affinity    = "NONE"  # No session affinity for staging
 }
 
