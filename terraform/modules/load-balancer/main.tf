@@ -10,9 +10,8 @@ resource "google_compute_global_address" "lb_ip" {
   project = var.project_id
 }
 
-# SSL Certificate (managed by Google) - only if domain is provided and SSL is enabled
+# SSL Certificate (managed by Google)
 resource "google_compute_managed_ssl_certificate" "ssl_cert" {
-  count   = var.enable_ssl && var.domain_name != "" ? 1 : 0
   name    = "${local.lb_name}-ssl-cert"
   project = var.project_id
 
@@ -88,25 +87,23 @@ resource "google_compute_url_map" "url_map" {
   default_service = google_compute_backend_service.backend.id
 }
 
-# HTTPS proxy - only if SSL is enabled
+# HTTPS proxy
 resource "google_compute_target_https_proxy" "https_proxy" {
-  count            = var.enable_ssl ? 1 : 0
   name             = "${local.lb_name}-https-proxy"
   project          = var.project_id
   url_map          = google_compute_url_map.url_map.id
-  ssl_certificates = var.domain_name != "" ? [google_compute_managed_ssl_certificate.ssl_cert[0].id] : []
+  ssl_certificates = [google_compute_managed_ssl_certificate.ssl_cert.id]
 }
 
 # HTTP proxy
 resource "google_compute_target_http_proxy" "http_proxy" {
   name    = "${local.lb_name}-http-proxy"
   project = var.project_id
-  url_map = var.enable_ssl ? google_compute_url_map.http_redirect[0].id : google_compute_url_map.url_map.id
+  url_map = google_compute_url_map.http_redirect.id
 }
 
-# URL map for HTTP to HTTPS redirect - only if SSL is enabled
+# URL map for HTTP to HTTPS redirect
 resource "google_compute_url_map" "http_redirect" {
-  count   = var.enable_ssl ? 1 : 0
   name    = "${local.lb_name}-http-redirect"
   project = var.project_id
 
@@ -117,15 +114,14 @@ resource "google_compute_url_map" "http_redirect" {
   }
 }
 
-# Global forwarding rule for HTTPS - only if SSL is enabled
+# Global forwarding rule for HTTPS
 resource "google_compute_global_forwarding_rule" "https_forwarding_rule" {
-  count                 = var.enable_ssl ? 1 : 0
   name                  = "${local.lb_name}-https-forwarding-rule"
   project               = var.project_id
   ip_protocol           = "TCP"
   load_balancing_scheme = "EXTERNAL"
   port_range            = "443"
-  target                = google_compute_target_https_proxy.https_proxy[0].id
+  target                = google_compute_target_https_proxy.https_proxy.id
   ip_address            = google_compute_global_address.lb_ip.id
 }
 

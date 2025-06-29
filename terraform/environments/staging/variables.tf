@@ -52,16 +52,10 @@ variable "ssh_source_ranges" {
 
 # Load Balancer variables
 variable "domain_name" {
-  description = "Domain name for SSL certificate (leave empty for IP-only access)"
+  description = "Domain name for SSL certificate"
   type        = string
-  default     = ""
 }
 
-variable "enable_ssl" {
-  description = "Enable SSL certificate and HTTPS"
-  type        = bool
-  default     = false
-}
 
 variable "enable_cdn" {
   description = "Enable Cloud CDN for static content caching"

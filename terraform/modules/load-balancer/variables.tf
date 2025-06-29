@@ -29,9 +29,8 @@ variable "network_name" {
 }
 
 variable "domain_name" {
-  description = "Domain name for SSL certificate (optional)"
+  description = "Domain name for SSL certificate"
   type        = string
-  default     = ""
 }
 
 variable "health_check_path" {
@@ -46,11 +45,6 @@ variable "health_check_port" {
   default     = 80
 }
 
-variable "enable_ssl" {
-  description = "Enable SSL certificate and HTTPS"
-  type        = bool
-  default     = false
-}
 
 variable "enable_cdn" {
   description = "Enable Cloud CDN for static content caching"

@@ -164,7 +164,6 @@ module "load_balancer" {
 
   # Load balancer configuration
   domain_name         = var.domain_name
-  enable_ssl          = var.enable_ssl
   enable_cdn          = var.enable_cdn
   health_check_path   = "/console/api/ping"  # Dify health check endpoint
   health_check_port   = 80

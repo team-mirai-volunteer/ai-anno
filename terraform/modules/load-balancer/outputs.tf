@@ -10,7 +10,7 @@ output "load_balancer_ip_address_name" {
 
 output "load_balancer_url" {
   description = "The URL to access the application through the load balancer"
-  value       = var.enable_ssl && var.domain_name != "" ? "https://${var.domain_name}" : "http://${google_compute_global_address.lb_ip.address}"
+  value       = "https://${var.domain_name}"
 }
 
 output "backend_service_id" {
@@ -31,11 +31,11 @@ output "health_check_id" {
 }
 
 output "ssl_certificate_id" {
-  description = "The ID of the SSL certificate (if SSL is enabled)"
-  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert[0].id : null
+  description = "The ID of the SSL certificate"
+  value       = google_compute_managed_ssl_certificate.ssl_cert.id
 }
 
 output "ssl_certificate_name" {
-  description = "The name of the SSL certificate (if SSL is enabled)"
-  value       = var.enable_ssl && var.domain_name != "" ? google_compute_managed_ssl_certificate.ssl_cert[0].name : null
+  description = "The name of the SSL certificate"
+  value       = google_compute_managed_ssl_certificate.ssl_cert.name
 }

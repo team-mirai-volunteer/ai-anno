@@ -18,14 +18,9 @@ ssh_source_ranges = ["0.0.0.0/0"]  # Restrict this to your IP ranges for securit
 
 # Load Balancer Configuration
 
-# For HTTP-only access (no domain required)
-enable_ssl = false
-enable_cdn = false
-
-# For HTTPS access with domain (uncomment and configure)
-# enable_ssl  = true
-# domain_name = "ai-anno.example.com"
-# enable_cdn  = true  # Optional: Enable CDN for better performance
+# SSL is always enabled. Domain name is required:
+domain_name = "ai-anno.example.com"  # Required: Your domain name for HTTPS access
+enable_cdn  = false                   # Optional: Enable CDN for better performance
 
 # Health check configuration
 health_check_path = "/console/api/ping"  # Dify health check endpoint
