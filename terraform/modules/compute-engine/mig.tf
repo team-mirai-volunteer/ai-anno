@@ -117,10 +117,10 @@ resource "google_compute_region_instance_group_manager" "dify" {
     max_surge_fixed                = 3 # リージョナルMIGでは最低でもゾーン数が必要（通常3ゾーン）
     max_unavailable_fixed          = 0 # ダウンタイムなし
     replacement_method             = "SUBSTITUTE"
-    min_ready_sec                  = 120 # 新規インスタンスがヘルスチェックを通過してから120秒待機
   }
 
-  wait_for_instances = false
+  wait_for_instances = true
+  wait_for_instances_status = "STABLE"
 
   lifecycle {
     create_before_destroy = true
