@@ -107,11 +107,6 @@ chown -R 1000:1000 volumes/
 # Authenticate with Artifact Registry
 gcloud auth configure-docker ${REGION}-docker.pkg.dev
 
-# Download nginx health check configuration
-echo "Downloading nginx health check configuration..."
-mkdir -p docker/nginx/conf.d
-gsutil cp gs://${PROJECT_ID}-vm-scripts-${ENVIRONMENT}/nginx/conf.d/health.conf docker/nginx/conf.d/health.conf
-
 # Start services using the docker directory
 cd docker
 docker compose up -d
