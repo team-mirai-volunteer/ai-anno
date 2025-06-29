@@ -96,12 +96,6 @@ variable "artifact_registry_name" {
   type        = string
 }
 
-variable "iap_ssh_users" {
-  description = "List of users who can SSH via IAP (format: user:email@example.com or serviceAccount:sa@project.iam.gserviceaccount.com)"
-  type        = list(string)
-  default     = []
-}
-
 variable "database_host" {
   description = "Database host address"
   type        = string

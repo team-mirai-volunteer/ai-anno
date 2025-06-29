@@ -74,12 +74,6 @@ variable "ssh_source_ranges" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "iap_ssh_users" {
-  description = "List of users who can SSH via IAP"
-  type        = list(string)
-  default     = []
-}
-
 # Load Balancer variables
 variable "domain_name" {
   description = "Domain name for SSL certificate (leave empty for IP-only access)"
