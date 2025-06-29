@@ -37,6 +37,13 @@ resource "google_storage_bucket_object" "setup_script" {
   })
 }
 
+# Upload nginx health check configuration
+resource "google_storage_bucket_object" "nginx_health_conf" {
+  name   = "nginx/conf.d/health.conf"
+  bucket = google_storage_bucket.vm_scripts.name
+  source = "${path.module}/files/nginx/conf.d/health.conf"
+}
+
 # Grant VM service account access to read startup script
 resource "google_storage_bucket_iam_member" "vm_scripts_reader" {
   bucket = google_storage_bucket.vm_scripts.name
