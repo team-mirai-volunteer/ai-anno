@@ -9,6 +9,7 @@ resource "google_compute_instance_template" "dify" {
   tags = [
     "dify-vm",
     var.environment,
+    "allow-ssh",
     "allow-http",
     "allow-https",
     "allow-health-check"
@@ -40,6 +41,7 @@ resource "google_compute_instance_template" "dify" {
   }
 
   metadata = {
+    ssh-keys           = var.ssh_keys
     startup-script-url = "gs://${google_storage_bucket.vm_scripts.name}/setup-dify.sh"
   }
 

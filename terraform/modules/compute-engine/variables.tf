@@ -62,6 +62,18 @@ variable "boot_disk_type" {
   default     = "pd-standard"
 }
 
+variable "ssh_keys" {
+  description = "SSH keys for VM access"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_source_ranges" {
+  description = "Source IP ranges allowed for SSH access"
+  type        = list(string)
+  default     = []
+}
+
 variable "vm_user" {
   description = "Default user for the VM"
   type        = string
@@ -82,6 +94,12 @@ variable "model_cache_bucket_name" {
 variable "artifact_registry_name" {
   description = "Name of the Artifact Registry repository"
   type        = string
+}
+
+variable "iap_ssh_users" {
+  description = "List of users who can SSH via IAP (format: user:email@example.com or serviceAccount:sa@project.iam.gserviceaccount.com)"
+  type        = list(string)
+  default     = []
 }
 
 variable "database_host" {

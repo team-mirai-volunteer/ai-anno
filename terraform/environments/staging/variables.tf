@@ -62,6 +62,24 @@ variable "dify_inner_api_key" {
   sensitive   = true
 }
 
+variable "ssh_keys" {
+  description = "SSH keys for VM access in format 'username:ssh-rsa AAAAB3...'"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_source_ranges" {
+  description = "Source IP ranges allowed for SSH access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "iap_ssh_users" {
+  description = "List of users who can SSH via IAP"
+  type        = list(string)
+  default     = []
+}
+
 # Load Balancer variables
 variable "domain_name" {
   description = "Domain name for SSL certificate (leave empty for IP-only access)"
