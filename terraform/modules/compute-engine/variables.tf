@@ -62,12 +62,6 @@ variable "boot_disk_type" {
   default     = "pd-standard"
 }
 
-variable "ssh_keys" {
-  description = "SSH keys for VM access"
-  type        = string
-  default     = ""
-}
-
 variable "ssh_source_ranges" {
   description = "Source IP ranges allowed for SSH access"
   type        = list(string)

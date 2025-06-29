@@ -16,7 +16,6 @@ mail_type              = "smtp"
 mail_default_send_from = "noreply@example.com"
 
 # SSH Configuration
-ssh_keys = "username:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB... user@example.com"
 ssh_source_ranges = ["0.0.0.0/0"]  # Restrict this to your IP ranges for security
 
 # Load Balancer Configuration

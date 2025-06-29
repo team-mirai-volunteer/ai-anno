@@ -41,7 +41,6 @@ resource "google_compute_instance_template" "dify" {
   }
 
   metadata = {
-    ssh-keys           = var.ssh_keys
     startup-script-url = "gs://${google_storage_bucket.vm_scripts.name}/setup-dify.sh"
   }
 
@@ -59,17 +58,17 @@ resource "google_compute_instance_template" "dify" {
 
 # Health check for MIG
 resource "google_compute_health_check" "dify_mig" {
-  name               = "${var.project_name}-dify-mig-health-${var.environment}"
-  check_interval_sec = 10
-  timeout_sec        = 5
+  name                = "${var.project_name}-dify-mig-health-${var.environment}"
+  check_interval_sec  = 10
+  timeout_sec         = 5
   unhealthy_threshold = 3
-  healthy_threshold  = 2
-  project           = var.project_id
+  healthy_threshold   = 2
+  project             = var.project_id
 
   http_health_check {
-    port               = 80
-    request_path       = "/"
-    response           = ""
+    port         = 80
+    request_path = "/"
+    response     = ""
   }
 }
 
@@ -107,8 +106,8 @@ resource "google_compute_region_instance_group_manager" "dify" {
     type                           = "PROACTIVE"
     minimal_action                 = "REPLACE"
     most_disruptive_allowed_action = "REPLACE"
-    max_surge_fixed                = 3  # リージョナルMIGでは最低でもゾーン数が必要（通常3ゾーン）
-    max_unavailable_fixed          = 0  # ダウンタイムなし
+    max_surge_fixed                = 3 # リージョナルMIGでは最低でもゾーン数が必要（通常3ゾーン）
+    max_unavailable_fixed          = 0 # ダウンタイムなし
     replacement_method             = "SUBSTITUTE"
   }
 

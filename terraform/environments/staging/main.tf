@@ -101,7 +101,6 @@ module "compute_engine" {
   machine_type      = "e2-standard-8" # 8 vCPUs, 32GB RAM for staging
   boot_disk_size    = 200
   boot_disk_type    = "pd-ssd"
-  ssh_keys          = var.ssh_keys
   ssh_source_ranges = var.ssh_source_ranges
 }
 
