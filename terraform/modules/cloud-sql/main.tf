@@ -58,13 +58,13 @@ resource "google_sql_database_instance" "main" {
 }
 
 resource "google_sql_database" "main" {
-  name     = "main-${var.environment}"
+  name     = "main_${var.environment}"
   instance = google_sql_database_instance.main.name
   project  = var.project_id
 }
 
 resource "google_sql_user" "main" {
-  name     = "main-${var.environment}"
+  name     = "main_${var.environment}"
   instance = google_sql_database_instance.main.name
   password = random_password.db_password.result
   project  = var.project_id

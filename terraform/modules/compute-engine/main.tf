@@ -30,7 +30,6 @@ resource "google_storage_bucket_object" "setup_script" {
     ENVIRONMENT           = var.environment
     REGION                = var.region
     DB_HOST               = var.database_host
-    DB_NAME               = var.database_name
     DB_USER               = var.database_user
     GOOGLE_STORAGE_BUCKET = var.uploads_bucket_name
     PLUGIN_S3_BUCKET      = var.plugin_s3_bucket
@@ -51,61 +50,6 @@ resource "google_service_account" "dify_vm" {
   display_name = "Dify VM Service Account for ${var.environment}"
   project      = var.project_id
 }
-
-# Note: VM instance is now managed by MIG (see mig.tf)
-# This resource block is commented out but kept for reference during migration
-# resource "google_compute_instance" "dify" {
-#   name         = "${var.project_name}-dify-${var.environment}"
-#   machine_type = var.machine_type
-#   zone         = var.zone
-#   project      = var.project_id
-#
-#   tags = [
-#     "dify-vm",
-#     var.environment,
-#     "allow-ssh",
-#     "allow-http",
-#     "allow-https",
-#     "allow-health-check"
-#   ]
-#
-#   boot_disk {
-#     initialize_params {
-#       image = var.boot_disk_image
-#       size  = var.boot_disk_size
-#       type  = var.boot_disk_type
-#     }
-#   }
-#
-#   network_interface {
-#     network    = var.network_id
-#     subnetwork = var.subnet_id
-#
-#     # Assign external IP for initial setup
-#     access_config {
-#       // Ephemeral public IP
-#     }
-#   }
-#
-#   service_account {
-#     email  = google_service_account.dify_vm.email
-#     scopes = ["cloud-platform"]
-#   }
-#
-#   metadata = {
-#     ssh-keys = var.ssh_keys
-#     startup-script-url = "gs://${google_storage_bucket.vm_scripts.name}/setup-dify.sh"
-#   }
-#
-#   labels = {
-#     environment  = var.environment
-#     project      = var.project_name
-#     service      = "dify"
-#     managed_by   = "terraform"
-#   }
-#
-#   allow_stopping_for_update = true
-# }
 
 # Firewall rules for VM
 resource "google_compute_firewall" "dify_allow_http" {

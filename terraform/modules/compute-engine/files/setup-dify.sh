@@ -24,7 +24,6 @@ PROJECT_NAME="${PROJECT_NAME}"                              # Project name (e.g.
 ENVIRONMENT="${ENVIRONMENT}"                                # Environment name (e.g., "dev", "prod")
 REGION="${REGION}"                                          # GCP Region (e.g., "asia-northeast1")
 DB_HOST="${DB_HOST}"                                        # Cloud SQL instance connection name
-DB_NAME="${DB_NAME}"                                        # Database name
 DB_USER="${DB_USER}"                                        # Database username
 GOOGLE_STORAGE_BUCKET="${GOOGLE_STORAGE_BUCKET}"            # GCS bucket for Dify file uploads
 PLUGIN_S3_BUCKET="${PLUGIN_S3_BUCKET}"                      # S3 bucket for plugin storage
@@ -69,10 +68,8 @@ DB_USERNAME=$DB_USER
 DB_PASSWORD=$DB_PASSWORD
 DB_HOST=$DB_HOST
 DB_PORT=5432
-DB_DATABASE=$DB_NAME
 PGUSER=$DB_USER
 POSTGRES_PASSWORD=$DB_PASSWORD
-POSTGRES_DB=$DB_NAME
 
 # Dify Configuration
 SECRET_KEY=$SECRET_KEY
