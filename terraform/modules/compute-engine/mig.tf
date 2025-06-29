@@ -76,7 +76,7 @@ resource "google_compute_health_check" "dify_mig" {
 
   http_health_check {
     port         = 80
-    request_path = "/"
+    request_path = "/console/api/ping"
     response     = ""
   }
 }
