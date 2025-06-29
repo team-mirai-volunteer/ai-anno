@@ -30,28 +30,28 @@ module "networking" {
 module "cloud_sql" {
   source = "../../modules/cloud-sql"
 
-  project_id                = var.project_id
-  project_name              = var.project_name
-  region                    = var.region
-  environment               = local.environment
-  network_id                = module.networking.network_id
-  private_vpc_connection    = module.networking.private_vpc_connection
+  project_id             = var.project_id
+  project_name           = var.project_name
+  region                 = var.region
+  environment            = local.environment
+  network_id             = module.networking.network_id
+  private_vpc_connection = module.networking.private_vpc_connection
 
-  database_version              = "POSTGRES_15"
+  database_version              = "POSTGRES_17"
   database_tier                 = "db-custom-2-7680"
   availability_type             = "ZONAL"
   disk_size                     = 100
   enable_point_in_time_recovery = false
-  deletion_protection           = false
+  deletion_protection           = true
 }
 
 module "storage" {
   source = "../../modules/storage"
 
-  project_id                = var.project_id
-  project_name              = var.project_name
-  region                    = var.region
-  environment               = local.environment
+  project_id   = var.project_id
+  project_name = var.project_name
+  region       = var.region
+  environment  = local.environment
 
   force_destroy              = true
   uploads_retention_days     = 30
@@ -86,24 +86,24 @@ module "compute_engine" {
   network_name = module.networking.network_name
   subnet_id    = module.networking.subnet_id
 
-  uploads_bucket_name        = module.storage.uploads_bucket_name
-  model_cache_bucket_name    = module.storage.model_cache_bucket_name
-  artifact_registry_name     = module.artifact_registry.repository_name
+  uploads_bucket_name     = module.storage.uploads_bucket_name
+  model_cache_bucket_name = module.storage.model_cache_bucket_name
+  artifact_registry_name  = module.artifact_registry.repository_name
 
-  database_host              = module.cloud_sql.private_ip_address
-  database_name              = module.cloud_sql.database_name
-  database_user              = module.cloud_sql.database_user
+  database_host = module.cloud_sql.private_ip_address
+  database_name = module.cloud_sql.database_name
+  database_user = module.cloud_sql.database_user
 
   # AWS S3 configuration for plugin storage
   plugin_aws_region = var.plugin_aws_region
   plugin_s3_bucket  = var.plugin_s3_bucket
 
-  machine_type    = "e2-standard-8"  # 8 vCPUs, 32GB RAM for staging
-  boot_disk_size  = 200
-  boot_disk_type  = "pd-ssd"
-  ssh_keys        = var.ssh_keys
+  machine_type      = "e2-standard-8" # 8 vCPUs, 32GB RAM for staging
+  boot_disk_size    = 200
+  boot_disk_type    = "pd-ssd"
+  ssh_keys          = var.ssh_keys
   ssh_source_ranges = var.ssh_source_ranges
-  iap_ssh_users   = var.iap_ssh_users
+  iap_ssh_users     = var.iap_ssh_users
 }
 
 module "secret_manager" {
@@ -113,19 +113,19 @@ module "secret_manager" {
   project_name = var.project_name
   environment  = local.environment
 
-  database_password         = module.cloud_sql.database_password
-  dify_secret_key           = var.dify_secret_key
-  gcs_service_account_json  = module.storage.gcs_service_account_json
-  plugin_daemon_key         = var.dify_plugin_daemon_key
-  plugin_inner_api_key      = var.dify_plugin_dify_inner_api_key
-  server_key                = var.dify_server_key
-  dify_inner_api_key        = var.dify_inner_api_key
-  vm_service_account_email  = module.compute_engine.service_account_email
-  init_password             = var.init_password
-  redis_password            = var.redis_password
-  code_execution_api_key    = var.code_execution_api_key
-  plugin_s3_access_key      = var.plugin_s3_access_key
-  plugin_s3_secret_key      = var.plugin_s3_secret_key
+  database_password        = module.cloud_sql.database_password
+  dify_secret_key          = var.dify_secret_key
+  gcs_service_account_json = module.storage.gcs_service_account_json
+  plugin_daemon_key        = var.dify_plugin_daemon_key
+  plugin_inner_api_key     = var.dify_plugin_dify_inner_api_key
+  server_key               = var.dify_server_key
+  dify_inner_api_key       = var.dify_inner_api_key
+  vm_service_account_email = module.compute_engine.service_account_email
+  init_password            = var.init_password
+  redis_password           = var.redis_password
+  code_execution_api_key   = var.code_execution_api_key
+  plugin_s3_access_key     = var.plugin_s3_access_key
+  plugin_s3_secret_key     = var.plugin_s3_secret_key
 }
 
 module "load_balancer" {
