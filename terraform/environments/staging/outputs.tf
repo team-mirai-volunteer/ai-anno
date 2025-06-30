@@ -64,3 +64,25 @@ output "ssl_certificate_name" {
   description = "The name of the SSL certificate (if SSL is enabled)"
   value       = module.load_balancer.ssl_certificate_name
 }
+
+# Manifest Images Storage outputs
+output "manifest_images_bucket_name" {
+  description = "Name of the manifest images storage bucket"
+  value       = module.storage.manifest_images_bucket_name
+}
+
+output "manifest_images_public_url" {
+  description = "Public URL prefix for accessing manifest images"
+  value       = module.storage.manifest_images_public_url
+}
+
+output "manifest_images_service_account_json" {
+  description = "Base64 encoded service account key for manifest images upload (sensitive)"
+  value       = module.storage.manifest_images_service_account_json
+  sensitive   = true
+}
+
+output "manifest_images_service_account_email" {
+  description = "Email of the manifest images service account"
+  value       = module.storage.manifest_images_service_account_email
+}

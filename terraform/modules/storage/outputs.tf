@@ -39,3 +39,29 @@ output "gcs_service_account_email" {
   description = "Email of the GCS service account"
 }
 
+output "manifest_images_bucket_name" {
+  description = "Name of the manifest images storage bucket"
+  value       = google_storage_bucket.manifest_images.name
+}
+
+output "manifest_images_bucket_url" {
+  description = "URL of the manifest images storage bucket"
+  value       = google_storage_bucket.manifest_images.url
+}
+
+output "manifest_images_public_url" {
+  description = "Public URL prefix for accessing manifest images"
+  value       = "https://storage.googleapis.com/${google_storage_bucket.manifest_images.name}"
+}
+
+output "manifest_images_service_account_json" {
+  value     = google_service_account_key.manifest_images_uploader.private_key
+  sensitive = true
+  description = "Base64 encoded service account key for manifest images upload"
+}
+
+output "manifest_images_service_account_email" {
+  value = google_service_account.manifest_images_uploader.email
+  description = "Email of the manifest images service account"
+}
+

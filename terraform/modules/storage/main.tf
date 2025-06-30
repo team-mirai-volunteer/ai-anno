@@ -74,3 +74,29 @@ resource "google_storage_bucket" "backups" {
     enabled = true
   }
 }
+
+resource "google_storage_bucket" "manifest_images" {
+  name          = "${var.project_id}-${var.project_name}-manifest-images-${var.environment}"
+  location      = var.region
+  project       = var.project_id
+  force_destroy = var.force_destroy
+
+  uniform_bucket_level_access = true
+
+  cors {
+    origin          = ["*"]
+    method          = ["GET", "HEAD"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
+
+  versioning {
+    enabled = false
+  }
+}
+
+resource "google_storage_bucket_iam_member" "manifest_images_public" {
+  bucket = google_storage_bucket.manifest_images.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
