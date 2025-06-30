@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using WebSocketSharp;
 
-namespace Services.Dify.Presentation
+namespace AiTuber.Dify
 {
     /// <summary>
     /// 汎用WebSocketクライアント - 再利用可能
