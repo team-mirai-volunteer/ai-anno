@@ -12,18 +12,14 @@ namespace AiTuber.Dify
         [SerializeField] private bool enableDebugLogging = true;
 
         [Header("OneComme Configuration")]
-        [SerializeField] private string oneCommeUrl = "ws://localhost:11180/";
         [SerializeField] private bool autoConnect = true;
-
-        [Header("Dify Configuration")]
-        [SerializeField] private string difyUrl = "http://localhost/v1/chat-messages";
-        [SerializeField] private string apiKey = "";
         [SerializeField] private float gapBetweenAudio = 1.0f;
 
         [Header("Chat Components")]
         [SerializeField] private OneCommeClient? oneCommeClient;
         [SerializeField] private NodeChainController? nodeChainController;
         [SerializeField] private AudioPlayer? audioPlayer;
+        [SerializeField] private AudioSource? audioSource;
 
         private DifyClient? difyClient;
 
@@ -47,15 +43,20 @@ namespace AiTuber.Dify
         {
             try
             {
+                // PlayerPrefsから設定読み込み
+                var oneCommeUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.OneCommeUrl);
+                var difyUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyUrl);
+                var apiKey = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyApiKey);
+
                 // 設定バリデーション
-                if (!ValidateConfiguration())
+                if (!ValidateConfiguration(oneCommeUrl, difyUrl, apiKey))
                 {
                     Debug.LogError("[Installer] 設定が無効です");
                     return;
                 }
 
-                // 全コンポーネントにDebugLog設定を注入
-                ConfigureComponents();
+                // 全コンポーネントに依存注入
+                InstallComponents(oneCommeUrl);
 
                 // DifyClient作成
                 difyClient = new DifyClient(difyUrl, apiKey, enableDebugLogging);
@@ -81,20 +82,20 @@ namespace AiTuber.Dify
         }
 
         /// <summary>
-        /// 全コンポーネントの設定統一
+        /// 全コンポーネントの依存注入
         /// </summary>
-        private void ConfigureComponents()
+        private void InstallComponents(string oneCommeUrl)
         {
-            // OneCommeClientの設定注入
+            // OneCommeClientの依存注入
             if (oneCommeClient != null)
             {
-                oneCommeClient.Configure(oneCommeUrl, autoConnect, enableDebugLogging);
+                oneCommeClient.Install(oneCommeUrl, autoConnect, enableDebugLogging);
             }
 
-            // AudioPlayerのDebugLog設定
-            if (audioPlayer != null)
+            // AudioPlayerの依存注入
+            if (audioPlayer != null && audioSource != null)
             {
-                audioPlayer.Configure(enableDebugLogging);
+                audioPlayer.Install(audioSource, enableDebugLogging);
             }
 
         }
@@ -103,41 +104,41 @@ namespace AiTuber.Dify
         /// 設定バリデーション
         /// </summary>
         /// <returns>設定が有効な場合true</returns>
-        private bool ValidateConfiguration()
+        private bool ValidateConfiguration(string oneCommeUrl, string difyUrl, string apiKey)
         {
             // OneComme設定バリデーション
             if (string.IsNullOrWhiteSpace(oneCommeUrl))
             {
-                Debug.LogError("[Installer] OneComme URLが設定されていません");
-                return false;
-            }
-
-            if (!System.Uri.TryCreate(oneCommeUrl, System.UriKind.Absolute, out _))
-            {
-                Debug.LogError($"[Installer] 無効なOneComme URL形式: {oneCommeUrl}");
+                Debug.LogError($"[Installer] OneComme URLが設定されていません (PlayerPrefs: {Constants.PlayerPrefs.OneCommeUrl})");
                 return false;
             }
 
             // Dify設定バリデーション
             if (string.IsNullOrWhiteSpace(difyUrl))
             {
-                Debug.LogError("[Installer] Dify URLが設定されていません");
+                Debug.LogError($"[Installer] Dify URLが設定されていません (PlayerPrefs: {Constants.PlayerPrefs.DifyUrl})");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                Debug.LogError("[Installer] API Keyが設定されていません");
-                return false;
-            }
-
-            if (!System.Uri.TryCreate(difyUrl, System.UriKind.Absolute, out _))
-            {
-                Debug.LogError($"[Installer] 無効なDify URL形式: {difyUrl}");
+                Debug.LogError($"[Installer] API Keyが設定されていません (PlayerPrefs: {Constants.PlayerPrefs.DifyApiKey})");
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// PlayerPrefs設定用ヘルパー（エディタ用）
+        /// </summary>
+        [ContextMenu("Show PlayerPrefs Keys")]
+        public void ShowPlayerPrefsKeys()
+        {
+            Debug.Log("[Installer] PlayerPrefs設定が必要:");
+            Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.OneCommeUrl}\", \"ws://localhost:11180/\")");
+            Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.DifyUrl}\", \"https://dify.seiichirou.jp/v1/chat-messages\")");
+            Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.DifyApiKey}\", \"your-api-key-here\")");
         }
 
         /// <summary>

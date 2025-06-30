@@ -76,18 +76,18 @@ namespace AiTuber.Dify
         public bool IsConnected => webSocketClient?.IsConnected ?? false;
 
         /// <summary>
-        /// 設定注入（インストーラーから制御）
+        /// 依存注入（インストーラーから一括設定）
         /// </summary>
         /// <param name="url">OneComme WebSocket URL</param>
         /// <param name="autoConnectFlag">自動接続フラグ</param>
         /// <param name="debugLogEnabled">DebugLog有効フラグ</param>
-        public void Configure(string url, bool autoConnectFlag, bool debugLogEnabled)
+        public void Install(string url, bool autoConnectFlag, bool debugLogEnabled)
         {
             oneCommeUrl = url;
             autoConnect = autoConnectFlag;
             debugLog = debugLogEnabled;
             
-            Debug.Log($"[OneCommeClient] 設定完了 - URL: {url}, AutoConnect: {autoConnectFlag}, DebugLog: {debugLogEnabled}");
+            Debug.Log($"[OneCommeClient] Install完了 - URL: {url}, AutoConnect: {autoConnectFlag}, DebugLog: {debugLogEnabled}");
             
             // WebSocketClient再初期化
             InitializeWebSocketClient();

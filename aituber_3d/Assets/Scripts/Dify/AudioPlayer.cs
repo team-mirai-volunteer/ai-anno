@@ -9,7 +9,6 @@ namespace AiTuber.Dify
     /// <summary>
     /// MP3音声ファイル再生クラス
     /// </summary>
-    [RequireComponent(typeof(AudioSource))]
     public class AudioPlayer : MonoBehaviour
     {
         [Header("Settings")]
@@ -29,17 +28,6 @@ namespace AiTuber.Dify
         /// </summary>
         public event Action<string>? OnPlaybackError;
 
-        /// <summary>
-        /// MonoBehaviour初期化
-        /// </summary>
-        private void Awake()
-        {
-            if (audioSource == null)
-            {
-                audioSource = GetComponent<AudioSource>();
-                if (debugLog) Debug.Log($"{logPrefix} AudioSource設定完了");
-            }
-        }
 
         /// <summary>
         /// MP3バイトデータから音声を再生
@@ -191,12 +179,15 @@ namespace AiTuber.Dify
         }
 
         /// <summary>
-        /// DebugLog設定（インストーラーから制御）
+        /// 依存注入（インストーラーから一括設定）
         /// </summary>
-        /// <param name="enabled">DebugLog有効フラグ</param>
-        public void Configure(bool debugLogEnabled)
+        /// <param name="audioSourceComponent">AudioSourceコンポーネント</param>
+        /// <param name="debugLogEnabled">DebugLog有効フラグ</param>
+        public void Install(AudioSource audioSourceComponent, bool debugLogEnabled)
         {
+            audioSource = audioSourceComponent;
             debugLog = debugLogEnabled;
+            if (debugLog) Debug.Log($"{logPrefix} Install完了");
         }
 
         /// <summary>
