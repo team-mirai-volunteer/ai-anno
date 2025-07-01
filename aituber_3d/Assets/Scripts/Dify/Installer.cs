@@ -10,7 +10,6 @@ namespace AiTuber.Dify
     {
         [Header("Global Settings")]
         [SerializeField] private bool enableDebugLogging = true;
-        [SerializeField] private bool useChunkedSystem = false;
 
         [Header("OneComme Configuration")]
         [SerializeField] private bool autoConnect = true;
@@ -19,12 +18,9 @@ namespace AiTuber.Dify
 
         [Header("Chat Components")]
         [SerializeField] private OneCommeClient? oneCommeClient;
-        [SerializeField] private NodeChainController? nodeChainController;
         [SerializeField] private NodeChainChunkedController? nodeChainChunkedController;
-        [SerializeField] private AudioPlayer? audioPlayer;
         [SerializeField] private AudioSource? audioSource;
 
-        private DifyClient? difyClient;
         private DifyChunkedClient? difyChunkedClient;
         private BufferedAudioPlayer? bufferedAudioPlayer;
 
@@ -38,60 +34,9 @@ namespace AiTuber.Dify
         /// </summary>
         private void Awake()
         {
-            if (useChunkedSystem)
-            {
-                InitializeDifyChunkedSystem();
-            }
-            else
-            {
-                InitializeDifyBlockingSystem();
-            }
+            InitializeDifyChunkedSystem();
         }
 
-        /// <summary>
-        /// OneComme統合システム全体初期化
-        /// </summary>
-        private void InitializeDifyBlockingSystem()
-        {
-            try
-            {
-                // PlayerPrefsから設定読み込み
-                var oneCommeUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.OneCommeUrl);
-                var difyUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyUrl);
-                var apiKey = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyApiKey);
-
-                // 設定バリデーション
-                if (!ValidateConfiguration(oneCommeUrl, difyUrl, apiKey))
-                {
-                    Debug.LogError("[Installer] 設定が無効です");
-                    return;
-                }
-
-                // 全コンポーネントに依存注入
-                InstallComponents(oneCommeUrl);
-
-                // DifyClient作成
-                difyClient = new DifyClient(difyUrl, apiKey, enableDebugLogging);
-
-                // NodeChainControllerの依存関係構築
-                if (oneCommeClient != null && audioPlayer != null && nodeChainController != null)
-                {
-                    nodeChainController.Initialize(oneCommeClient, audioPlayer, difyClient, gapBetweenAudio, gapBetweenDifyRequests, enableDebugLogging);
-                }
-
-                IsInitialized = true;
-                
-                if (enableDebugLogging)
-                {
-                    Debug.Log("[Installer] OneComme統合システム初期化完了");
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"[Installer] 初期化失敗: {ex.Message}");
-                IsInitialized = false;
-            }
-        }
 
         /// <summary>
         /// Difyチャンクシステム全体初期化
@@ -155,11 +100,6 @@ namespace AiTuber.Dify
                 oneCommeClient.Install(oneCommeUrl, autoConnect, enableDebugLogging);
             }
 
-            // AudioPlayerの依存注入
-            if (audioPlayer != null && audioSource != null)
-            {
-                audioPlayer.Install(audioSource, enableDebugLogging);
-            }
 
         }
 
@@ -209,7 +149,6 @@ namespace AiTuber.Dify
         /// </summary>
         private void OnDestroy()
         {
-            difyClient?.Dispose();
             difyChunkedClient?.Dispose();
             IsInitialized = false;
             

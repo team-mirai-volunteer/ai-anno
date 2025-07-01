@@ -56,8 +56,6 @@ namespace AiTuber.Dify
             // BufferedAudioPlayerのチャンクイベントを購読
             this.bufferedAudioPlayer.OnChunkStarted += text => OnChunkStarted?.Invoke(text);
 
-            // AudioPlaybackNodeカウント増加（既存のカウンターを流用）
-            NodeChainController.IncrementAudioPlaybackNodeCount();
         }
 
         /// <summary>
@@ -128,10 +126,7 @@ namespace AiTuber.Dify
             }
             finally
             {
-                // 4. AudioPlaybackNodeカウント減少
-                NodeChainController.DecrementAudioPlaybackNodeCount();
-
-                // 5. 次のノードへ継続またはチェーン終了通知
+                // 4. 次のノードへ継続またはチェーン終了通知
                 nextNode = Next;
                 Next = null; // 参照切断（GC対象化）
 

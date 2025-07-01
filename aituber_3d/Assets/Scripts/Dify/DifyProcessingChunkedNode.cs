@@ -58,8 +58,6 @@ namespace AiTuber.Dify
             this.difyGap = difyGap;
             debugLog = enableDebugLog;
 
-            // DifyProcessingNodeカウント増加（既存のカウンターを流用）
-            NodeChainController.IncrementDifyProcessingNodeCount();
         }
 
         /// <summary>
@@ -121,10 +119,7 @@ namespace AiTuber.Dify
             }
             finally
             {
-                // 5. DifyProcessingNodeカウント減少
-                NodeChainController.DecrementDifyProcessingNodeCount();
-
-                // 6. 次のノードへ継続またはチェーン終了通知
+                // 5. 次のノードへ継続またはチェーン終了通知
                 nextNode = Next;
                 Next = null; // 参照切断（GC対象化）
 
