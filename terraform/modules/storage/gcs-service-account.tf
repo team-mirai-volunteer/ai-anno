@@ -30,7 +30,7 @@ resource "google_project_iam_member" "dify_gcs_bucket_reader" {
 
 # Service Account for Manifest Image Uploads
 resource "google_service_account" "manifest_images_uploader" {
-  account_id   = "${var.project_name}-manifest-img-${var.environment}"
+  account_id   = "${var.project_name}-manifest-${var.environment}"
   display_name = "Manifest Images Uploader (${var.environment})"
   project      = var.project_id
   description  = "Service account for uploading manifest images from Google Colab"
