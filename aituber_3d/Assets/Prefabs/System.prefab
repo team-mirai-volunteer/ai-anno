@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5722269719048582471}
   - component: {fileID: 2535327654895445971}
   - component: {fileID: 4722530337285840994}
+  - component: {fileID: 6374056860351552290}
   m_Layer: 0
   m_Name: System
   m_TagString: Untagged
@@ -48,10 +49,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableDebugLogging: 1
+  useChunkedSystem: 1
   autoConnect: 1
-  gapBetweenAudio: 1
+  gapBetweenAudio: 0.8
+  gapBetweenDifyRequests: 10
   oneCommeClient: {fileID: 2535327654895445971}
   nodeChainController: {fileID: 4722530337285840994}
+  nodeChainChunkedController: {fileID: 6374056860351552290}
   audioPlayer: {fileID: 5722269719048582471}
   audioSource: {fileID: 0}
 --- !u!114 &5722269719048582471
@@ -86,10 +90,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4596331959020848556}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 35fa5ef4179154e83a9e272c7500b3dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   logPrefix: '[NodeChainController]'
+  maxChainLength: 5
+--- !u!114 &6374056860351552290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4596331959020848556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e35c07ef9d1c4d86841f7cd3559c849, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logPrefix: '[NodeChainChunkedController]'
   maxChainLength: 5

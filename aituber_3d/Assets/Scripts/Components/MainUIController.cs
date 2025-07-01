@@ -90,6 +90,30 @@ namespace AiTuber
             PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
         }
 
+        private void ChunkedCommentPlay(SubtitleAudioNode subtitleAudioNode)
+        {
+            var comment = subtitleAudioNode.Comment;
+
+            // chunkedコメント再生時の処理
+            // 質問、質問者名、質問者アイコン
+            mainUI.SetQuestionerName(comment.data?.displayName ?? "匿名");
+            mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
+            mainUI.SetQuestionText(comment.data?.speechText ?? "");
+            // 回答は空（字幕で表示）、スライドはSiteUrlから取得予定
+            mainUI.SetAnswerText("");
+            // TODO: SiteUrl設定
+            // mainUI.SetSlideImageUrl(subtitleAudioNode.SiteUrl);
+
+            _totalAnswerCount++;
+            mainUI.SetTotalAnswerCount(_totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
+        }
+
+        private void HandleChunkStarted(string chunkText)
+        {
+            mainUI.SetAnswerText(chunkText);
+        }
+
         void OnDestroy()
         {
             CleanupEventHandlers();
@@ -97,12 +121,18 @@ namespace AiTuber
         private void SetupEventHandlers()
         {
             DifyProcessingNode.OnCommentProcessed += CommentHandler;
+            DifyProcessingChunkedNode.OnCommentProcessed += CommentHandler;
             AudioPlaybackNode.OnPlayStart += CommentPlay;
+            SubtitleAudioNode.OnPlayStart += ChunkedCommentPlay;
+            SubtitleAudioNode.OnChunkStarted += HandleChunkStarted;
         }
         private void CleanupEventHandlers()
         {
             DifyProcessingNode.OnCommentProcessed -= CommentHandler;
+            DifyProcessingChunkedNode.OnCommentProcessed -= CommentHandler;
             AudioPlaybackNode.OnPlayStart -= CommentPlay;
+            SubtitleAudioNode.OnPlayStart -= ChunkedCommentPlay;
+            SubtitleAudioNode.OnChunkStarted -= HandleChunkStarted;
         }
     }
 

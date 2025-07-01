@@ -22,6 +22,11 @@ namespace AiTuber.Dify
         public static event Action<SubtitleAudioNode>? OnPlayStart;
 
         /// <summary>
+        /// チャンク開始イベント（字幕表示用）
+        /// </summary>
+        public static event Action<string>? OnChunkStarted;
+
+        /// <summary>
         /// チェーン完了通知イベント
         /// </summary>
         public static event Action<SubtitleAudioNode>? OnChainCompleted;
@@ -47,6 +52,9 @@ namespace AiTuber.Dify
             Gap = gap;
             this.bufferedAudioPlayer = bufferedAudioPlayer ?? throw new ArgumentNullException(nameof(bufferedAudioPlayer));
             debugLog = enableDebugLog;
+
+            // BufferedAudioPlayerのチャンクイベントを購読
+            this.bufferedAudioPlayer.OnChunkStarted += text => OnChunkStarted?.Invoke(text);
 
             // AudioPlaybackNodeカウント増加（既存のカウンターを流用）
             NodeChainController.IncrementAudioPlaybackNodeCount();

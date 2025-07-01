@@ -38,7 +38,7 @@ namespace AiTuber.Dify
         /// <summary>
         /// チャンク開始イベント（テキスト表示用）
         /// </summary>
-        public event Action<int, string>? OnChunkStarted;
+        public event Action<string>? OnChunkStarted;
 
         /// <summary>
         /// BufferedAudioPlayerを作成
@@ -179,7 +179,7 @@ namespace AiTuber.Dify
                     
                     // テキスト表示イベントは常に発火（音声の成功/失敗に関係なく）
                     var currentText = GetTextForChunk(i);
-                    OnChunkStarted?.Invoke(i, currentText);
+                    OnChunkStarted?.Invoke(currentText);
                     
                     if (audioClip != null)
                     {
