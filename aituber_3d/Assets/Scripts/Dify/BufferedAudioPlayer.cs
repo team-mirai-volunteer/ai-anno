@@ -11,16 +11,13 @@ using Cysharp.Threading.Tasks;
 namespace AiTuber.Dify
 {
     /// <summary>
-    /// バッファリング型音声再生プロトタイプ
-    /// チャンク化された音声の先読み再生
+    /// 並列音声再生プレイヤー
+    /// チャンク化された音声の並列ダウンロード・順次再生
     /// </summary>
     public class BufferedAudioPlayer : MonoBehaviour
     {
-        [Header("Download Strategy")]
-        [SerializeField] private bool useParallelDownload = false;
         
-        [Header("Buffer Settings")]
-        [SerializeField] private int bufferSize = 3;
+        [Header("Playback Settings")]
         [SerializeField] private float gapBetweenChunks = 0.5f;
         
         [Header("Debug")]
@@ -30,15 +27,11 @@ namespace AiTuber.Dify
         [SerializeField] private List<string> testAudioUrls = new List<string>();
         
         private AudioSource? audioSource;
-        private readonly Queue<AudioClip> audioBuffer = new Queue<AudioClip>();
-        private readonly Queue<string> pendingUrls = new Queue<string>();
         private readonly string logPrefix = "[BufferedAudioPlayer]";
         
         private bool isPlaying = false;
-        private bool isBuffering = false;
         private CancellationTokenSource? cancellationTokenSource;
         private List<string>? currentTextChunks;
-        private int currentChunkIndex;
 
         /// <summary>
         /// 再生完了イベント
@@ -103,32 +96,16 @@ namespace AiTuber.Dify
 
                 // テキストチャンクを保存
                 currentTextChunks = textChunks;
-                currentChunkIndex = 0;
 
-                // URLキューに追加
-                pendingUrls.Clear();
-                foreach (var url in audioUrls)
-                {
-                    pendingUrls.Enqueue(url);
-                }
 
                 var startTime = Time.realtimeSinceStartup;
-                if (debugLog) Debug.Log($"{logPrefix} {(useParallelDownload ? "並列" : "バッファリング")}再生開始: {audioUrls.Count}チャンク - 開始時刻: {startTime:F3}秒");
+                if (debugLog) Debug.Log($"{logPrefix} 並列再生開始: {audioUrls.Count}チャンク - 開始時刻: {startTime:F3}秒");
 
-                if (useParallelDownload)
-                {
-                    // 並列ダウンロード戦略
-                    await PlayParallelDownload(audioUrls, cancellationToken);
-                }
-                else
-                {
-                    // バッファリング戦略
-                    await InitialBuffering(cancellationToken);
-                    await PlayBufferedChunks(cancellationToken);
-                }
+                // 並列ダウンロード戦略のみ
+                await PlayParallelDownload(audioUrls, cancellationToken);
                 
                 var totalTime = Time.realtimeSinceStartup - startTime;
-                if (debugLog) Debug.Log($"{logPrefix} ★{(useParallelDownload ? "並列" : "バッファリング")}再生完了★ 総時間: {totalTime:F3}秒");
+                if (debugLog) Debug.Log($"{logPrefix} ★並列再生完了★ 総時間: {totalTime:F3}秒");
                 
                 OnPlaybackCompleted?.Invoke();
             }
@@ -143,95 +120,10 @@ namespace AiTuber.Dify
             }
             finally
             {
-                CleanupBuffers();
                 isPlaying = false;
-                isBuffering = false;
             }
         }
 
-        /// <summary>
-        /// 初期バッファリング（最初のN個をダウンロード）
-        /// </summary>
-        /// <param name="cancellationToken">キャンセレーショントークン</param>
-        private async UniTask InitialBuffering(CancellationToken cancellationToken)
-        {
-            isBuffering = true;
-            var tasks = new List<UniTask>();
-            var initialBufferCount = Math.Min(bufferSize, pendingUrls.Count);
-            var bufferStartTime = Time.realtimeSinceStartup;
-
-            if (debugLog) Debug.Log($"{logPrefix} 初期バッファリング開始: {initialBufferCount}チャンク");
-
-            for (int i = 0; i < initialBufferCount; i++)
-            {
-                if (pendingUrls.Count > 0)
-                {
-                    var url = pendingUrls.Dequeue();
-                    tasks.Add(DownloadAndBufferAudio(url, cancellationToken));
-                }
-            }
-
-            await UniTask.WhenAll(tasks);
-            isBuffering = false;
-            
-            var bufferTime = Time.realtimeSinceStartup - bufferStartTime;
-            if (debugLog) Debug.Log($"{logPrefix} 初期バッファリング完了: {audioBuffer.Count}チャンク準備完了 - バッファ時間: {bufferTime:F3}秒");
-        }
-
-        /// <summary>
-        /// バッファされたチャンクを順次再生
-        /// </summary>
-        /// <param name="cancellationToken">キャンセレーショントークン</param>
-        private async UniTask PlayBufferedChunks(CancellationToken cancellationToken)
-        {
-            isPlaying = true;
-
-            while (audioBuffer.Count > 0 || pendingUrls.Count > 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // バッファに音声があれば再生
-                if (audioBuffer.Count > 0)
-                {
-                    var audioClip = audioBuffer.Dequeue();
-                    
-                    // テキスト表示イベント発火
-                    var currentText = GetTextForChunk(currentChunkIndex);
-                    OnChunkStarted?.Invoke(currentChunkIndex, currentText);
-                    
-                    // 次のチャンクをバックグラウンドでダウンロード開始
-                    if (pendingUrls.Count > 0 && audioBuffer.Count < bufferSize - 1)
-                    {
-                        var nextUrl = pendingUrls.Dequeue();
-                        _ = DownloadAndBufferAudio(nextUrl, cancellationToken);
-                    }
-
-                    // 現在のチャンクを再生
-                    await PlayAudioClip(audioClip, cancellationToken);
-                    currentChunkIndex++;
-                    
-                    // AudioClip解放
-                    if (audioClip != null)
-                    {
-                        DestroyImmediate(audioClip);
-                    }
-
-                    // チャンク間のギャップ
-                    if (gapBetweenChunks > 0)
-                    {
-                        await UniTask.Delay(TimeSpan.FromSeconds(gapBetweenChunks), cancellationToken: cancellationToken);
-                    }
-                }
-                else
-                {
-                    // バッファが空の場合は少し待機
-                    if (debugLog) Debug.Log($"{logPrefix} バッファ待機中...");
-                    await UniTask.Delay(100, cancellationToken: cancellationToken);
-                }
-            }
-
-            if (debugLog) Debug.Log($"{logPrefix} 全チャンク再生完了");
-        }
 
         /// <summary>
         /// 並列ダウンロード戦略
@@ -245,9 +137,18 @@ namespace AiTuber.Dify
                 var downloadStartTime = Time.realtimeSinceStartup;
                 if (debugLog) Debug.Log($"{logPrefix} 並列ダウンロード開始: {audioUrls.Count}チャンク");
 
-                // 全音声を並列ダウンロード
-                var downloadTasks = audioUrls.Select(url => DownloadAudioClip(url, cancellationToken)).ToList();
-                var audioClips = await UniTask.WhenAll(downloadTasks);
+                // 全音声を並列ダウンロード（順序保持）
+                var downloadTasks = audioUrls.Select((url, index) => 
+                    DownloadAudioClip(url, cancellationToken).ContinueWith(clip => new { Index = index, Clip = clip })
+                ).ToList();
+                var downloadResults = await UniTask.WhenAll(downloadTasks);
+                
+                // 順序でソートして配列に格納
+                var audioClips = new AudioClip?[audioUrls.Count];
+                foreach (var result in downloadResults)
+                {
+                    audioClips[result.Index] = result.Clip;
+                }
 
                 var downloadTime = Time.realtimeSinceStartup - downloadStartTime;
                 if (debugLog) Debug.Log($"{logPrefix} 並列ダウンロード完了: {audioClips.Count(c => c != null)}チャンク成功 - ダウンロード時間: {downloadTime:F3}秒");
@@ -259,28 +160,29 @@ namespace AiTuber.Dify
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var audioClip = audioClips[i];
+                    
+                    // テキスト表示イベントは常に発火（音声の成功/失敗に関係なく）
+                    var currentText = GetTextForChunk(i);
+                    OnChunkStarted?.Invoke(i, currentText);
+                    
                     if (audioClip != null)
                     {
-                        // テキスト表示イベント発火
-                        var currentText = GetTextForChunk(i);
-                        OnChunkStarted?.Invoke(i, currentText);
-                        
                         if (debugLog) Debug.Log($"{logPrefix} チャンク{i + 1}/{audioClips.Length}再生開始: {currentText}");
                         
                         await PlayAudioClip(audioClip, cancellationToken);
                         
                         // AudioClip解放
                         DestroyImmediate(audioClip);
-
-                        // チャンク間のギャップ
-                        if (gapBetweenChunks > 0 && i < audioClips.Length - 1)
-                        {
-                            await UniTask.Delay(TimeSpan.FromSeconds(gapBetweenChunks), cancellationToken: cancellationToken);
-                        }
                     }
                     else
                     {
-                        Debug.LogWarning($"{logPrefix} チャンク{i + 1}のダウンロードに失敗しました");
+                        Debug.LogWarning($"{logPrefix} チャンク{i + 1}の音声ダウンロードに失敗しました（字幕のみ表示）: {currentText}");
+                    }
+
+                    // チャンク間のギャップ（音声の成功/失敗に関係なく）
+                    if (gapBetweenChunks > 0 && i < audioClips.Length - 1)
+                    {
+                        await UniTask.Delay(TimeSpan.FromSeconds(gapBetweenChunks), cancellationToken: cancellationToken);
                     }
                 }
 
@@ -338,47 +240,6 @@ namespace AiTuber.Dify
             }
         }
 
-        /// <summary>
-        /// 音声ダウンロードしてバッファに追加
-        /// </summary>
-        /// <param name="audioUrl">音声URL</param>
-        /// <param name="cancellationToken">キャンセレーショントークン</param>
-        private async UniTask DownloadAndBufferAudio(string audioUrl, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (debugLog) Debug.Log($"{logPrefix} 音声ダウンロード開始: {audioUrl}");
-
-                // 音声データダウンロード
-                using var request = UnityWebRequest.Get(audioUrl);
-                await request.SendWebRequest().WithCancellation(cancellationToken);
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"{logPrefix} 音声ダウンロードエラー: {request.error}");
-                    return;
-                }
-
-                var audioData = request.downloadHandler.data;
-                
-                // MP3からAudioClipに変換
-                var audioClip = await CreateAudioClipFromMp3(audioData, cancellationToken);
-                
-                if (audioClip != null)
-                {
-                    audioBuffer.Enqueue(audioClip);
-                    if (debugLog) Debug.Log($"{logPrefix} バッファに追加完了: {audioData.Length} bytes → バッファサイズ: {audioBuffer.Count}");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                if (debugLog) Debug.Log($"{logPrefix} 音声ダウンロードキャンセル: {audioUrl}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{logPrefix} 音声ダウンロード例外: {ex.Message}");
-            }
-        }
 
         /// <summary>
         /// MP3データからAudioClipを作成
@@ -473,28 +334,9 @@ namespace AiTuber.Dify
                 audioSource.Stop();
             }
 
-            CleanupBuffers();
             isPlaying = false;
-            isBuffering = false;
 
             if (debugLog) Debug.Log($"{logPrefix} 再生停止");
-        }
-
-        /// <summary>
-        /// バッファクリーンアップ
-        /// </summary>
-        private void CleanupBuffers()
-        {
-            while (audioBuffer.Count > 0)
-            {
-                var clip = audioBuffer.Dequeue();
-                if (clip != null)
-                {
-                    DestroyImmediate(clip);
-                }
-            }
-            
-            pendingUrls.Clear();
         }
 
         /// <summary>
@@ -503,20 +345,10 @@ namespace AiTuber.Dify
         public bool IsPlaying => isPlaying;
 
         /// <summary>
-        /// バッファリング中かどうか
+        /// テスト用並列再生
         /// </summary>
-        public bool IsBuffering => isBuffering;
-
-        /// <summary>
-        /// 現在のバッファサイズ
-        /// </summary>
-        public int CurrentBufferSize => audioBuffer.Count;
-
-        /// <summary>
-        /// テスト用バッファリング再生
-        /// </summary>
-        [ContextMenu("Test Buffered Playback")]
-        public async void TestBufferedPlayback()
+        [ContextMenu("Test Parallel Playback")]
+        public async void TestParallelPlayback()
         {
             if (audioSource == null)
             {
@@ -549,18 +381,6 @@ namespace AiTuber.Dify
             Debug.Log($"{logPrefix} テスト停止");
         }
 
-        /// <summary>
-        /// バッファ状態表示
-        /// </summary>
-        [ContextMenu("Show Buffer Status")]
-        public void ShowBufferStatus()
-        {
-            Debug.Log($"{logPrefix} バッファ状態:");
-            Debug.Log($"  - IsPlaying: {IsPlaying}");
-            Debug.Log($"  - IsBuffering: {IsBuffering}");
-            Debug.Log($"  - CurrentBufferSize: {CurrentBufferSize}");
-            Debug.Log($"  - PendingUrls: {pendingUrls.Count}");
-        }
 
         /// <summary>
         /// 指定インデックスのテキストチャンクを取得

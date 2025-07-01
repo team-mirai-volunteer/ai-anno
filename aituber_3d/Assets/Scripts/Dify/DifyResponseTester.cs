@@ -169,32 +169,28 @@ namespace AiTuber.Dify
                     return;
                 }
 
-                // text:チャンクを抽出
-                var textMatches = Regex.Matches(answer, @"text:(.+?)(?=\n(?:voice:|text:|$)|$)", RegexOptions.Singleline);
+                // text:とvoice:のペアを順序を保持して抽出
                 var textChunks = new List<string>();
-                
-                foreach (Match match in textMatches)
-                {
-                    var text = match.Groups[1].Value.Trim();
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        textChunks.Add(text);
-                    }
-                }
-
-                // voice:パスを抽出
-                var voiceMatches = Regex.Matches(answer, @"voice:(/files/.*?)(?=\n|$)");
                 var audioUrls = new List<string>();
-
+                
                 // ベースURL構築（DifyClientと同じロジック）
                 var uri = new Uri(difyUrl);
                 var baseUrl = $"{uri.Scheme}://{uri.Host}{(uri.Port != 80 && uri.Port != 443 ? $":{uri.Port}" : "")}";
 
-                foreach (Match match in voiceMatches)
+                // text:とvoice:のペアをまとめて抽出
+                var pairMatches = Regex.Matches(answer, @"text:(.+?)\nvoice:(/files/.*?)(?=\n|$)", RegexOptions.Singleline);
+                
+                foreach (Match match in pairMatches)
                 {
-                    var voicePath = match.Groups[1].Value.Trim();
-                    var fullUrl = baseUrl + voicePath;
-                    audioUrls.Add(fullUrl);
+                    var text = match.Groups[1].Value.Trim();
+                    var voicePath = match.Groups[2].Value.Trim();
+                    
+                    if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(voicePath))
+                    {
+                        textChunks.Add(text);
+                        var fullUrl = baseUrl + voicePath;
+                        audioUrls.Add(fullUrl);
+                    }
                 }
 
                 if (audioUrls.Count > 0)
