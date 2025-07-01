@@ -16,16 +16,21 @@ namespace AiTuber.Dify
             /// OneComme WebSocket URL
             /// </summary>
             public const string OneCommeUrl = "AiTuber.OneCommeUrl";
-            
+
             /// <summary>
             /// Dify API URL
             /// </summary>
             public const string DifyUrl = "AiTuber.DifyUrl";
-            
+
             /// <summary>
             /// Dify API Key
             /// </summary>
             public const string DifyApiKey = "AiTuber.DifyApiKey";
+
+            /// <summary>
+            /// Total Answer Count
+            /// </summary>
+            public const string TotalAnswerCount = "AiTuber.TotalAnswerCount";
         }
     }
 }

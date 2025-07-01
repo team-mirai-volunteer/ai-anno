@@ -11,9 +11,12 @@ namespace AiTuber
     {
         private MainUI mainUI;
 
+        private int _totalAnswerCount = 0;
+
         void Start()
         {
             mainUI = GetComponent<MainUI>();
+            _totalAnswerCount = PlayerPrefs.GetInt(Constants.PlayerPrefs.TotalAnswerCount, 0);
             SetupEventHandlers();
 
             // 初期化処理
@@ -22,6 +25,7 @@ namespace AiTuber
 
         void InitializeUI()
         {
+            mainUI.SetTotalAnswerCount(_totalAnswerCount);
             mainUI.SetQuestionerName("");
             mainUI.SetQuestionText("質問をお待ちしています...");
             mainUI.SetAnswerText("質問をお待ちしています...");
@@ -47,6 +51,10 @@ namespace AiTuber
             // 回答、スライド
             mainUI.SetAnswerText(response.TextResponse);
             mainUI.SetSlideImageUrl(response.SlideUrl);
+
+            _totalAnswerCount++;
+            mainUI.SetTotalAnswerCount(_totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
         }
 
         void OnDestroy()
