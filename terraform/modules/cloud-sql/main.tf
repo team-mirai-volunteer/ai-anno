@@ -64,6 +64,12 @@ resource "google_sql_database" "main" {
   project  = var.project_id
 }
 
+resource "google_sql_database" "dify_vector" {
+  name     = "dify_vector"
+  instance = google_sql_database_instance.main.name
+  project  = var.project_id
+}
+
 resource "google_sql_user" "main" {
   name     = "dify"
   instance = google_sql_database_instance.main.name
@@ -76,6 +82,9 @@ locals {
     CREATE EXTENSION IF NOT EXISTS vector;
     CREATE EXTENSION IF NOT EXISTS pg_trgm;
     CREATE EXTENSION IF NOT EXISTS btree_gin;
+    -- Note: pg_bigm is not available in Cloud SQL
+    -- Using pg_trgm for text search functionality
+    -- Dify application may handle Japanese text search internally
   EOT
 }
 
@@ -86,12 +95,16 @@ resource "null_resource" "init_pgvector" {
       gcloud sql import sql ${google_sql_database_instance.main.name} /tmp/init_pgvector.sql \
         --database=${google_sql_database.main.name} \
         --project=${var.project_id}
+      gcloud sql import sql ${google_sql_database_instance.main.name} /tmp/init_pgvector.sql \
+        --database=${google_sql_database.dify_vector.name} \
+        --project=${var.project_id}
       rm /tmp/init_pgvector.sql
     EOT
   }
 
   depends_on = [
     google_sql_database.main,
+    google_sql_database.dify_vector,
     google_sql_user.main
   ]
 }
