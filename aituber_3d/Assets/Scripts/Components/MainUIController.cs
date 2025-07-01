@@ -15,6 +15,7 @@ namespace AiTuber
         private int _totalAnswerCount = 0;
 
         private List<MainCommentContext> _waitComments = new();
+        private List<MainChunkedCommentContext> _waitChunkedComments = new();
 
         void Start()
         {
@@ -41,14 +42,32 @@ namespace AiTuber
             _waitComments.Add(context);
             UpdateWaitList();
         }
+
+        private void ChunkedCommentHandler(MainChunkedCommentContext context)
+        {
+            _waitChunkedComments.Add(context);
+            UpdateWaitList();
+        }
         private void UpdateWaitList()
         {
+            var totalWaitCount = _waitComments.Count + _waitChunkedComments.Count;
+            
             for (var i = 0; i < mainUI.QueueCount; i++)
             {
-                var iconUrl = i < _waitComments.Count ? _waitComments[i].Comment.data.profileImage : null;
+                string iconUrl = null;
+                
+                if (i < _waitComments.Count)
+                {
+                    iconUrl = _waitComments[i].Comment.data.profileImage;
+                }
+                else if (i - _waitComments.Count < _waitChunkedComments.Count)
+                {
+                    iconUrl = _waitChunkedComments[i - _waitComments.Count].Comment.data?.profileImage;
+                }
+                
                 mainUI.SetQueuedIcon(iconUrl, i);
             }
-            mainUI.SetQueuedQuestionCount(_waitComments.Count);
+            mainUI.SetQueuedQuestionCount(totalWaitCount);
         }
 
         private void CommentPlay(AudioPlaybackNode commentNode)
@@ -92,17 +111,36 @@ namespace AiTuber
 
         private void ChunkedCommentPlay(SubtitleAudioNode subtitleAudioNode)
         {
-            var comment = subtitleAudioNode.Comment;
+            MainChunkedCommentContext? commentContext = null;
+            foreach (var context in _waitChunkedComments)
+            {
+                if (context.AudioNode == subtitleAudioNode)
+                {
+                    commentContext = context;
+                    break;
+                }
+            }
+
+            if (commentContext == null)
+            {
+                return;
+            }
+
+            _waitChunkedComments.Remove(commentContext);
+
+            var comment = commentContext.Comment;
+            var response = commentContext.Response;
 
             // chunkedコメント再生時の処理
             // 質問、質問者名、質問者アイコン
             mainUI.SetQuestionerName(comment.data?.displayName ?? "匿名");
             mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
             mainUI.SetQuestionText(comment.data?.speechText ?? "");
-            // 回答は空（字幕で表示）、スライドはSiteUrlから取得予定
+            // 回答は空（字幕で表示）、スライドURL設定
             mainUI.SetAnswerText("");
-            // TODO: SiteUrl設定
-            // mainUI.SetSlideImageUrl(subtitleAudioNode.SiteUrl);
+            mainUI.SetSlideImageUrl(response.SiteUrl ?? "");
+
+            UpdateWaitList();
 
             _totalAnswerCount++;
             mainUI.SetTotalAnswerCount(_totalAnswerCount);
@@ -121,7 +159,7 @@ namespace AiTuber
         private void SetupEventHandlers()
         {
             DifyProcessingNode.OnCommentProcessed += CommentHandler;
-            DifyProcessingChunkedNode.OnCommentProcessed += CommentHandler;
+            DifyProcessingChunkedNode.OnCommentProcessed += ChunkedCommentHandler;
             AudioPlaybackNode.OnPlayStart += CommentPlay;
             SubtitleAudioNode.OnPlayStart += ChunkedCommentPlay;
             SubtitleAudioNode.OnChunkStarted += HandleChunkStarted;
@@ -129,7 +167,7 @@ namespace AiTuber
         private void CleanupEventHandlers()
         {
             DifyProcessingNode.OnCommentProcessed -= CommentHandler;
-            DifyProcessingChunkedNode.OnCommentProcessed -= CommentHandler;
+            DifyProcessingChunkedNode.OnCommentProcessed -= ChunkedCommentHandler;
             AudioPlaybackNode.OnPlayStart -= CommentPlay;
             SubtitleAudioNode.OnPlayStart -= ChunkedCommentPlay;
             SubtitleAudioNode.OnChunkStarted -= HandleChunkStarted;
@@ -143,6 +181,20 @@ namespace AiTuber
         public AudioPlaybackNode AudioNode { get; set; }
 
         public MainCommentContext(OneCommeComment comment, DifyBlockingResponse response, AudioPlaybackNode audioNode)
+        {
+            Comment = comment;
+            Response = response;
+            AudioNode = audioNode;
+        }
+    }
+
+    public class MainChunkedCommentContext
+    {
+        public OneCommeComment Comment { get; set; }
+        public DifyChunkedResponse Response { get; set; }
+        public SubtitleAudioNode AudioNode { get; set; }
+
+        public MainChunkedCommentContext(OneCommeComment comment, DifyChunkedResponse response, SubtitleAudioNode audioNode)
         {
             Comment = comment;
             Response = response;

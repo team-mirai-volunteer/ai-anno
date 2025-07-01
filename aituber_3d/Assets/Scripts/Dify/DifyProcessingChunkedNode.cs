@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using AiTuber;
 
 namespace AiTuber.Dify
 {
@@ -28,7 +29,7 @@ namespace AiTuber.Dify
         /// <summary>
         /// コメント処理完了イベント
         /// </summary>
-        public static event Action<MainCommentContext>? OnCommentProcessed;
+        public static event Action<MainChunkedCommentContext>? OnCommentProcessed;
 
         private readonly DifyChunkedClient difyClient;
         private readonly BufferedAudioPlayer bufferedAudioPlayer;
@@ -96,11 +97,12 @@ namespace AiTuber.Dify
                     );
 
                     if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNode作成完了: [{UserName}] チャンク数={response.ChunkCount}");
+                    
+                    // MainChunkedCommentContext作成してイベント発火（OnSubtitleAudioNodeCreatedより先に）
+                    var commentContext = new MainChunkedCommentContext(Comment, response, subtitleAudioNode);
+                    OnCommentProcessed?.Invoke(commentContext);
+                    
                     OnSubtitleAudioNodeCreated?.Invoke(subtitleAudioNode);
-
-                    // TODO: MainCommentContextをチャンク対応にする必要があるかもしれない
-                    // var commentContext = new MainCommentContext(Comment, response);
-                    // OnCommentProcessed?.Invoke(commentContext);
                 }
                 else
                 {
