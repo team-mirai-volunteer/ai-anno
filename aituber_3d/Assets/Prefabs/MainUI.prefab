@@ -451,7 +451,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "AI\u3042\u3093\u306E\u306F\u7686\u3055\u307E\u306E\u8CEA\u554F\u306E\u610F\u56F3\u3092\u6B63\u78BA\u306B\u628A\u63E1\u3067\u304D\u306A\u3044\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u8A73\u7D30\u306F\u6982\u8981\u6B04\u3092\u3054\u89A7\u304F\u3060\u3055\u3044\u3002AI\u3042\u3093\u306E\u306F\u7686\u3055\u307E\u306E"
+  m_text: "AI\u3042\u3093\u306E\u306F\u7686\u3055\u307E\u306E\u8CEA\u554F\u306E\u610F\u56F3\u3092\u6B63\u78BA\u306B\u628A\u63E1\u3067\u304D\u306A\u3044\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u8A73\u7D30\u306F\u6982\u8981\u6B04\u3092\u3054\u89A7\u304F\u3060\u3055\u3044\u3002"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7f790beb4b2f05c4692528208078a79a, type: 2}
   m_sharedMaterial: {fileID: -2524200077300313474, guid: 7f790beb4b2f05c4692528208078a79a, type: 2}
@@ -569,6 +569,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8365344587700336045}
   - component: {fileID: 7178385297715740420}
+  - component: {fileID: 7637900439362732622}
   m_Layer: 0
   m_Name: MainUI
   m_TagString: Untagged
@@ -617,6 +618,18 @@ MonoBehaviour:
   _questionText: {fileID: 7274579463610088835}
   _answerText: {fileID: 4954399535294316594}
   _slideImage: {fileID: 7447596863971594184}
+--- !u!114 &7637900439362732622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2890986035390009755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb85c92fb5a3e424384b4a5eb6eba078, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2956194477324360865
 GameObject:
   m_ObjectHideFlags: 0

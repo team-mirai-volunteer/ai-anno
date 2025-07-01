@@ -14,17 +14,22 @@ namespace AiTuber.Dify
         public OneCommeComment Comment { get; }
         public string UserName { get; }
         public DifyProcessingNode? Next { get; set; }
-        
+
         /// <summary>
         /// Dify処理チェーン完了通知イベント
         /// </summary>
         public static event Action<DifyProcessingNode>? OnDifyProcessingChainCompleted;
-        
+
         /// <summary>
         /// AudioPlaybackNode作成完了イベント
         /// </summary>
         public static event Action<AudioPlaybackNode>? OnAudioPlaybackNodeCreated;
-        
+
+        /// <summary>
+        /// コメント処理完了イベント
+        /// </summary>
+        public static event Action<MainCommentContext>? OnCommentProcessed;
+
         private readonly DifyClient difyClient;
         private readonly AudioPlayer audioPlayer;
         private readonly float audioGap;
@@ -51,7 +56,7 @@ namespace AiTuber.Dify
             this.audioGap = audioGap;
             this.difyGap = difyGap;
             debugLog = enableDebugLog;
-            
+
             // DifyProcessingNodeカウント増加
             NodeChainController.IncrementDifyProcessingNodeCount();
         }
@@ -63,21 +68,21 @@ namespace AiTuber.Dify
         public async void ProcessAndContinue(CancellationToken cancellationToken = default)
         {
             DifyProcessingNode? nextNode = null;
-            
+
             try
             {
                 if (debugLog) Debug.Log($"{logPrefix} ダウンロード処理開始: [{UserName}] {Comment.data?.comment}");
-                
+
                 // 1. キャンセルチェック
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 2. Dify処理
                 var commentText = Comment.data?.comment ?? "";
                 var response = await difyClient.SendQueryAsync(commentText, UserName);
-                
+
                 // 3. キャンセルチェック
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 4. 成功時はAudioPlaybackNode作成
                 if (response.IsSuccess)
                 {
@@ -89,9 +94,12 @@ namespace AiTuber.Dify
                         audioPlayer,
                         debugLog
                     );
-                    
+
                     if (debugLog) Debug.Log($"{logPrefix} AudioPlaybackNode作成完了: [{UserName}]");
                     OnAudioPlaybackNodeCreated?.Invoke(commentNode);
+
+                    var commentContext = new MainCommentContext(Comment, response);
+                    OnCommentProcessed?.Invoke(commentContext);
                 }
                 else
                 {
@@ -112,11 +120,11 @@ namespace AiTuber.Dify
             {
                 // 5. DifyProcessingNodeカウント減少
                 NodeChainController.DecrementDifyProcessingNodeCount();
-                
+
                 // 6. 次のノードへ継続またはチェーン終了通知
                 nextNode = Next;
                 Next = null; // 参照切断（GC対象化）
-                
+
                 // キャンセル状態でない場合のみ次のノードに継続
                 if (nextNode != null && !cancellationToken.IsCancellationRequested)
                 {
