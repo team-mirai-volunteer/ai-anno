@@ -125,7 +125,7 @@ module "compute_engine" {
   plugin_s3_bucket  = var.plugin_s3_bucket
 
   machine_type      = "e2-standard-8" # 8 vCPUs, 32GB RAM for staging
-  boot_disk_size    = 200
+  boot_disk_size    = 50
   boot_disk_type    = "pd-ssd"
   ssh_source_ranges = var.ssh_source_ranges
 }
@@ -167,9 +167,9 @@ module "load_balancer" {
   # Load balancer configuration
   domain_name         = var.domain_name
   enable_cdn          = var.enable_cdn
-  health_check_path   = "/console/api/ping"  # Dify health check endpoint
+  health_check_path   = "/console/api/ping" # Dify health check endpoint
   health_check_port   = 80
   backend_timeout_sec = 30
-  session_affinity    = "NONE"  # No session affinity for staging
+  session_affinity    = "NONE" # No session affinity for staging
 }
 
