@@ -69,21 +69,6 @@ resource "google_compute_backend_service" "backend" {
   # コネクションドレイン設定（グレースフルな終了）
   connection_draining_timeout_sec = 300  # 5分間のドレインタイム
 
-  # Enable CDN if requested
-  dynamic "cdn_policy" {
-    for_each = var.enable_cdn ? [1] : []
-    content {
-      cache_mode = "CACHE_ALL_STATIC"
-      default_ttl = 3600
-      max_ttl     = 86400
-      
-      cache_key_policy {
-        include_host         = true
-        include_protocol     = true
-        include_query_string = false
-      }
-    }
-  }
 
   log_config {
     enable      = true

@@ -46,12 +46,6 @@ variable "health_check_port" {
 }
 
 
-variable "enable_cdn" {
-  description = "Enable Cloud CDN for static content caching"
-  type        = bool
-  default     = false
-}
-
 variable "backend_timeout_sec" {
   description = "Timeout for backend requests in seconds"
   type        = number

@@ -57,11 +57,6 @@ variable "domain_name" {
 }
 
 
-variable "enable_cdn" {
-  description = "Enable Cloud CDN for static content caching"
-  type        = bool
-  default     = false
-}
 
 variable "init_password" {
   description = "Initial admin password for Dify"
