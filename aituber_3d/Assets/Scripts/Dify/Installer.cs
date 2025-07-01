@@ -138,7 +138,7 @@ namespace AiTuber.Dify
         {
             Debug.Log("[Installer] PlayerPrefs設定が必要:");
             Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.OneCommeUrl}\", \"ws://localhost:11180/\")");
-            Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.DifyUrl}\", \"https://dify.seiichirou.jp/v1/chat-messages\")");
+            Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.DifyUrl}\", \"https://your-dify-server.com/v1/chat-messages\")");
             Debug.Log($"PlayerPrefs.SetString(\"{Constants.PlayerPrefs.DifyApiKey}\", \"your-api-key-here\")");
         }
 
