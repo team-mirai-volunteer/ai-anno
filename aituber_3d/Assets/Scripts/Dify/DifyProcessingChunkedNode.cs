@@ -23,7 +23,7 @@ namespace AiTuber.Dify
         /// <summary>
         /// SubtitleAudioNode作成完了イベント
         /// </summary>
-        // public static event Action<SubtitleAudioNode>? OnSubtitleAudioNodeCreated;
+        public static event Action<SubtitleAudioNode>? OnSubtitleAudioNodeCreated;
 
         /// <summary>
         /// コメント処理完了イベント
@@ -31,6 +31,8 @@ namespace AiTuber.Dify
         public static event Action<MainCommentContext>? OnCommentProcessed;
 
         private readonly DifyChunkedClient difyClient;
+        private readonly BufferedAudioPlayer bufferedAudioPlayer;
+        private readonly float audioGap;
         private readonly float difyGap;
         private readonly bool debugLog;
         private readonly string logPrefix = "[DifyProcessingChunkedNode]";
@@ -41,13 +43,17 @@ namespace AiTuber.Dify
         /// <param name="comment">OneCommeコメント</param>
         /// <param name="userName">ユーザー名</param>
         /// <param name="difyClient">Difyチャンククライアント</param>
+        /// <param name="bufferedAudioPlayer">バッファード音声プレイヤー</param>
+        /// <param name="audioGap">音声間のギャップ</param>
         /// <param name="difyGap">Dify API呼び出し間隔</param>
         /// <param name="enableDebugLog">デバッグログ有効フラグ</param>
-        public DifyProcessingChunkedNode(OneCommeComment comment, string userName, DifyChunkedClient difyClient, float difyGap, bool enableDebugLog = false)
+        public DifyProcessingChunkedNode(OneCommeComment comment, string userName, DifyChunkedClient difyClient, BufferedAudioPlayer bufferedAudioPlayer, float audioGap, float difyGap, bool enableDebugLog = false)
         {
             Comment = comment ?? throw new ArgumentNullException(nameof(comment));
             UserName = userName ?? "匿名";
             this.difyClient = difyClient ?? throw new ArgumentNullException(nameof(difyClient));
+            this.bufferedAudioPlayer = bufferedAudioPlayer ?? throw new ArgumentNullException(nameof(bufferedAudioPlayer));
+            this.audioGap = audioGap;
             this.difyGap = difyGap;
             debugLog = enableDebugLog;
 
@@ -80,20 +86,17 @@ namespace AiTuber.Dify
                 // 4. 成功時はSubtitleAudioNode作成
                 if (response.IsSuccess && response.ChunkCount > 0)
                 {
-                    // TODO: SubtitleAudioNode実装後に有効化
-                    /*
                     var subtitleAudioNode = new SubtitleAudioNode(
                         Comment,
                         response.Chunks,
                         UserName,
+                        audioGap,
+                        bufferedAudioPlayer,
                         debugLog
                     );
 
                     if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNode作成完了: [{UserName}] チャンク数={response.ChunkCount}");
                     OnSubtitleAudioNodeCreated?.Invoke(subtitleAudioNode);
-                    */
-
-                    if (debugLog) Debug.Log($"{logPrefix} Difyチャンク処理成功: [{UserName}] チャンク数={response.ChunkCount}");
 
                     // TODO: MainCommentContextをチャンク対応にする必要があるかもしれない
                     // var commentContext = new MainCommentContext(Comment, response);

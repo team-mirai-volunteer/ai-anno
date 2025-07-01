@@ -164,14 +164,10 @@ namespace AiTuber.Dify
                 {
                     Debug.Log($"[DifyResponseTester] 音声URL抽出完了: {audioUrls.Count}チャンク");
 
-                    // BufferedAudioPlayerを初期化（必要に応じて）
-                    var audioSource = bufferedAudioPlayer.GetComponent<AudioSource>();
-                    if (audioSource == null)
-                    {
-                        audioSource = bufferedAudioPlayer.gameObject.AddComponent<AudioSource>();
-                    }
-                    bufferedAudioPlayer.Initialize(audioSource);
+                    // BufferedAudioPlayerはPure C#になったため、このテスターは非対応
+                    Debug.LogWarning("[DifyResponseTester] BufferedAudioPlayerがPure C#になったため、テスト機能は無効化されています");
 
+                    /* BufferedAudioPlayerがPure C#になったため、以下のテスト機能は無効化
                     // 字幕テキストイベント購読
                     if (subtitleText != null)
                     {
@@ -193,6 +189,7 @@ namespace AiTuber.Dify
                     }
                     
                     Debug.Log("[DifyResponseTester] 全体完了");
+                    */
                 }
                 else
                 {

@@ -82,7 +82,7 @@ namespace AiTuber.Dify
                 var responseText = request.downloadHandler.text;
                 if (debugLog) Debug.Log($"{logPrefix} レスポンス受信完了");
 
-                return await ParseResponse(responseText);
+                return ParseResponse(responseText);
             }
             catch (Exception ex)
             {
@@ -115,7 +115,7 @@ namespace AiTuber.Dify
         /// </summary>
         /// <param name="responseJson">レスポンスJSON</param>
         /// <returns>解析されたレスポンス</returns>
-        private async UniTask<DifyChunkedResponse> ParseResponse(string responseJson)
+        private DifyChunkedResponse ParseResponse(string responseJson)
         {
             try
             {
@@ -128,22 +128,24 @@ namespace AiTuber.Dify
 
                 var parsedContent = ParseAnswerContent(response.answer ?? "");
                 
-                // 各チャンクの音声をダウンロード
+                // 各チャンクの音声URLとテキストペアを作成
                 var chunks = new List<DifyChunk>();
                 for (int i = 0; i < parsedContent.TextChunks.Count; i++)
                 {
                     var textChunk = parsedContent.TextChunks[i];
-                    byte[]? audioData = null;
+                    string? audioUrl = null;
                     
                     if (i < parsedContent.VoiceUrls.Count && !string.IsNullOrEmpty(parsedContent.VoiceUrls[i]))
                     {
-                        audioData = await DownloadAudioFile(parsedContent.VoiceUrls[i]);
+                        // 相対URLを絶対URLに変換
+                        var voiceUrl = parsedContent.VoiceUrls[i];
+                        audioUrl = voiceUrl.StartsWith("http") ? voiceUrl : $"{difyBaseUrl}{voiceUrl}";
                     }
 
                     chunks.Add(new DifyChunk
                     {
                         Text = textChunk,
-                        AudioData = audioData
+                        AudioUrl = audioUrl
                     });
                 }
 
@@ -207,37 +209,6 @@ namespace AiTuber.Dify
             return result;
         }
 
-        /// <summary>
-        /// 音声ファイルダウンロード
-        /// </summary>
-        /// <param name="voiceUrl">音声ファイルURL</param>
-        /// <returns>音声データ</returns>
-        private async UniTask<byte[]?> DownloadAudioFile(string voiceUrl)
-        {
-            try
-            {
-                if (debugLog) Debug.Log($"{logPrefix} 音声ダウンロード開始: {voiceUrl}");
-
-                using var request = UnityWebRequest.Get(voiceUrl);
-                await request.SendWebRequest();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"{logPrefix} 音声ダウンロードエラー: {request.error}");
-                    return null;
-                }
-
-                var audioData = request.downloadHandler.data;
-                if (debugLog) Debug.Log($"{logPrefix} 音声ダウンロード完了: {audioData.Length} bytes");
-
-                return audioData;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"{logPrefix} 音声ダウンロード例外: {ex.Message}");
-                return null;
-            }
-        }
 
         /// <summary>
         /// リソース解放
@@ -308,16 +279,16 @@ namespace AiTuber.Dify
     }
 
     /// <summary>
-    /// Difyチャンク（テキスト+音声のペア）
+    /// Difyチャンク（テキスト+音声URLのペア）
     /// </summary>
     public class DifyChunk
     {
         public string Text { get; set; } = "";
-        public byte[]? AudioData { get; set; }
+        public string? AudioUrl { get; set; }
 
         /// <summary>
-        /// 音声データを持っているかどうか
+        /// 音声URLを持っているかどうか
         /// </summary>
-        public bool HasAudioData => AudioData != null && AudioData.Length > 0;
+        public bool HasAudioUrl => !string.IsNullOrEmpty(AudioUrl);
     }
 }

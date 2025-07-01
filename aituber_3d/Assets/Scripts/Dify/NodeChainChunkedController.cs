@@ -16,10 +16,12 @@ namespace AiTuber.Dify
         [SerializeField] private string logPrefix = "[NodeChainChunkedController]";
         [SerializeField] private int maxChainLength = 5;
         
+        private float gapBetweenAudio = 1.0f;
         private float gapBetweenDifyRequests = 15.0f;
         
         private OneCommeClient? oneCommeClient;
         private DifyChunkedClient? difyChunkedClient;
+        private BufferedAudioPlayer? bufferedAudioPlayer;
         private bool debugLog;
 
         // チャンクダウンロードチェーン管理
@@ -27,7 +29,7 @@ namespace AiTuber.Dify
         private CancellationTokenSource? downloadCancellationTokenSource;
         
         // 字幕音声再生チェーン管理
-        // private SubtitleAudioNode? lastSubtitleAudioNode = null;
+        private SubtitleAudioNode? lastSubtitleAudioNode = null;
         private CancellationTokenSource? playbackCancellationTokenSource;
         
         // ユーザーコメント累積カウンター（荒らし対策）
@@ -38,16 +40,20 @@ namespace AiTuber.Dify
         /// </summary>
         /// <param name="client">OneCommeClient</param>
         /// <param name="difyChunkedClient">DifyChunkedClient</param>
+        /// <param name="bufferedAudioPlayer">BufferedAudioPlayer</param>
+        /// <param name="audioGap">音声再生間隔</param>
         /// <param name="difyGap">Dify API呼び出し間隔</param>
         /// <param name="enableDebugLog">DebugLog有効フラグ</param>
-        public void Initialize(OneCommeClient client, DifyChunkedClient difyChunkedClient, float difyGap, bool enableDebugLog)
+        public void Initialize(OneCommeClient client, DifyChunkedClient difyChunkedClient, BufferedAudioPlayer bufferedAudioPlayer, float audioGap, float difyGap, bool enableDebugLog)
         {
             oneCommeClient = client ?? throw new ArgumentNullException(nameof(client));
             this.difyChunkedClient = difyChunkedClient ?? throw new ArgumentNullException(nameof(difyChunkedClient));
+            this.bufferedAudioPlayer = bufferedAudioPlayer ?? throw new ArgumentNullException(nameof(bufferedAudioPlayer));
+            gapBetweenAudio = audioGap;
             gapBetweenDifyRequests = difyGap;
             debugLog = enableDebugLog;
             
-            Debug.Log($"{logPrefix} 初期化完了 - DifyGap: {difyGap}秒, DebugLog: {enableDebugLog}");
+            Debug.Log($"{logPrefix} 初期化完了 - AudioGap: {audioGap}秒, DifyGap: {difyGap}秒, DebugLog: {enableDebugLog}");
         }
 
         /// <summary>
@@ -81,12 +87,12 @@ namespace AiTuber.Dify
 
             // DifyProcessingChunkedNodeイベント設定
             DifyProcessingChunkedNode.OnDifyProcessingChainCompleted += HandleDownloadChainCompleted;
-            // DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated += HandleSubtitleAudioNodeCreated;
+            DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated += HandleSubtitleAudioNodeCreated;
             if (debugLog) Debug.Log($"{logPrefix} DifyProcessingChunkedNodeイベント設定完了");
             
-            // SubtitleAudioNode完了イベント設定（未実装）
-            // SubtitleAudioNode.OnChainCompleted += HandleSubtitleAudioChainCompleted;
-            // if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNodeイベント設定完了");
+            // SubtitleAudioNode完了イベント設定
+            SubtitleAudioNode.OnChainCompleted += HandleSubtitleAudioChainCompleted;
+            if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNodeイベント設定完了");
         }
 
         /// <summary>
@@ -102,12 +108,14 @@ namespace AiTuber.Dify
                 var userName = comment.data?.name ?? "匿名";
                 
                 // DifyProcessingChunkedNode作成してチェーンに追加
-                if (difyChunkedClient != null)
+                if (difyChunkedClient != null && bufferedAudioPlayer != null)
                 {
                     var downloadNode = new DifyProcessingChunkedNode(
                         comment,
                         userName,
                         difyChunkedClient,
+                        bufferedAudioPlayer,
+                        gapBetweenAudio,
                         gapBetweenDifyRequests,
                         debugLog
                     );
@@ -160,7 +168,6 @@ namespace AiTuber.Dify
         /// DifyProcessingChunkedNodeからSubtitleAudioNode作成完了イベントハンドラー
         /// </summary>
         /// <param name="subtitleAudioNode">作成されたSubtitleAudioNode</param>
-        /*
         private void HandleSubtitleAudioNodeCreated(SubtitleAudioNode subtitleAudioNode)
         {
             try
@@ -174,13 +181,11 @@ namespace AiTuber.Dify
                 Debug.LogError($"{logPrefix} SubtitleAudioNode作成イベント処理エラー: {ex.Message}");
             }
         }
-        */
 
         /// <summary>
         /// SubtitleAudioNodeを字幕音声再生チェーンに追加
         /// </summary>
         /// <param name="newNode">追加する字幕音声ノード</param>
-        /*
         private void AddToSubtitleAudioChain(SubtitleAudioNode newNode)
         {
             if (lastSubtitleAudioNode != null)
@@ -198,7 +203,6 @@ namespace AiTuber.Dify
 
             lastSubtitleAudioNode = newNode;
         }
-        */
 
         /// <summary>
         /// ダウンロードチェーン完了イベントハンドラー
@@ -217,7 +221,6 @@ namespace AiTuber.Dify
         /// 字幕音声再生チェーン完了イベントハンドラー
         /// </summary>
         /// <param name="completedNode">完了した字幕音声ノード</param>
-        /*
         private void HandleSubtitleAudioChainCompleted(SubtitleAudioNode completedNode)
         {
             if (lastSubtitleAudioNode == completedNode)
@@ -226,7 +229,6 @@ namespace AiTuber.Dify
                 if (debugLog) Debug.Log($"{logPrefix} 字幕音声再生チェーン完了");
             }
         }
-        */
 
         /// <summary>
         /// ダウンロードチェーンをキャンセル
@@ -256,7 +258,7 @@ namespace AiTuber.Dify
                 
                 playbackCancellationTokenSource.Dispose();
                 playbackCancellationTokenSource = new CancellationTokenSource();
-                // lastSubtitleAudioNode = null;
+                lastSubtitleAudioNode = null;
             }
         }
         
@@ -281,8 +283,8 @@ namespace AiTuber.Dify
             
             // イベント解除
             DifyProcessingChunkedNode.OnDifyProcessingChainCompleted -= HandleDownloadChainCompleted;
-            // DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated -= HandleSubtitleAudioNodeCreated;
-            // SubtitleAudioNode.OnChainCompleted -= HandleSubtitleAudioChainCompleted;
+            DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated -= HandleSubtitleAudioNodeCreated;
+            SubtitleAudioNode.OnChainCompleted -= HandleSubtitleAudioChainCompleted;
             
             // チェーンをキャンセルしてクリア
             downloadCancellationTokenSource?.Cancel();
@@ -294,7 +296,7 @@ namespace AiTuber.Dify
             playbackCancellationTokenSource = null;
             
             lastDifyProcessingChunkedNode = null;
-            // lastSubtitleAudioNode = null;
+            lastSubtitleAudioNode = null;
             
             if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステムリソース解放完了");
         }

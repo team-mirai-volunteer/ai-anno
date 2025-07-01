@@ -26,6 +26,7 @@ namespace AiTuber.Dify
 
         private DifyClient? difyClient;
         private DifyChunkedClient? difyChunkedClient;
+        private BufferedAudioPlayer? bufferedAudioPlayer;
 
         /// <summary>
         /// 初期化フラグ
@@ -117,10 +118,16 @@ namespace AiTuber.Dify
                 // DifyChunkedClient作成
                 difyChunkedClient = new DifyChunkedClient(difyUrl, apiKey, enableDebugLogging);
 
-                // NodeChainChunkedControllerの依存関係構築
-                if (oneCommeClient != null && nodeChainChunkedController != null)
+                // BufferedAudioPlayer作成
+                if (audioSource != null)
                 {
-                    nodeChainChunkedController.Initialize(oneCommeClient, difyChunkedClient, gapBetweenDifyRequests, enableDebugLogging);
+                    bufferedAudioPlayer = new BufferedAudioPlayer(audioSource, gapBetweenAudio, enableDebugLogging);
+                }
+
+                // NodeChainChunkedControllerの依存関係構築
+                if (oneCommeClient != null && nodeChainChunkedController != null && bufferedAudioPlayer != null)
+                {
+                    nodeChainChunkedController.Initialize(oneCommeClient, difyChunkedClient, bufferedAudioPlayer, gapBetweenAudio, gapBetweenDifyRequests, enableDebugLogging);
                 }
 
                 IsInitialized = true;

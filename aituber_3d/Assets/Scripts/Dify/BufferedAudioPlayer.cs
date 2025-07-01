@@ -14,19 +14,10 @@ namespace AiTuber.Dify
     /// 並列音声再生プレイヤー
     /// チャンク化された音声の並列ダウンロード・順次再生
     /// </summary>
-    public class BufferedAudioPlayer : MonoBehaviour
+    public class BufferedAudioPlayer
     {
-        
-        [Header("Playback Settings")]
-        [SerializeField] private float gapBetweenChunks = 1.0f;
-        [Tooltip("0秒だと音声重複の可能性あり。1秒推奨。")]
-        
-        [Header("Debug")]
-        [SerializeField] private bool debugLog = true;
-        
-        [Header("Test Settings")]
-        [SerializeField] private List<string> testAudioUrls = new List<string>();
-        
+        private readonly float gapBetweenChunks;
+        private readonly bool debugLog;
         private AudioSource? audioSource;
         private readonly string logPrefix = "[BufferedAudioPlayer]";
         
@@ -50,22 +41,28 @@ namespace AiTuber.Dify
         public event Action<int, string>? OnChunkStarted;
 
         /// <summary>
-        /// 初期化
+        /// BufferedAudioPlayerを作成
         /// </summary>
         /// <param name="audioSourceComponent">AudioSourceコンポーネント</param>
-        public void Initialize(AudioSource audioSourceComponent)
+        /// <param name="gapBetweenChunks">チャンク間のギャップ（秒）</param>
+        /// <param name="enableDebugLog">デバッグログ有効フラグ</param>
+        public BufferedAudioPlayer(AudioSource audioSourceComponent, float gapBetweenChunks = 1.0f, bool enableDebugLog = false)
         {
             audioSource = audioSourceComponent ?? throw new ArgumentNullException(nameof(audioSourceComponent));
-            if (debugLog) Debug.Log($"{logPrefix} 初期化完了");
+            this.gapBetweenChunks = gapBetweenChunks;
+            debugLog = enableDebugLog;
+            
+            if (debugLog) Debug.Log($"{logPrefix} 初期化完了 - ギャップ: {gapBetweenChunks}秒");
         }
 
         /// <summary>
         /// バッファリング再生開始
         /// </summary>
         /// <param name="audioUrls">音声URLリスト</param>
-        public async UniTask PlayBufferedAsync(List<string> audioUrls)
+        /// <param name="cancellationToken">キャンセレーショントークン</param>
+        public async UniTask PlayBufferedAsync(List<string> audioUrls, CancellationToken cancellationToken = default)
         {
-            await PlayBufferedAsync(audioUrls, null);
+            await PlayBufferedAsync(audioUrls, null, cancellationToken);
         }
 
         /// <summary>
@@ -73,7 +70,8 @@ namespace AiTuber.Dify
         /// </summary>
         /// <param name="audioUrls">音声URLリスト</param>
         /// <param name="textChunks">対応するテキストチャンクリスト</param>
-        public async UniTask PlayBufferedAsync(List<string> audioUrls, List<string>? textChunks)
+        /// <param name="cancellationToken">キャンセレーショントークン</param>
+        public async UniTask PlayBufferedAsync(List<string> audioUrls, List<string>? textChunks, CancellationToken cancellationToken = default)
         {
             if (audioSource == null)
             {
@@ -93,7 +91,10 @@ namespace AiTuber.Dify
                 StopPlayback();
                 
                 cancellationTokenSource = new CancellationTokenSource();
-                var cancellationToken = cancellationTokenSource.Token;
+                
+                // 外部キャンセルトークンと内部キャンセルトークンを結合
+                using var combinedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cancellationTokenSource.Token);
+                var combinedToken = combinedTokenSource.Token;
 
                 // テキストチャンクを保存
                 currentTextChunks = textChunks;
@@ -103,7 +104,7 @@ namespace AiTuber.Dify
                 if (debugLog) Debug.Log($"{logPrefix} 並列再生開始: {audioUrls.Count}チャンク - 開始時刻: {startTime:F3}秒");
 
                 // 並列ダウンロード戦略のみ
-                await PlayParallelDownload(audioUrls, cancellationToken);
+                await PlayParallelDownload(audioUrls, combinedToken);
                 
                 var totalTime = Time.realtimeSinceStartup - startTime;
                 if (debugLog) Debug.Log($"{logPrefix} ★並列再生完了★ 総時間: {totalTime:F3}秒");
@@ -187,7 +188,7 @@ namespace AiTuber.Dify
                         await PlayAudioClip(audioClip, cancellationToken);
                         
                         // AudioClip解放
-                        DestroyImmediate(audioClip);
+                        UnityEngine.Object.DestroyImmediate(audioClip);
                     }
                     else
                     {
@@ -360,44 +361,6 @@ namespace AiTuber.Dify
         public bool IsPlaying => isPlaying;
 
         /// <summary>
-        /// テスト用並列再生
-        /// </summary>
-        [ContextMenu("Test Parallel Playback")]
-        public async void TestParallelPlayback()
-        {
-            if (audioSource == null)
-            {
-                audioSource = GetComponent<AudioSource>();
-                if (audioSource == null)
-                {
-                    Debug.LogError($"{logPrefix} AudioSourceコンポーネントが見つかりません");
-                    return;
-                }
-                Initialize(audioSource);
-            }
-
-            if (testAudioUrls.Count == 0)
-            {
-                Debug.LogWarning($"{logPrefix} テスト用音声URLが設定されていません");
-                return;
-            }
-
-            Debug.Log($"{logPrefix} テスト開始: {testAudioUrls.Count}チャンク");
-            await PlayBufferedAsync(testAudioUrls);
-        }
-
-        /// <summary>
-        /// テスト停止
-        /// </summary>
-        [ContextMenu("Stop Test Playback")]
-        public void StopTestPlayback()
-        {
-            StopPlayback();
-            Debug.Log($"{logPrefix} テスト停止");
-        }
-
-
-        /// <summary>
         /// 指定インデックスのテキストチャンクを取得
         /// </summary>
         /// <param name="index">チャンクインデックス</param>
@@ -412,9 +375,9 @@ namespace AiTuber.Dify
         }
 
         /// <summary>
-        /// MonoBehaviour破棄時のクリーンアップ
+        /// リソース解放
         /// </summary>
-        private void OnDestroy()
+        public void Dispose()
         {
             StopPlayback();
         }
