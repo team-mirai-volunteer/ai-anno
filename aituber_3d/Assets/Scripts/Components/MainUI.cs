@@ -23,6 +23,8 @@ namespace AiTuber
         [SerializeField] private GameObject _settingsUI = null;
         [SerializeField] private float _longPressDuration = 2.0f;
 
+        public int QueueCount => _queuedIcons.Length;
+
         private bool _isPointerDown = false;
         private float _pointerDownTime = 0f;
         private void Update()
