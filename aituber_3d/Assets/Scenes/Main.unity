@@ -381,9 +381,9 @@ MonoBehaviour:
   onLipSyncUpdate:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 595878150}
+      - m_Target: {fileID: 595878156}
         m_TargetAssemblyTypeName: uLipSync.uLipSyncBlendShape, uLipSync.Runtime
-        m_MethodName: 
+        m_MethodName: OnLipSyncUpdate
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
