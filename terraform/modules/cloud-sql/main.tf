@@ -15,6 +15,7 @@ resource "google_sql_database_instance" "main" {
     disk_type         = "PD_SSD"
     disk_size         = var.disk_size
     disk_autoresize   = true
+    edition           = "ENTERPRISE"
 
     backup_configuration {
       enabled                        = true
