@@ -89,3 +89,9 @@ variable "plugin_s3_secret_key" {
   type        = string
   sensitive   = true
 }
+
+variable "manifest_service_account_json" {
+  description = "Manifest images service account JSON"
+  type        = string
+  sensitive   = true
+}

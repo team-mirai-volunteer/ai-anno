@@ -338,3 +338,25 @@ resource "google_secret_manager_secret_iam_member" "vm_access_plugin_s3_secret_k
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.vm_service_account_email}"
 }
+
+# Manifest service account JSON
+resource "google_secret_manager_secret" "manifest_service_account" {
+  secret_id = "${var.project_name}-manifest-sa-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "manifest_service_account" {
+  secret      = google_secret_manager_secret.manifest_service_account.id
+  secret_data = var.manifest_service_account_json
+}
+

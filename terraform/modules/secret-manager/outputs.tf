@@ -22,3 +22,8 @@ output "plugin_inner_api_key_secret_id" {
   description = "Secret Manager secret ID for plugin inner API key"
   value       = google_secret_manager_secret.plugin_inner_api_key.id
 }
+
+output "manifest_service_account_secret_id" {
+  description = "Secret Manager secret ID for manifest service account"
+  value       = google_secret_manager_secret.manifest_service_account.id
+}

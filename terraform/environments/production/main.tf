@@ -137,19 +137,20 @@ module "secret_manager" {
   project_name = var.project_name
   environment  = local.environment
 
-  database_password        = module.cloud_sql.database_password
-  dify_secret_key          = var.dify_secret_key
-  gcs_service_account_json = module.storage.gcs_service_account_json
-  plugin_daemon_key        = random_password.plugin_daemon_key.result
-  plugin_inner_api_key     = random_password.plugin_dify_inner_api_key.result
-  server_key               = var.dify_server_key
-  dify_inner_api_key       = random_password.dify_inner_api_key.result
-  vm_service_account_email = module.compute_engine.service_account_email
-  init_password            = var.init_password
-  redis_password           = random_password.redis_password.result
-  code_execution_api_key   = random_password.code_execution_api_key.result
-  plugin_s3_access_key     = var.plugin_s3_access_key
-  plugin_s3_secret_key     = var.plugin_s3_secret_key
+  database_password             = module.cloud_sql.database_password
+  dify_secret_key               = var.dify_secret_key
+  gcs_service_account_json      = module.storage.gcs_service_account_json
+  plugin_daemon_key             = random_password.plugin_daemon_key.result
+  plugin_inner_api_key          = random_password.plugin_dify_inner_api_key.result
+  server_key                    = var.dify_server_key
+  dify_inner_api_key            = random_password.dify_inner_api_key.result
+  vm_service_account_email      = module.compute_engine.service_account_email
+  init_password                 = var.init_password
+  redis_password                = random_password.redis_password.result
+  code_execution_api_key        = random_password.code_execution_api_key.result
+  plugin_s3_access_key          = var.plugin_s3_access_key
+  plugin_s3_secret_key          = var.plugin_s3_secret_key
+  manifest_service_account_json = module.storage.manifest_service_account_json
 }
 
 module "load_balancer" {
