@@ -327,10 +327,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: ArtSection
       objectReference: {fileID: 0}
-    - target: {fileID: 8878015044227392204, guid: 42f4c891bc5e54733bc7b6ac8c73b325, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: a91569ba32cf5c848a99c3ac692f7350, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
