@@ -6,6 +6,7 @@ using TMPro;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using System.Linq;
+using System;
 
 namespace AiTuber
 {
@@ -22,6 +23,10 @@ namespace AiTuber
         [SerializeField] private RawImage _slideImage = null;
         [SerializeField] private GameObject _settingsUI = null;
         [SerializeField] private float _longPressDuration = 2.0f;
+
+        private string _questionerIconUrl = null;
+        private string[] _queuedIconUrls = null;
+        private string _slideImageUrl = null;
 
         public int QueueCount => _queuedIcons.Length;
 
@@ -59,10 +64,23 @@ namespace AiTuber
 
         public void SetQuestionerIconUrl(string url)
         {
-            LoadImage(url, _questionerIcon);
+            // Debug.Log($"MainUI.SetQuestionerIconUrl called with URL: {url}");
+            _questionerIconUrl = url;
+            LoadImage(url, texture =>
+            {
+                if (_questionerIconUrl == url)
+                {
+                    _questionerIcon.texture = texture;
+                }
+                else
+                {
+                    Debug.LogWarning($"Questioner icon URL mismatch: expected {_questionerIconUrl}, got {url}");
+                }
+            });
         }
         public void SetQuestionerName(string name)
         {
+            // Debug.Log($"MainUI.SetQuestionerName called with Name: {name}");
             _questionerName.text = name;
         }
         public void SetTotalAnswerCount(int count)
@@ -71,16 +89,29 @@ namespace AiTuber
         }
         public void SetQueuedQuestionCount(int count)
         {
+            // Debug.Log($"MainUI.SetQueuedQuestionCount called with count: {count}");
             _queuedQuestionCountText.text = count.ToString("N0");
         }
         public void SetQueuedIcon(string url, int index)
         {
+            // Debug.Log($"MainUI.SetQueuedIcon called with URL: {url}, Index: {index}");
             if (index < 0 || index >= _queuedIcons.Length)
             {
                 Debug.LogWarning($"Index out of bounds for queued icons. Index: {index}, Length: {_queuedIcons.Length}");
                 return;
             }
-            LoadImage(url, _queuedIcons[index]);
+            _queuedIconUrls[index] = url;
+            LoadImage(url, texture =>
+            {
+                if (_queuedIconUrls[index] == url)
+                {
+                    _queuedIcons[index].texture = texture;
+                }
+                else
+                {
+                    Debug.LogWarning($"Queued icon URL mismatch: expected {_queuedIconUrls[index]}, got {url}");
+                }
+            });
         }
         public void SetQuestionText(string text)
         {
@@ -92,24 +123,46 @@ namespace AiTuber
         }
         public void SetSlideImageUrl(string url)
         {
-            LoadImage(url, _slideImage);
+            // Debug.Log($"MainUI.SetSlideImageUrl called with URL: {url}");
+            _slideImageUrl = url;
+            LoadImage(url, texture =>
+            {
+                if (_slideImageUrl == url)
+                {
+                    _slideImage.texture = texture;
+                }
+                else
+                {
+                    Debug.LogWarning($"Slide image URL mismatch: expected {_slideImageUrl}, got {url}");
+                }
+            });
         }
-        private async void LoadImage(string url, RawImage targetImage)
+        private async void LoadImage(string url, Action<Texture2D> onCompleted)
         {
             if (string.IsNullOrEmpty(url))
             {
-                targetImage.texture = null;
+                onCompleted?.Invoke(null);
                 return;
             }
 
             var texture = await LoadImageAsync(url);
             if (texture != null)
             {
-                targetImage.texture = texture;
+                onCompleted?.Invoke(texture);
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to load image from URL: {url}");
+                onCompleted?.Invoke(null);
             }
         }
 
         private Dictionary<string, Texture2D> _imageCache = new();
+
+        private void Awake()
+        {
+            _queuedIconUrls = new string[_queuedIcons.Length];
+        }
 
         private void Start()
         {
