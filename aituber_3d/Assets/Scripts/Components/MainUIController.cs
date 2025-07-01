@@ -47,7 +47,7 @@ namespace AiTuber
             // コメント再生時の処理
             // 質問、質問者名、質問者アイコン
             mainUI.SetQuestionerName(comment.data.displayName ?? "匿名");
-            mainUI.SetQuestionerIconUrl(comment.data.iconUrl);
+            mainUI.SetQuestionerIconUrl(comment.data.profileImage);
             mainUI.SetQuestionText(comment.data.comment);
             // 回答、スライド
             mainUI.SetAnswerText(response.TextResponse);

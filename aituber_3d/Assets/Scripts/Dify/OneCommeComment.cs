@@ -26,5 +26,6 @@ namespace AiTuber.Dify
         public string? service { get; set; }
         public string? iconUrl { get; set; }
         public string? timestamp { get; set; }
+        public string? profileImage { get; set; }
     }
 }
