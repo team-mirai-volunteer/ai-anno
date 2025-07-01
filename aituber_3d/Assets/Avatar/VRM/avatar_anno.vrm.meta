@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 92cd11c35b23fa942a3a24e7a8a87c56
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: mat_anno_cloth_01
+    second: {fileID: 2100000, guid: 6abf3821b596a964f9c64b833805d393, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: mat_anno_tasuki_01
+    second: {fileID: 2100000, guid: ff65719b7f78a434b9cb6796872b9710, type: 2}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: f66ead3390398f443aa127b741826ad9, type: 3}
+  MigrateToVrm1: 0
+  RenderPipeline: 0

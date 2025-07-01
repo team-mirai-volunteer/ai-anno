@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: mat_anno_tasuki_01
+  m_Shader: {fileID: 4800000, guid: 51b2dee0ab07bd84d8147601ff89e511, type: 3}
+  m_Parent: {fileID: 2100000, guid: 6abf3821b596a964f9c64b833805d393, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - AUTO_KEY_VALUE
+  - GEOM_TYPE_LEAF
+  - _GLOSSYREFLECTIONS_OFF
+  - _METALLICGLOSSMAP
+  - _REQUIRE_UV2
+  m_InvalidKeywords:
+  - _ALPHATEST_ON
+  - _MTOON_EMISSIVEMAP
+  - _MTOON_OUTLINE_WORLD
+  - _MTOON_RIMMAP
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: _Reflectance _RimBlur _RimEnableLighting _RimShadeBlur _RimShadeNormalStrength
+    _SpecularNormalStrength
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseColorMap:
+        m_Texture: {fileID: 2800000, guid: 2c3f4aefa3f507347952219a33daf3dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 2c3f4aefa3f507347952219a33daf3dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 2c3f4aefa3f507347952219a33daf3dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OutlineTex:
+        m_Texture: {fileID: 2800000, guid: 2c3f4aefa3f507347952219a33daf3dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionColorTex:
+        m_Texture: {fileID: 2800000, guid: fc283391e88a02941af5c0993e758266, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RimColorTex:
+        m_Texture: {fileID: 2800000, guid: 2c3f4aefa3f507347952219a33daf3dd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShadowBorderMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Anisotropy2Reflection: 1
+    - _AnisotropyBitangentWidth: 7.21
+    - _AnisotropyShiftNoiseScale: -0.42
+    - _AnisotropySpecularStrength: 10
+    - _AnisotropyTangentWidth: 1.76
+    - _ApplyReflection: 0
+    - _ApplySpecularFA: 0
+    - _Cull: 0
+    - _OutlineWidth: 0.2
+    - _RimShadeBorder: 0.5
+    - _RimShadeFresnelPower: 1
+    - _RimShadowMask: 1
+    - _Smoothness: 0.5
+    - _SpecularBlur: 0.067
+    - _SpecularBorder: 0.85
+    - _SpecularToon: 1
+    - _UseAnisotropy: 0
+    - _UseBumpMap: 0
+    - _UseGlitter: 0
+    - _UseReflection: 1
+    - _UseRim: 1
+    - _UseRimShade: 1
+    - _UseShadow: 1
+    m_Colors:
+    - _OutlineColor: {r: 0.21104558, g: 0.19228373, b: 0.2735849, a: 1}
+    - _ReflectionColor: {r: 1, g: 0.96330327, b: 0.8443396, a: 0.15}
+    - _RimColor: {r: 0.8689176, g: 0.8443396, b: 1, a: 0}
+    - _RimShadeColor: {r: 0.79872733, g: 0.8773585, b: 0.85283047, a: 1}
+    - _ShadowColor: {r: 0.6465379, g: 0.7607817, b: 0.8207547, a: 1}
+  m_BuildTextureStacks: []
