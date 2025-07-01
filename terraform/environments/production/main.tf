@@ -44,10 +44,10 @@ module "networking" {
   region       = var.region
   environment  = local.environment
 
-  subnet_cidr              = "10.0.0.0/24"
-  services_cidr            = "10.1.0.0/20"
-  pods_cidr                = "10.2.0.0/16"
-  connector_cidr           = "10.8.0.0/28"
+  subnet_cidr              = "10.10.0.0/24"
+  services_cidr            = "10.11.0.0/20"
+  pods_cidr                = "10.12.0.0/16"
+  connector_cidr           = "10.18.0.0/28"
   connector_min_instances  = 2
   connector_max_instances  = 10
   connector_max_throughput = 1000
@@ -125,7 +125,7 @@ module "compute_engine" {
   plugin_s3_bucket  = var.plugin_s3_bucket
 
   machine_type      = "e2-standard-8" # 8 vCPUs, 32GB RAM for production
-  boot_disk_size    = 200
+  boot_disk_size    = 50
   boot_disk_type    = "pd-ssd"
   ssh_source_ranges = var.ssh_source_ranges
 }
@@ -167,9 +167,9 @@ module "load_balancer" {
   # Load balancer configuration
   domain_name         = var.domain_name
   enable_cdn          = var.enable_cdn
-  health_check_path   = "/console/api/ping"  # Dify health check endpoint
+  health_check_path   = "/console/api/ping" # Dify health check endpoint
   health_check_port   = 80
   backend_timeout_sec = 30
-  session_affinity    = "NONE"  # No session affinity for production
+  session_affinity    = "NONE" # No session affinity for production
 }
 
