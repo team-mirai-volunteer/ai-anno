@@ -150,7 +150,7 @@ module "secret_manager" {
   code_execution_api_key        = random_password.code_execution_api_key.result
   plugin_s3_access_key          = var.plugin_s3_access_key
   plugin_s3_secret_key          = var.plugin_s3_secret_key
-  manifest_service_account_json = module.storage.manifest_service_account_json
+  manifest_service_account_json = module.storage.manifest_images_service_account_json
 }
 
 module "load_balancer" {
