@@ -34,9 +34,6 @@ namespace AiTuber.Dify
         [SerializeField] private string testMessage = "こんにちは";
         [SerializeField] private string userName = "テストユーザー";
         
-        [Header("Output Settings")]
-        [SerializeField] private string outputFilePath = "dify_response.json";
-        
         [Header("Audio Playback")]
         [SerializeField] private BufferedAudioPlayer? bufferedAudioPlayer;
         
@@ -62,7 +59,8 @@ namespace AiTuber.Dify
             }
 
             testStartTime = Time.realtimeSinceStartup;
-            Debug.Log($"<color=cyan>[DifyResponseTester] 🚀 Difyテスト開始: {testMessage} - 開始時刻: {testStartTime:F3}秒</color>");
+            Debug.Log($"[DifyResponseTester] Difyテスト開始: {testMessage}");
+            
             await SendDifyRequest();
         }
 
@@ -82,7 +80,6 @@ namespace AiTuber.Dify
                 };
 
                 var jsonData = JsonConvert.SerializeObject(requestData);
-                Debug.Log($"[DifyResponseTester] 送信JSON: {jsonData}");
                 var bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
 
                 using (var request = new UnityWebRequest(difyUrl, "POST"))
@@ -92,58 +89,28 @@ namespace AiTuber.Dify
                     request.SetRequestHeader("Content-Type", "application/json");
                     request.SetRequestHeader("Authorization", $"Bearer {apiKey}");
 
-                    Debug.Log("[DifyResponseTester] リクエスト送信中...");
                     await request.SendWebRequest();
 
                     if (request.result == UnityWebRequest.Result.Success)
                     {
                         var responseText = request.downloadHandler.text;
-                        var responseTime = Time.realtimeSinceStartup - testStartTime;
-                        Debug.Log($"<color=yellow>[DifyResponseTester] 📥 レスポンス取得成功: {responseText.Length} 文字 - API応答時間: {responseTime:F3}秒</color>");
-                        
-                        SaveResponseToFile(responseText);
+                        Debug.Log("[DifyResponseTester] レスポンス取得成功");
                         
                         // 音声URLを抽出してバッファリング再生
                         await ProcessAudioPlayback(responseText);
                     }
                     else
                     {
-                        var errorMessage = $"リクエスト失敗: {request.error} (Code: {request.responseCode})";
-                        Debug.LogError($"[DifyResponseTester] {errorMessage}");
-                        
-                        var errorResponse = request.downloadHandler?.text ?? "レスポンスなし";
-                        SaveResponseToFile($"{{\"error\": \"{errorMessage}\", \"response\": \"{errorResponse}\"}}");
+                        Debug.LogError($"[DifyResponseTester] リクエスト失敗: {request.error} (Code: {request.responseCode})");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[DifyResponseTester] 例外発生: {ex.Message}");
-                SaveResponseToFile($"{{\"exception\": \"{ex.Message}\"}}");
             }
         }
 
-        /// <summary>
-        /// レスポンスをファイルに保存
-        /// </summary>
-        /// <param name="responseText">レスポンステキスト</param>
-        private void SaveResponseToFile(string responseText)
-        {
-            try
-            {
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var fileName = $"{timestamp}_{outputFilePath}";
-                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                var filePath = Path.Combine(desktopPath, fileName);
-                
-                File.WriteAllText(filePath, responseText, System.Text.Encoding.UTF8);
-                Debug.Log($"[DifyResponseTester] レスポンス保存完了: {filePath}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[DifyResponseTester] ファイル保存失敗: {ex.Message}");
-            }
-        }
 
         /// <summary>
         /// 音声再生処理
@@ -195,15 +162,7 @@ namespace AiTuber.Dify
 
                 if (audioUrls.Count > 0)
                 {
-                    Debug.Log($"[DifyResponseTester] 音声URL抽出完了: {audioUrls.Count}チャンク、テキストチャンク: {textChunks.Count}");
-                    foreach (var url in audioUrls)
-                    {
-                        Debug.Log($"[DifyResponseTester] 音声URL: {url}");
-                    }
-                    foreach (var text in textChunks)
-                    {
-                        Debug.Log($"[DifyResponseTester] テキスト: {text}");
-                    }
+                    Debug.Log($"[DifyResponseTester] 音声URL抽出完了: {audioUrls.Count}チャンク");
 
                     // BufferedAudioPlayerを初期化（必要に応じて）
                     var audioSource = bufferedAudioPlayer.GetComponent<AudioSource>();
@@ -221,9 +180,7 @@ namespace AiTuber.Dify
                     }
 
                     // バッファリング再生開始（テキスト同期対応）
-                    var audioStartTime = Time.realtimeSinceStartup;
-                    var timeToAudioStart = audioStartTime - testStartTime;
-                    Debug.Log($"<color=green>[DifyResponseTester] 🎵 字幕付きバッファリング再生開始 - 会話開始までの時間: {timeToAudioStart:F3}秒</color>");
+                    Debug.Log("[DifyResponseTester] 字幕付きバッファリング再生開始");
                     
                     // テキストチャンクがあれば字幕付きで再生、なければ音声のみ
                     if (textChunks.Count > 0)
@@ -235,8 +192,7 @@ namespace AiTuber.Dify
                         await bufferedAudioPlayer.PlayBufferedAsync(audioUrls);
                     }
                     
-                    var totalTime = Time.realtimeSinceStartup - testStartTime;
-                    Debug.Log($"<color=lime>[DifyResponseTester] ✅ 全体完了 - 総時間: {totalTime:F3}秒</color>");
+                    Debug.Log("[DifyResponseTester] 全体完了");
                 }
                 else
                 {
@@ -259,7 +215,6 @@ namespace AiTuber.Dify
             if (subtitleText != null)
             {
                 subtitleText.text = text;
-                Debug.Log($"[DifyResponseTester] 字幕更新: {text}");
             }
         }
 
@@ -271,7 +226,6 @@ namespace AiTuber.Dify
             if (subtitleText != null)
             {
                 subtitleText.text = "";
-                Debug.Log("[DifyResponseTester] 字幕クリア");
             }
         }
 

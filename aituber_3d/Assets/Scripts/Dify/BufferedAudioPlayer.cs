@@ -18,7 +18,8 @@ namespace AiTuber.Dify
     {
         
         [Header("Playback Settings")]
-        [SerializeField] private float gapBetweenChunks = 0.5f;
+        [SerializeField] private float gapBetweenChunks = 1.0f;
+        [Tooltip("0秒だと音声重複の可能性あり。1秒推奨。")]
         
         [Header("Debug")]
         [SerializeField] private bool debugLog = true;
@@ -138,6 +139,15 @@ namespace AiTuber.Dify
                 if (debugLog) Debug.Log($"{logPrefix} 並列ダウンロード開始: {audioUrls.Count}チャンク");
 
                 // 全音声を並列ダウンロード（順序保持）
+                if (debugLog)
+                {
+                    Debug.Log($"{logPrefix} === 音声URL順序確認 ===");
+                    for (int i = 0; i < audioUrls.Count; i++)
+                    {
+                        Debug.Log($"{logPrefix} [{i}]: {audioUrls[i]}");
+                    }
+                }
+                
                 var downloadTasks = audioUrls.Select((url, index) => 
                     DownloadAudioClip(url, cancellationToken).ContinueWith(clip => new { Index = index, Clip = clip })
                 ).ToList();
@@ -148,6 +158,11 @@ namespace AiTuber.Dify
                 foreach (var result in downloadResults)
                 {
                     audioClips[result.Index] = result.Clip;
+                    if (debugLog)
+                    {
+                        var status = result.Clip != null ? "成功" : "失敗";
+                        Debug.Log($"{logPrefix} ダウンロード結果[{result.Index}]: {status}");
+                    }
                 }
 
                 var downloadTime = Time.realtimeSinceStartup - downloadStartTime;

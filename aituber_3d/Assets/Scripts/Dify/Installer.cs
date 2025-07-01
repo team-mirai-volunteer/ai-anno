@@ -10,6 +10,7 @@ namespace AiTuber.Dify
     {
         [Header("Global Settings")]
         [SerializeField] private bool enableDebugLogging = true;
+        [SerializeField] private bool useChunkedSystem = false;
 
         [Header("OneComme Configuration")]
         [SerializeField] private bool autoConnect = true;
@@ -19,10 +20,12 @@ namespace AiTuber.Dify
         [Header("Chat Components")]
         [SerializeField] private OneCommeClient? oneCommeClient;
         [SerializeField] private NodeChainController? nodeChainController;
+        [SerializeField] private NodeChainChunkedController? nodeChainChunkedController;
         [SerializeField] private AudioPlayer? audioPlayer;
         [SerializeField] private AudioSource? audioSource;
 
         private DifyClient? difyClient;
+        private DifyChunkedClient? difyChunkedClient;
 
         /// <summary>
         /// 初期化フラグ
@@ -34,7 +37,14 @@ namespace AiTuber.Dify
         /// </summary>
         private void Awake()
         {
-            InitializeDifyBlockingSystem();
+            if (useChunkedSystem)
+            {
+                InitializeDifyChunkedSystem();
+            }
+            else
+            {
+                InitializeDifyBlockingSystem();
+            }
         }
 
         /// <summary>
@@ -78,6 +88,51 @@ namespace AiTuber.Dify
             catch (System.Exception ex)
             {
                 Debug.LogError($"[Installer] 初期化失敗: {ex.Message}");
+                IsInitialized = false;
+            }
+        }
+
+        /// <summary>
+        /// Difyチャンクシステム全体初期化
+        /// </summary>
+        private void InitializeDifyChunkedSystem()
+        {
+            try
+            {
+                // PlayerPrefsから設定読み込み
+                var oneCommeUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.OneCommeUrl);
+                var difyUrl = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyUrl);
+                var apiKey = PlayerPrefs.GetString(Constants.PlayerPrefs.DifyApiKey);
+
+                // 設定バリデーション
+                if (!ValidateConfiguration(oneCommeUrl, difyUrl, apiKey))
+                {
+                    Debug.LogError("[Installer] チャンク版設定が無効です");
+                    return;
+                }
+
+                // 全コンポーネントに依存注入
+                InstallComponents(oneCommeUrl);
+
+                // DifyChunkedClient作成
+                difyChunkedClient = new DifyChunkedClient(difyUrl, apiKey, enableDebugLogging);
+
+                // NodeChainChunkedControllerの依存関係構築
+                if (oneCommeClient != null && nodeChainChunkedController != null)
+                {
+                    nodeChainChunkedController.Initialize(oneCommeClient, difyChunkedClient, gapBetweenDifyRequests, enableDebugLogging);
+                }
+
+                IsInitialized = true;
+                
+                if (enableDebugLogging)
+                {
+                    Debug.Log("[Installer] Difyチャンクシステム初期化完了");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[Installer] チャンク版初期化失敗: {ex.Message}");
                 IsInitialized = false;
             }
         }
@@ -148,6 +203,7 @@ namespace AiTuber.Dify
         private void OnDestroy()
         {
             difyClient?.Dispose();
+            difyChunkedClient?.Dispose();
             IsInitialized = false;
             
             if (enableDebugLogging)
