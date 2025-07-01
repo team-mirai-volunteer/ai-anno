@@ -29,6 +29,7 @@ namespace AiTuber
             mainUI.SetQuestionerName("");
             mainUI.SetQuestionText("質問をお待ちしています...");
             mainUI.SetAnswerText("質問をお待ちしています...");
+            mainUI.SetSlideImageUrl("https://storage.googleapis.com/ai-anno-ai-anno-manifest-images-staging/250701/slides/003_introduction.png");
         }
 
         void Update()
