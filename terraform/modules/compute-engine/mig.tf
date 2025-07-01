@@ -124,6 +124,9 @@ resource "google_compute_region_instance_group_manager" "dify" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [
+      version[0].name  # Auto-generated version names are ignored
+    ]
   }
 }
 
