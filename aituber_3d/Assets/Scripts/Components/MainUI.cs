@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,6 +20,40 @@ namespace AiTuber
         [SerializeField] private TMP_Text _questionText = null;
         [SerializeField] private TMP_Text _answerText = null;
         [SerializeField] private RawImage _slideImage = null;
+        [SerializeField] private GameObject _settingsUI = null;
+        [SerializeField] private float _longPressDuration = 2.0f;
+
+        private bool _isPointerDown = false;
+        private float _pointerDownTime = 0f;
+        private void Update()
+        {
+            if (_isPointerDown)
+            {
+                _pointerDownTime += Time.unscaledDeltaTime;
+                if (_pointerDownTime >= _longPressDuration)
+                {
+                    _isPointerDown = false;
+                    _pointerDownTime = 0f;
+                    if (_settingsUI != null)
+                    {
+                        _settingsUI.SetActive(true);
+                    }
+                }
+            }
+        }
+
+        public void OnSettingsAreaPointerDown()
+        {
+            _isPointerDown = true;
+            _pointerDownTime = 0f;
+        }
+
+        public void OnSettingsAreaPointerUp()
+        {
+            _isPointerDown = false;
+            _pointerDownTime = 0f;
+        }
+
 
         public void SetQuestionerIconUrl(string url)
         {
@@ -78,6 +111,8 @@ namespace AiTuber
 
         private void Start()
         {
+            // 念の為起動時に設定 UI を非表示にしておく
+            _settingsUI?.SetActive(false);
             // Test();
         }
 
