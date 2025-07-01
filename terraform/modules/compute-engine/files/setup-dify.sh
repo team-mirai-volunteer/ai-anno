@@ -44,6 +44,8 @@ CODE_EXECUTION_API_KEY=$(gcloud secrets versions access latest --secret="${PROJE
 PLUGIN_S3_ACCESS_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-s3-access-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 PLUGIN_S3_SECRET_KEY=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-plugin-s3-secret-key-${ENVIRONMENT}" --project="${PROJECT_ID}")
 
+NOTION_INTERNAL_SECRET=$(gcloud secrets versions access latest --secret="${PROJECT_NAME}-notion-internal-secret-${ENVIRONMENT}" --project="${PROJECT_ID}")
+
 # Clone Dify 1.4.3 from git
 echo "Cloning Dify 1.4.3..."
 cd /opt
@@ -96,6 +98,10 @@ PLUGIN_AWS_ACCESS_KEY=$PLUGIN_S3_ACCESS_KEY
 PLUGIN_AWS_SECRET_KEY=$PLUGIN_S3_SECRET_KEY
 PLUGIN_AWS_REGION=$PLUGIN_AWS_REGION
 PLUGIN_S3_USE_PATH_STYLE=false
+
+# Notion Integration
+NOTION_INTEGRATION_TYPE=internal
+NOTION_INTERNAL_SECRET=$NOTION_INTERNAL_SECRET
 
 # Since we have plugins that require manual upload:
 FORCE_VERIFYING_SIGNATURE=false

@@ -93,3 +93,9 @@ variable "plugin_s3_bucket" {
   type        = string
 }
 
+variable "notion_internal_secret" {
+  description = "Notion internal integration secret"
+  type        = string
+  sensitive   = true
+}
+

@@ -95,3 +95,9 @@ variable "manifest_service_account_json" {
   type        = string
   sensitive   = true
 }
+
+variable "notion_internal_secret" {
+  description = "Notion internal integration secret"
+  type        = string
+  sensitive   = true
+}

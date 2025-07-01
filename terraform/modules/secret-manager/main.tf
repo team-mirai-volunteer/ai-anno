@@ -360,3 +360,32 @@ resource "google_secret_manager_secret_version" "manifest_service_account" {
   secret_data = var.manifest_service_account_json
 }
 
+# Notion internal secret
+resource "google_secret_manager_secret" "notion_internal_secret" {
+  secret_id = "${var.project_name}-notion-internal-secret-${var.environment}"
+  project   = var.project_id
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+    project     = var.project_name
+    managed_by  = "terraform"
+  }
+}
+
+resource "google_secret_manager_secret_version" "notion_internal_secret" {
+  secret      = google_secret_manager_secret.notion_internal_secret.id
+  secret_data = var.notion_internal_secret
+}
+
+# Grant VM service account access to Notion internal secret
+resource "google_secret_manager_secret_iam_member" "vm_access_notion_internal_secret" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.notion_internal_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vm_service_account_email}"
+}
+

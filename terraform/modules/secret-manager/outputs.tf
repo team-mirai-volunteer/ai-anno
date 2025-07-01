@@ -27,3 +27,8 @@ output "manifest_service_account_secret_id" {
   description = "Secret Manager secret ID for manifest service account"
   value       = google_secret_manager_secret.manifest_service_account.id
 }
+
+output "notion_internal_secret_secret_id" {
+  description = "Secret Manager secret ID for Notion internal secret"
+  value       = google_secret_manager_secret.notion_internal_secret.id
+}
