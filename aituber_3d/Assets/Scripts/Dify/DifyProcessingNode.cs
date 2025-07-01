@@ -95,11 +95,11 @@ namespace AiTuber.Dify
                         debugLog
                     );
 
+                    var commentContext = new MainCommentContext(Comment, response, commentNode);
+                    OnCommentProcessed?.Invoke(commentContext);
+
                     if (debugLog) Debug.Log($"{logPrefix} AudioPlaybackNode作成完了: [{UserName}]");
                     OnAudioPlaybackNodeCreated?.Invoke(commentNode);
-
-                    var commentContext = new MainCommentContext(Comment, response);
-                    OnCommentProcessed?.Invoke(commentContext);
                 }
                 else
                 {
@@ -135,7 +135,7 @@ namespace AiTuber.Dify
                         await UniTask.Delay(TimeSpan.FromSeconds(difyGap), cancellationToken: cancellationToken);
                         if (debugLog) Debug.Log($"{logPrefix} Dify API間隔待機完了");
                     }
-                    
+
                     if (debugLog) Debug.Log($"{logPrefix} 次のダウンロードノードに継続");
                     nextNode.ProcessAndContinue(cancellationToken);
                 }

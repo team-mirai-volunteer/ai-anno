@@ -16,12 +16,14 @@ namespace AiTuber.Dify
         public string UserName { get; }
         public float Gap { get; }
         public AudioPlaybackNode? Next { get; set; }
-        
+
+        public static event Action<AudioPlaybackNode>? OnPlayStart;
+
         /// <summary>
         /// チェーン完了通知イベント
         /// </summary>
         public static event Action<AudioPlaybackNode>? OnChainCompleted;
-        
+
         private readonly AudioPlayer audioPlayer;
         private readonly bool debugLog;
         private readonly string logPrefix = "[AudioPlaybackNode]";
@@ -43,7 +45,7 @@ namespace AiTuber.Dify
             Gap = gap;
             this.audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
             debugLog = enableDebugLog;
-            
+
             // AudioPlaybackNodeカウント増加
             NodeChainController.IncrementAudioPlaybackNodeCount();
         }
@@ -55,18 +57,19 @@ namespace AiTuber.Dify
         public async void ProcessAndContinue(CancellationToken cancellationToken = default)
         {
             AudioPlaybackNode? nextNode = null;
-            
+
             try
             {
                 if (debugLog) Debug.Log($"{logPrefix} ノード処理開始: {Comment.data?.comment}");
-                
+
                 // 1. キャンセルチェック
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 2. 音声再生
                 if (AudioData != null && AudioData.Length > 0)
                 {
                     if (debugLog) Debug.Log($"{logPrefix} 音声再生開始: {AudioData.Length} bytes");
+                    OnPlayStart?.Invoke(this); // 再生開始イベント通知
                     await audioPlayer.PlayAudioFromDataAsync(AudioData).AttachExternalCancellation(cancellationToken);
                     if (debugLog) Debug.Log($"{logPrefix} 音声再生完了");
                 }
@@ -74,7 +77,7 @@ namespace AiTuber.Dify
                 {
                     if (debugLog) Debug.Log($"{logPrefix} 音声データなし");
                 }
-                
+
                 // 3. ギャップ待機
                 if (Gap > 0)
                 {
@@ -96,11 +99,11 @@ namespace AiTuber.Dify
             {
                 // 3. AudioPlaybackNodeカウント減少
                 NodeChainController.DecrementAudioPlaybackNodeCount();
-                
+
                 // 4. 次のノードへ継続またはチェーン終了通知
                 nextNode = Next;
                 Next = null; // 参照切断（GC対象化）
-                
+
                 // キャンセル状態でない場合のみ次のノードに継続
                 if (nextNode != null && !cancellationToken.IsCancellationRequested)
                 {
