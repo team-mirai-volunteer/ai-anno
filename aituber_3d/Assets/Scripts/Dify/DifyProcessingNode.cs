@@ -27,7 +27,8 @@ namespace AiTuber.Dify
         
         private readonly DifyClient difyClient;
         private readonly AudioPlayer audioPlayer;
-        private readonly float gap;
+        private readonly float audioGap;
+        private readonly float difyGap;
         private readonly bool debugLog;
         private readonly string logPrefix = "[DifyProcessingNode]";
 
@@ -38,15 +39,17 @@ namespace AiTuber.Dify
         /// <param name="userName">ユーザー名</param>
         /// <param name="difyClient">Difyクライアント</param>
         /// <param name="audioPlayer">音声プレイヤー</param>
-        /// <param name="gap">音声間のギャップ</param>
+        /// <param name="audioGap">音声間のギャップ</param>
+        /// <param name="difyGap">Dify API呼び出し間隔</param>
         /// <param name="enableDebugLog">デバッグログ有効フラグ</param>
-        public DifyProcessingNode(OneCommeComment comment, string userName, DifyClient difyClient, AudioPlayer audioPlayer, float gap, bool enableDebugLog = false)
+        public DifyProcessingNode(OneCommeComment comment, string userName, DifyClient difyClient, AudioPlayer audioPlayer, float audioGap, float difyGap, bool enableDebugLog = false)
         {
             Comment = comment ?? throw new ArgumentNullException(nameof(comment));
             UserName = userName ?? "匿名";
             this.difyClient = difyClient ?? throw new ArgumentNullException(nameof(difyClient));
             this.audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
-            this.gap = gap;
+            this.audioGap = audioGap;
+            this.difyGap = difyGap;
             debugLog = enableDebugLog;
             
             // DifyProcessingNodeカウント増加
@@ -82,7 +85,7 @@ namespace AiTuber.Dify
                         Comment,
                         response.AudioData,
                         UserName,
-                        gap,
+                        audioGap,
                         audioPlayer,
                         debugLog
                     );
@@ -117,6 +120,14 @@ namespace AiTuber.Dify
                 // キャンセル状態でない場合のみ次のノードに継続
                 if (nextNode != null && !cancellationToken.IsCancellationRequested)
                 {
+                    // Dify API呼び出し間隔制御
+                    if (difyGap > 0)
+                    {
+                        if (debugLog) Debug.Log($"{logPrefix} Dify API間隔待機開始: {difyGap}秒");
+                        await UniTask.Delay(TimeSpan.FromSeconds(difyGap), cancellationToken: cancellationToken);
+                        if (debugLog) Debug.Log($"{logPrefix} Dify API間隔待機完了");
+                    }
+                    
                     if (debugLog) Debug.Log($"{logPrefix} 次のダウンロードノードに継続");
                     nextNode.ProcessAndContinue(cancellationToken);
                 }

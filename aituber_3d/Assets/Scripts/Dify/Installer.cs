@@ -14,6 +14,7 @@ namespace AiTuber.Dify
         [Header("OneComme Configuration")]
         [SerializeField] private bool autoConnect = true;
         [SerializeField] private float gapBetweenAudio = 1.0f;
+        [SerializeField] private float gapBetweenDifyRequests = 10.0f;
 
         [Header("Chat Components")]
         [SerializeField] private OneCommeClient? oneCommeClient;
@@ -64,7 +65,7 @@ namespace AiTuber.Dify
                 // NodeChainControllerの依存関係構築
                 if (oneCommeClient != null && audioPlayer != null && nodeChainController != null)
                 {
-                    nodeChainController.Initialize(oneCommeClient, audioPlayer, difyClient, gapBetweenAudio, enableDebugLogging);
+                    nodeChainController.Initialize(oneCommeClient, audioPlayer, difyClient, gapBetweenAudio, gapBetweenDifyRequests, enableDebugLogging);
                 }
 
                 IsInitialized = true;

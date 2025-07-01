@@ -18,6 +18,7 @@ namespace AiTuber.Dify
         [SerializeField] private int maxChainLength = 5;
         
         private float gapBetweenAudio = 1.0f;
+        private float gapBetweenDifyRequests = 15.0f;
         
         private OneCommeClient? oneCommeClient;
         private AudioPlayer? audioPlayer;
@@ -88,16 +89,20 @@ namespace AiTuber.Dify
         /// </summary>
         /// <param name="client">OneCommeClient</param>
         /// <param name="player">AudioPlayer</param>
+        /// <param name="difyClient">DifyClient</param>
+        /// <param name="audioGap">音声再生間隔</param>
+        /// <param name="difyGap">Dify API呼び出し間隔</param>
         /// <param name="enableDebugLog">DebugLog有効フラグ</param>
-        public void Initialize(OneCommeClient client, AudioPlayer player, DifyClient difyClient, float gap, bool enableDebugLog)
+        public void Initialize(OneCommeClient client, AudioPlayer player, DifyClient difyClient, float audioGap, float difyGap, bool enableDebugLog)
         {
             oneCommeClient = client ?? throw new ArgumentNullException(nameof(client));
             audioPlayer = player ?? throw new ArgumentNullException(nameof(player));
             this.difyClient = difyClient ?? throw new ArgumentNullException(nameof(difyClient));
-            gapBetweenAudio = gap;
+            gapBetweenAudio = audioGap;
+            gapBetweenDifyRequests = difyGap;
             debugLog = enableDebugLog;
             
-            Debug.Log($"{logPrefix} 初期化完了 - Gap: {gap}秒, DebugLog: {enableDebugLog}");
+            Debug.Log($"{logPrefix} 初期化完了 - AudioGap: {audioGap}秒, DifyGap: {difyGap}秒, DebugLog: {enableDebugLog}");
         }
 
         /// <summary>
@@ -160,6 +165,7 @@ namespace AiTuber.Dify
                         difyClient,
                         audioPlayer,
                         gapBetweenAudio,
+                        gapBetweenDifyRequests,
                         debugLog
                     );
                     
