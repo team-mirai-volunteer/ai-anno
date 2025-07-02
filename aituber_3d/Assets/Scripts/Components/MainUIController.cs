@@ -93,6 +93,8 @@ namespace AiTuber
             var slideUrl = string.IsNullOrEmpty(response.SiteUrl) 
                 ? DefaultSlideUrl
                 : response.SiteUrl;
+            
+            Debug.Log($"[MainUIController] Setting slide URL: {slideUrl} (Original: {response.SiteUrl ?? "null"})");
             mainUI.SetSlideImageUrl(slideUrl);
 
             UpdateWaitList();
@@ -107,6 +109,24 @@ namespace AiTuber
             mainUI.SetAnswerText(chunkText);
         }
 
+        /// <summary>
+        /// 音声再生チェーン完了時の処理 - デフォルト画像とUI状態に復帰
+        /// </summary>
+        /// <param name="completedNode">完了したノード</param>
+        private void HandleChainCompleted(SubtitleAudioNode completedNode)
+        {
+            // デフォルト画像に復帰
+            mainUI.SetSlideImageUrl(DefaultSlideUrl);
+            
+            // UI状態をデフォルトに復帰
+            mainUI.SetQuestionerName("");
+            mainUI.SetQuestionText("質問をお待ちしています...");
+            mainUI.SetAnswerText("質問をお待ちしています...");
+            mainUI.SetQuestionerIconUrl(null);
+            
+            Debug.Log("[MainUIController] 字幕音声チェーン完了 - UI状態をデフォルトに復帰");
+        }
+
         void OnDestroy()
         {
             CleanupEventHandlers();
@@ -116,12 +136,14 @@ namespace AiTuber
             DifyProcessingChunkedNode.OnCommentProcessed += ChunkedCommentHandler;
             SubtitleAudioNode.OnPlayStart += ChunkedCommentPlay;
             SubtitleAudioNode.OnChunkStarted += HandleChunkStarted;
+            SubtitleAudioNode.OnChainCompleted += HandleChainCompleted;
         }
         private void CleanupEventHandlers()
         {
             DifyProcessingChunkedNode.OnCommentProcessed -= ChunkedCommentHandler;
             SubtitleAudioNode.OnPlayStart -= ChunkedCommentPlay;
             SubtitleAudioNode.OnChunkStarted -= HandleChunkStarted;
+            SubtitleAudioNode.OnChainCompleted -= HandleChainCompleted;
         }
     }
 
