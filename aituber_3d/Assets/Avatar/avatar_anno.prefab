@@ -903,7 +903,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10eb83d4c88f93a4e9171ae73bfe071a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vrmInstance: {fileID: 0}
+  vrmInstance: {fileID: 8317520403671795938}
   blinkInterval: 3
   blinkDuration: 0.1
 --- !u!114 &8571719873548449496
@@ -918,7 +918,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e5fab11179cd8c4eb3c4d4651659bb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 8405421397357930172}
   numberOfStates: 7
   textToSpeech: {fileID: 0}
   queueManager: {fileID: 0}
@@ -958,3 +958,19 @@ MonoBehaviour:
   maxVolume: -1.7507715
   smoothness: 0.05
   usePhonemeBlend: 0
+--- !u!114 &8317520403671795938 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -4297446187249348513, guid: 92cd11c35b23fa942a3a24e7a8a87c56, type: 3}
+  m_PrefabInstance: {fileID: 3977140038609574077}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6860529761154086619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfba4ccd3f854e64f868ce83553071a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!95 &8405421397357930172 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 4870552773557632513, guid: 92cd11c35b23fa942a3a24e7a8a87c56, type: 3}
+  m_PrefabInstance: {fileID: 3977140038609574077}
+  m_PrefabAsset: {fileID: 0}

@@ -174,11 +174,18 @@ namespace AiTuber.Dify
         {
             var result = new ParsedChunkedContent();
 
-            // siteUrl: を抽出
-            var siteMatch = Regex.Match(answer, @"siteUrl:(.+?)(?=\n|$)");
+            if (debugLog) Debug.Log($"{logPrefix} ParseAnswerContent - Raw answer: {answer}");
+
+            // slideUrl: を抽出
+            var siteMatch = Regex.Match(answer, @"slideUrl:(.+?)(?=\n|$)");
             if (siteMatch.Success)
             {
                 result.SiteUrl = siteMatch.Groups[1].Value.Trim();
+                if (debugLog) Debug.Log($"{logPrefix} SiteUrl extracted: {result.SiteUrl}");
+            }
+            else
+            {
+                if (debugLog) Debug.Log($"{logPrefix} SiteUrl not found in answer");
             }
 
             // text: を全て抽出

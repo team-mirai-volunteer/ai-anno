@@ -123,17 +123,12 @@ namespace AiTuber
         }
         public void SetSlideImageUrl(string url)
         {
-            // Debug.Log($"MainUI.SetSlideImageUrl called with URL: {url}");
             _slideImageUrl = url;
             LoadImage(url, texture =>
             {
-                if (_slideImageUrl == url)
+                if (texture != null)
                 {
                     _slideImage.texture = texture;
-                }
-                else
-                {
-                    Debug.LogWarning($"Slide image URL mismatch: expected {_slideImageUrl}, got {url}");
                 }
             });
         }
@@ -168,11 +163,11 @@ namespace AiTuber
         {
             // 念の為起動時に設定 UI を非表示にしておく
             _settingsUI?.SetActive(false);
-            // Test();
         }
 
         private void Test()
         {
+            Debug.Log("MainUI.Test() called");
             var iconUrl = "https://yt3.googleusercontent.com/ZXlu3tgzsXVrVURXwFFhZlHTd8tzAfGTElWGIZqv7gA-0kWb_yL3YzNEbPtGNK-6HbpLPxUV=s88-c-k-c0x00ffffff-no-rj";
             SetQuestionerIconUrl(iconUrl);
             SetQuestionerName("ほにゃ");
@@ -184,7 +179,10 @@ namespace AiTuber
             SetQueuedIcon(iconUrl, 3);
             SetQuestionText(string.Concat(Enumerable.Repeat("これはテストの質問です。", 16)));
             SetAnswerText(string.Concat(Enumerable.Repeat("これはテストの回答です。", 16)));
-            var slideUrl = "https://pbs.twimg.com/profile_banners/83077565/1746686903/1500x500";
+            
+            // ローカルでアクセス可能な確実な画像URL（GitHub成功例を使用）
+            var slideUrl = "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
+            Debug.Log($"Test: Setting slide URL to {slideUrl}");
             SetSlideImageUrl(slideUrl);
         }
 
