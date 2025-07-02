@@ -190,5 +190,34 @@ namespace AiTuber.Dify
             while (disconnectionQueue.TryDequeue(out var _)) { }
         }
 
+        /// <summary>
+        /// テスト用擬似コメント流し込み（Editor専用）
+        /// </summary>
+        /// <param name="comment">擬似コメント文</param>
+        /// <param name="userName">擬似ユーザー名</param>
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public void InjectTestComment(string comment, string userName = "テストユーザー")
+        {
+            var testComment = new OneCommeComment
+            {
+                id = System.Guid.NewGuid().ToString(),
+                data = new OneCommeCommentData
+                {
+                    comment = comment,
+                    speechText = comment,
+                    name = userName,
+                    displayName = userName,
+                    service = "editor_test",
+                    timestamp = System.DateTimeOffset.Now.ToUnixTimeSeconds().ToString(),
+                    profileImage = null
+                }
+            };
+            
+            if (debugLog) Debug.Log($"[OneComme] テストコメント注入: [{userName}] {comment}");
+            
+            // 直接イベント発火（メインスレッドで実行）
+            OnCommentReceived?.Invoke(testComment);
+        }
+
     }
 }
