@@ -128,6 +128,17 @@ namespace AiTuber
             Debug.Log("[MainUIController] 字幕音声チェーン完了 - UI状態をデフォルトに復帰");
         }
 
+        /// <summary>
+        /// 回答累積数をリセット（AiTuberSettingsUIから呼び出し）
+        /// </summary>
+        public void ResetAnswerCount()
+        {
+            _totalAnswerCount = 0;
+            mainUI.SetTotalAnswerCount(_totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
+            Debug.Log("[MainUIController] 回答累積数をリセットしました");
+        }
+
         void OnDestroy()
         {
             CleanupEventHandlers();

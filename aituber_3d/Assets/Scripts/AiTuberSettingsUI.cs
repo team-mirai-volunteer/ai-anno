@@ -23,6 +23,7 @@ namespace AiTuber
         public Button saveButton;
         public Button reloadButton;
         public Button clearButton;
+        public Button resetAnswerCountButton;
         public Button closeButton;
 
         private void Start()
@@ -32,6 +33,7 @@ namespace AiTuber
             saveButton.onClick.AddListener(SaveSettings);
             reloadButton.onClick.AddListener(() => { LoadSettings(); UpdateStatus(); ShowMessage("設定を再読込しました"); });
             clearButton.onClick.AddListener(ClearSettings);
+            resetAnswerCountButton.onClick.AddListener(ResetAnswerCount);
             closeButton.onClick.AddListener(Close);
         }
 
@@ -81,6 +83,21 @@ namespace AiTuber
             systemStatusText.text = (oneCommeValid && difyUrlValid && apiKeyValid) ? "o Ready" : "x Configuration Required";
         }
 
+        private void ResetAnswerCount()
+        {
+            PlayerPrefs.DeleteKey(Constants.PlayerPrefs.TotalAnswerCount);
+            PlayerPrefs.Save();
+            
+            // MainUIControllerのカウンターもリセット
+            var mainUIController = FindObjectOfType<MainUIController>();
+            if (mainUIController != null)
+            {
+                mainUIController.ResetAnswerCount();
+            }
+            
+            ShowMessage("回答累積数をリセットしました");
+        }
+        
         private void ShowMessage(string msg)
         {
             messageText.text = msg;
