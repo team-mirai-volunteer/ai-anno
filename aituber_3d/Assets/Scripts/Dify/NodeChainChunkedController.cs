@@ -34,6 +34,13 @@ namespace AiTuber.Dify
 
         // ユーザーコメント累積カウンター（荒らし対策）
         private readonly Dictionary<string, int> userCommentCounts = new();
+        
+        // 初期ブロック期間制御（安全性担保のため有効化）
+        private bool enableInitialBlock = true; // 初期ブロック機能のON/OFF
+        private bool isInitialBlockPeriod = false;
+        private bool hasReceivedFirstComment = false;
+        private float initialBlockDuration = 10.0f;
+        private CancellationTokenSource? initialBlockCancellationTokenSource;
 
         /// <summary>
         /// コンポーネント初期化（Installerから呼び出し）
@@ -66,8 +73,57 @@ namespace AiTuber.Dify
             // CancellationTokenSource初期化
             downloadCancellationTokenSource = new CancellationTokenSource();
             playbackCancellationTokenSource = new CancellationTokenSource();
-
-            if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステム初期化完了");
+            
+            if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステム初期化完了（初期ブロック期間は最初のコメント受信時に開始）");
+        }
+        
+        /// <summary>
+        /// 初期ブロック期間を開始（最初のコメント受信時点から10秒間）
+        /// </summary>
+        private async void StartInitialBlockPeriod()
+        {
+            // 既存のブロックタイマーをキャンセル
+            initialBlockCancellationTokenSource?.Cancel();
+            initialBlockCancellationTokenSource?.Dispose();
+            initialBlockCancellationTokenSource = new CancellationTokenSource();
+            
+            if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間開始: 最初のコメント受信から{initialBlockDuration}秒間コメント受付停止");
+            
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(initialBlockDuration), cancellationToken: initialBlockCancellationTokenSource.Token);
+                
+                isInitialBlockPeriod = false;
+                if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間終了 - コメント受付開始");
+            }
+            catch (OperationCanceledException)
+            {
+                if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間キャンセルされました");
+            }
+        }
+        
+        /// <summary>
+        /// OneComme接続時の処理
+        /// </summary>
+        private void HandleOneCommeConnected()
+        {
+            if (debugLog) Debug.Log($"{logPrefix} OneComme接続確認 - 初期ブロックカウントリセット準備");
+        }
+        
+        /// <summary>
+        /// OneComme切断時の処理（初期ブロックカウントをリセット）
+        /// </summary>
+        private void HandleOneCommeDisconnected()
+        {
+            if (enableInitialBlock)
+            {
+                // 初期ブロックタイマーをキャンセル
+                initialBlockCancellationTokenSource?.Cancel();
+                
+                hasReceivedFirstComment = false;
+                isInitialBlockPeriod = false;
+                if (debugLog) Debug.Log($"{logPrefix} OneComme切断 - 初期ブロックカウントリセット");
+            }
         }
 
         /// <summary>
@@ -78,6 +134,8 @@ namespace AiTuber.Dify
             if (oneCommeClient != null)
             {
                 oneCommeClient.OnCommentReceived += HandleOneCommeComment;
+                oneCommeClient.OnDisconnected += HandleOneCommeDisconnected;
+                oneCommeClient.OnConnected += HandleOneCommeConnected;
                 if (debugLog) Debug.Log($"{logPrefix} OneCommeClientイベント設定完了");
             }
             else
@@ -102,6 +160,27 @@ namespace AiTuber.Dify
         private void HandleOneCommeComment(OneCommeComment comment)
         {
             if (comment == null) return;
+            
+            // 初期ブロック機能（現在無効化中）
+            if (enableInitialBlock)
+            {
+                // 最初のコメント受信時に初期ブロック期間を開始
+                if (!hasReceivedFirstComment)
+                {
+                    hasReceivedFirstComment = true;
+                    isInitialBlockPeriod = true;
+                    StartInitialBlockPeriod();
+                }
+                
+                // 初期ブロック期間中はコメントを破棄
+                if (isInitialBlockPeriod)
+                {
+                    var userName = comment.data?.name ?? "匿名";
+                    var commentText = comment.data?.comment ?? "";
+                    if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間中 - コメント破棄: [{userName}] {commentText}");
+                    return;
+                }
+            }
 
             try
             {
@@ -288,6 +367,8 @@ namespace AiTuber.Dify
             if (oneCommeClient != null)
             {
                 oneCommeClient.OnCommentReceived -= HandleOneCommeComment;
+                oneCommeClient.OnDisconnected -= HandleOneCommeDisconnected;
+                oneCommeClient.OnConnected -= HandleOneCommeConnected;
             }
 
             // イベント解除
@@ -303,6 +384,10 @@ namespace AiTuber.Dify
             playbackCancellationTokenSource?.Cancel();
             playbackCancellationTokenSource?.Dispose();
             playbackCancellationTokenSource = null;
+            
+            initialBlockCancellationTokenSource?.Cancel();
+            initialBlockCancellationTokenSource?.Dispose();
+            initialBlockCancellationTokenSource = null;
 
             lastDifyProcessingChunkedNode = null;
             lastSubtitleAudioNode = null;
