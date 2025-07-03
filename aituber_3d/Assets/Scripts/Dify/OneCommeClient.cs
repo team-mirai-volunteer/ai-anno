@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 using Newtonsoft.Json;
+using Cysharp.Threading.Tasks;
 
 namespace AiTuber.Dify
 {
@@ -15,6 +16,11 @@ namespace AiTuber.Dify
         private string oneCommeUrl = "ws://localhost:11180/";
         private bool autoConnect = true;
         private bool debugLog;
+        
+        // 自動再接続設定
+        private bool autoReconnectEnabled = true;
+        private float reconnectIntervalSeconds = 0.5f;
+        private bool isAutoReconnecting = false;
 
         public event Action<OneCommeComment>? OnCommentReceived;
         public event Action? OnConnected;
@@ -49,9 +55,15 @@ namespace AiTuber.Dify
             webSocketClient = new WebSocketClient(oneCommeUrl, debugLog, "[OneComme]");
 
             webSocketClient.OnRawMessageReceived += OnRawMessageReceivedFromThread;
-            webSocketClient.OnConnected += () => connectionQueue.Enqueue(true);
+            webSocketClient.OnConnected += () => {
+                connectionQueue.Enqueue(true);
+                StopAutoReconnect(); // 接続成功時に再接続ループ停止
+            };
             webSocketClient.OnConnectionError += (error) => errorQueue.Enqueue(error);
-            webSocketClient.OnDisconnected += () => disconnectionQueue.Enqueue(true);
+            webSocketClient.OnDisconnected += () => {
+                disconnectionQueue.Enqueue(true);
+                StartAutoReconnect(); // 切断時に再接続ループ開始
+            };
         }
 
         /// <summary>
@@ -81,13 +93,17 @@ namespace AiTuber.Dify
         /// <param name="url">OneComme WebSocket URL</param>
         /// <param name="autoConnectFlag">自動接続フラグ</param>
         /// <param name="debugLogEnabled">DebugLog有効フラグ</param>
-        public void Install(string url, bool autoConnectFlag, bool debugLogEnabled)
+        /// <param name="enableAutoReconnect">自動再接続有効フラグ</param>
+        /// <param name="reconnectInterval">再接続間隔（秒）</param>
+        public void Install(string url, bool autoConnectFlag, bool debugLogEnabled, bool enableAutoReconnect, float reconnectInterval)
         {
             oneCommeUrl = url;
             autoConnect = autoConnectFlag;
             debugLog = debugLogEnabled;
+            autoReconnectEnabled = enableAutoReconnect;
+            reconnectIntervalSeconds = reconnectInterval;
             
-            Debug.Log($"[OneCommeClient] Install完了 - URL: {url}, AutoConnect: {autoConnectFlag}, DebugLog: {debugLogEnabled}");
+            Debug.Log($"[OneCommeClient] Install完了 - URL: {url}, AutoConnect: {autoConnectFlag}, DebugLog: {debugLogEnabled}, AutoReconnect: {enableAutoReconnect}, ReconnectInterval: {reconnectInterval}秒");
             
             // WebSocketClient再初期化
             InitializeWebSocketClient();
@@ -156,10 +172,51 @@ namespace AiTuber.Dify
         }
 
         /// <summary>
+        /// 自動再接続開始
+        /// </summary>
+        private async void StartAutoReconnect()
+        {
+            if (!autoReconnectEnabled || isAutoReconnecting)
+            {
+                return;
+            }
+            
+            isAutoReconnecting = true;
+            if (debugLog) Debug.Log("[OneCommeClient] 自動再接続開始");
+            
+            while (!IsConnected && autoReconnectEnabled && isAutoReconnecting)
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(reconnectIntervalSeconds));
+                
+                if (!IsConnected && autoReconnectEnabled && isAutoReconnecting)
+                {
+                    if (debugLog) Debug.Log("[OneCommeClient] 再接続試行");
+                    Connect();
+                }
+            }
+            
+            isAutoReconnecting = false;
+            if (debugLog) Debug.Log("[OneCommeClient] 自動再接続終了");
+        }
+        
+        /// <summary>
+        /// 自動再接続停止
+        /// </summary>
+        private void StopAutoReconnect()
+        {
+            if (isAutoReconnecting)
+            {
+                isAutoReconnecting = false;
+                if (debugLog) Debug.Log("[OneCommeClient] 自動再接続停止");
+            }
+        }
+
+        /// <summary>
         /// Unity終了時のクリーンアップ
         /// </summary>
         private void OnDestroy()
         {
+            StopAutoReconnect();
             CleanupWebSocket();
         }
 
@@ -168,6 +225,7 @@ namespace AiTuber.Dify
         /// </summary>
         private void OnApplicationQuit()
         {
+            StopAutoReconnect();
             CleanupWebSocket();
         }
 

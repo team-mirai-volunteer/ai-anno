@@ -48,7 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableDebugLogging: 1
   autoConnect: 1
-  gapBetweenAudio: 0.8
+  enableAutoReconnect: 1
+  reconnectInterval: 0.5
+  gapBetweenAudio: 0.3
   gapBetweenDifyRequests: 10
   oneCommeClient: {fileID: 2535327654895445971}
   nodeChainChunkedController: {fileID: 6374056860351552290}
