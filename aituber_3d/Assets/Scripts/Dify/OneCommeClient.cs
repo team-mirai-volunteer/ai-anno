@@ -145,8 +145,8 @@ namespace AiTuber.Dify
         /// </summary>
         private void Update()
         {
-            // コメントキューを処理
-            while (commentQueue.TryDequeue(out var comment))
+            // コメントキューを処理（1フレーム1コメント）
+            if (commentQueue.TryDequeue(out var comment))
             {
                 OnCommentReceived?.Invoke(comment);
             }
