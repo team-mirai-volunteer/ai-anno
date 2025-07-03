@@ -87,7 +87,8 @@ namespace AiTuber
             // 質問、質問者名、質問者アイコン
             mainUI.SetQuestionerName(comment.data?.displayName ?? "匿名");
             mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
-            mainUI.SetQuestionText(comment.data?.speechText ?? "");
+            var questionText = comment.data?.speechText ?? comment.data?.comment ?? "";
+            mainUI.SetQuestionText(questionText);
             // 回答は空（字幕で表示）、スライドURL設定
             mainUI.SetAnswerText("");
             var slideUrl = string.IsNullOrEmpty(response.SiteUrl) 
