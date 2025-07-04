@@ -214,7 +214,8 @@ namespace AiTuber.Dify
         private bool IsCommentOutMessage(OneCommeComment comment)
         {
             // コメントアウト（質問の回答を作らない）メッセージかを判定
-            return comment.data?.comment?.StartsWith("#") ?? false;
+            var commentText = comment.data?.comment;
+            return commentText?.StartsWith("#") == true || commentText?.StartsWith("＃") == true;
         }
 
         /// <summary>
