@@ -321,12 +321,8 @@ namespace AiTuber.Dify
 
                 if (debugLog) Debug.Log($"{logPrefix} チャンク再生開始: {audioClip.length}秒");
 
-                // 再生完了まで待機
-                while (audioSource.isPlaying)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await UniTask.Delay(50, cancellationToken: cancellationToken);
-                }
+                // 再生完了まで待機（フレーム単位で監視）
+                await UniTask.WaitUntil(() => !audioSource.isPlaying, cancellationToken: cancellationToken);
 
                 if (debugLog) Debug.Log($"{logPrefix} チャンク再生完了");
             }
