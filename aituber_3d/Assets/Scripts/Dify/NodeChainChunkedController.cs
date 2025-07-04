@@ -15,10 +15,10 @@ namespace AiTuber.Dify
         [Header("Settings")]
         [SerializeField] private string logPrefix = "[NodeChainChunkedController]";
         [SerializeField] private int maxChainLength = 5;
-        
+
         private float gapBetweenAudio = 1.0f;
         private float gapBetweenDifyRequests = 15.0f;
-        
+
         private OneCommeClient? oneCommeClient;
         private DifyChunkedClient? difyChunkedClient;
         private BufferedAudioPlayer? bufferedAudioPlayer;
@@ -27,13 +27,20 @@ namespace AiTuber.Dify
         // チャンクダウンロードチェーン管理
         private DifyProcessingChunkedNode? lastDifyProcessingChunkedNode = null;
         private CancellationTokenSource? downloadCancellationTokenSource;
-        
+
         // 字幕音声再生チェーン管理
         private SubtitleAudioNode? lastSubtitleAudioNode = null;
         private CancellationTokenSource? playbackCancellationTokenSource;
-        
+
         // ユーザーコメント累積カウンター（荒らし対策）
         private readonly Dictionary<string, int> userCommentCounts = new();
+        
+        // 初期ブロック期間制御（安全性担保のため有効化）
+        private bool enableInitialBlock = true; // 初期ブロック機能のON/OFF
+        private bool isInitialBlockPeriod = false;
+        private bool hasReceivedFirstComment = false;
+        private float initialBlockDuration = 10.0f;
+        private CancellationTokenSource? initialBlockCancellationTokenSource;
 
         /// <summary>
         /// コンポーネント初期化（Installerから呼び出し）
@@ -52,7 +59,7 @@ namespace AiTuber.Dify
             gapBetweenAudio = audioGap;
             gapBetweenDifyRequests = difyGap;
             debugLog = enableDebugLog;
-            
+
             Debug.Log($"{logPrefix} 初期化完了 - AudioGap: {audioGap}秒, DifyGap: {difyGap}秒, DebugLog: {enableDebugLog}");
         }
 
@@ -62,12 +69,61 @@ namespace AiTuber.Dify
         private void Start()
         {
             SetupEventHandlers();
-            
+
             // CancellationTokenSource初期化
             downloadCancellationTokenSource = new CancellationTokenSource();
             playbackCancellationTokenSource = new CancellationTokenSource();
             
-            if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステム初期化完了");
+            if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステム初期化完了（初期ブロック期間は最初のコメント受信時に開始）");
+        }
+        
+        /// <summary>
+        /// 初期ブロック期間を開始（最初のコメント受信時点から10秒間）
+        /// </summary>
+        private async void StartInitialBlockPeriod()
+        {
+            // 既存のブロックタイマーをキャンセル
+            initialBlockCancellationTokenSource?.Cancel();
+            initialBlockCancellationTokenSource?.Dispose();
+            initialBlockCancellationTokenSource = new CancellationTokenSource();
+            
+            if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間開始: 最初のコメント受信から{initialBlockDuration}秒間コメント受付停止");
+            
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(initialBlockDuration), cancellationToken: initialBlockCancellationTokenSource.Token);
+                
+                isInitialBlockPeriod = false;
+                if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間終了 - コメント受付開始");
+            }
+            catch (OperationCanceledException)
+            {
+                if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間キャンセルされました");
+            }
+        }
+        
+        /// <summary>
+        /// OneComme接続時の処理
+        /// </summary>
+        private void HandleOneCommeConnected()
+        {
+            if (debugLog) Debug.Log($"{logPrefix} OneComme接続確認 - 初期ブロックカウントリセット準備");
+        }
+        
+        /// <summary>
+        /// OneComme切断時の処理（初期ブロックカウントをリセット）
+        /// </summary>
+        private void HandleOneCommeDisconnected()
+        {
+            if (enableInitialBlock)
+            {
+                // 初期ブロックタイマーをキャンセル
+                initialBlockCancellationTokenSource?.Cancel();
+                
+                hasReceivedFirstComment = false;
+                isInitialBlockPeriod = false;
+                if (debugLog) Debug.Log($"{logPrefix} OneComme切断 - 初期ブロックカウントリセット");
+            }
         }
 
         /// <summary>
@@ -78,6 +134,8 @@ namespace AiTuber.Dify
             if (oneCommeClient != null)
             {
                 oneCommeClient.OnCommentReceived += HandleOneCommeComment;
+                oneCommeClient.OnDisconnected += HandleOneCommeDisconnected;
+                oneCommeClient.OnConnected += HandleOneCommeConnected;
                 if (debugLog) Debug.Log($"{logPrefix} OneCommeClientイベント設定完了");
             }
             else
@@ -89,7 +147,7 @@ namespace AiTuber.Dify
             DifyProcessingChunkedNode.OnDifyProcessingChainCompleted += HandleDownloadChainCompleted;
             DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated += HandleSubtitleAudioNodeCreated;
             if (debugLog) Debug.Log($"{logPrefix} DifyProcessingChunkedNodeイベント設定完了");
-            
+
             // SubtitleAudioNode完了イベント設定
             SubtitleAudioNode.OnChainCompleted += HandleSubtitleAudioChainCompleted;
             if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNodeイベント設定完了");
@@ -102,13 +160,38 @@ namespace AiTuber.Dify
         private void HandleOneCommeComment(OneCommeComment comment)
         {
             if (comment == null) return;
+            
+            // 初期ブロック機能（現在無効化中）
+            if (enableInitialBlock)
+            {
+                // 最初のコメント受信時に初期ブロック期間を開始
+                if (!hasReceivedFirstComment)
+                {
+                    hasReceivedFirstComment = true;
+                    isInitialBlockPeriod = true;
+                    StartInitialBlockPeriod();
+                }
+                
+                // 初期ブロック期間中はコメントを破棄
+                if (isInitialBlockPeriod)
+                {
+                    var userName = comment.data?.name ?? "匿名";
+                    var commentText = comment.data?.comment ?? "";
+                    if (debugLog) Debug.Log($"{logPrefix} 初期ブロック期間中 - コメント破棄: [{userName}] {commentText}");
+                    return;
+                }
+            }
 
             try
             {
                 var userName = comment.data?.name ?? "匿名";
-                
+
+                if (IsCommentOutMessage(comment))
+                {
+                    Debug.Log($"{logPrefix} コメントアウトメッセージ - ユーザー: {userName}, コメント: {comment.data?.comment}");
+                }
                 // DifyProcessingChunkedNode作成してチェーンに追加
-                if (difyChunkedClient != null && bufferedAudioPlayer != null)
+                else if (difyChunkedClient != null && bufferedAudioPlayer != null)
                 {
                     var downloadNode = new DifyProcessingChunkedNode(
                         comment,
@@ -119,7 +202,7 @@ namespace AiTuber.Dify
                         gapBetweenDifyRequests,
                         debugLog
                     );
-                    
+
                     AddToDownloadChain(downloadNode);
                 }
             }
@@ -127,6 +210,11 @@ namespace AiTuber.Dify
             {
                 Debug.LogError($"{logPrefix} コメント処理エラー: {ex.Message}");
             }
+        }
+        private bool IsCommentOutMessage(OneCommeComment comment)
+        {
+            // コメントアウト（質問の回答を作らない）メッセージかを判定
+            return comment.data?.comment?.StartsWith("#") ?? false;
         }
 
         /// <summary>
@@ -145,9 +233,9 @@ namespace AiTuber.Dify
             {
                 userCommentCounts[userName] = 1;
             }
-            
+
             if (debugLog) Debug.Log($"{logPrefix} ユーザー[{userName}]コメント累積: {userCommentCounts[userName]}");
-            
+
             if (lastDifyProcessingChunkedNode != null)
             {
                 // 既存チェーンに追加
@@ -173,7 +261,7 @@ namespace AiTuber.Dify
             try
             {
                 if (debugLog) Debug.Log($"{logPrefix} SubtitleAudioNode受信 - 字幕音声チェーンに追加: [{subtitleAudioNode.UserName}]");
-                
+
                 AddToSubtitleAudioChain(subtitleAudioNode);
             }
             catch (Exception ex)
@@ -216,7 +304,7 @@ namespace AiTuber.Dify
                 if (debugLog) Debug.Log($"{logPrefix} チャンクダウンロードチェーン完了 - 新しいコメント受付可能");
             }
         }
-        
+
         /// <summary>
         /// 字幕音声再生チェーン完了イベントハンドラー
         /// </summary>
@@ -239,13 +327,13 @@ namespace AiTuber.Dify
             {
                 if (debugLog) Debug.Log($"{logPrefix} チャンクダウンロードチェーンキャンセル実行");
                 downloadCancellationTokenSource.Cancel();
-                
+
                 downloadCancellationTokenSource.Dispose();
                 downloadCancellationTokenSource = new CancellationTokenSource();
                 lastDifyProcessingChunkedNode = null;
             }
         }
-        
+
         /// <summary>
         /// 字幕音声再生チェーンをキャンセル
         /// </summary>
@@ -255,13 +343,13 @@ namespace AiTuber.Dify
             {
                 if (debugLog) Debug.Log($"{logPrefix} 字幕音声再生チェーンキャンセル実行");
                 playbackCancellationTokenSource.Cancel();
-                
+
                 playbackCancellationTokenSource.Dispose();
                 playbackCancellationTokenSource = new CancellationTokenSource();
                 lastSubtitleAudioNode = null;
             }
         }
-        
+
         /// <summary>
         /// 両方のチェーンをキャンセル
         /// </summary>
@@ -279,25 +367,31 @@ namespace AiTuber.Dify
             if (oneCommeClient != null)
             {
                 oneCommeClient.OnCommentReceived -= HandleOneCommeComment;
+                oneCommeClient.OnDisconnected -= HandleOneCommeDisconnected;
+                oneCommeClient.OnConnected -= HandleOneCommeConnected;
             }
-            
+
             // イベント解除
             DifyProcessingChunkedNode.OnDifyProcessingChainCompleted -= HandleDownloadChainCompleted;
             DifyProcessingChunkedNode.OnSubtitleAudioNodeCreated -= HandleSubtitleAudioNodeCreated;
             SubtitleAudioNode.OnChainCompleted -= HandleSubtitleAudioChainCompleted;
-            
+
             // チェーンをキャンセルしてクリア
             downloadCancellationTokenSource?.Cancel();
             downloadCancellationTokenSource?.Dispose();
             downloadCancellationTokenSource = null;
-            
+
             playbackCancellationTokenSource?.Cancel();
             playbackCancellationTokenSource?.Dispose();
             playbackCancellationTokenSource = null;
             
+            initialBlockCancellationTokenSource?.Cancel();
+            initialBlockCancellationTokenSource?.Dispose();
+            initialBlockCancellationTokenSource = null;
+
             lastDifyProcessingChunkedNode = null;
             lastSubtitleAudioNode = null;
-            
+
             if (debugLog) Debug.Log($"{logPrefix} チャンク2チェーンシステムリソース解放完了");
         }
     }

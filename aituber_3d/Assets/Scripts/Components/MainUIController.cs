@@ -87,7 +87,8 @@ namespace AiTuber
             // 質問、質問者名、質問者アイコン
             mainUI.SetQuestionerName(comment.data?.displayName ?? "匿名");
             mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
-            mainUI.SetQuestionText(comment.data?.speechText ?? "");
+            var questionText = comment.data?.speechText ?? comment.data?.comment ?? "";
+            mainUI.SetQuestionText(questionText);
             // 回答は空（字幕で表示）、スライドURL設定
             mainUI.SetAnswerText("");
             var slideUrl = string.IsNullOrEmpty(response.SiteUrl) 
@@ -125,6 +126,17 @@ namespace AiTuber
             mainUI.SetQuestionerIconUrl(null);
             
             Debug.Log("[MainUIController] 字幕音声チェーン完了 - UI状態をデフォルトに復帰");
+        }
+
+        /// <summary>
+        /// 回答累積数をリセット（AiTuberSettingsUIから呼び出し）
+        /// </summary>
+        public void ResetAnswerCount()
+        {
+            _totalAnswerCount = 0;
+            mainUI.SetTotalAnswerCount(_totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
+            Debug.Log("[MainUIController] 回答累積数をリセットしました");
         }
 
         void OnDestroy()

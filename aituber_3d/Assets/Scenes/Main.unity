@@ -182,18 +182,6 @@ PrefabInstance:
       propertyPath: audioSource
       value: 
       objectReference: {fileID: 780862397}
-    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
-      propertyPath: gapBetweenAudio
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
-      propertyPath: enableDebugLogging
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
-      propertyPath: gapBetweenDifyRequests
-      value: 10
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

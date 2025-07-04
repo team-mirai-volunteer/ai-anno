@@ -13,6 +13,8 @@ namespace AiTuber.Dify
 
         [Header("OneComme Configuration")]
         [SerializeField] private bool autoConnect = true;
+        [SerializeField] private bool enableAutoReconnect = true;
+        [SerializeField] private float reconnectInterval = 0.5f;
         [SerializeField] private float gapBetweenAudio = 1.0f;
         [SerializeField] private float gapBetweenDifyRequests = 10.0f;
 
@@ -97,7 +99,7 @@ namespace AiTuber.Dify
             // OneCommeClientの依存注入
             if (oneCommeClient != null)
             {
-                oneCommeClient.Install(oneCommeUrl, autoConnect, enableDebugLogging);
+                oneCommeClient.Install(oneCommeUrl, autoConnect, enableDebugLogging, enableAutoReconnect, reconnectInterval);
             }
 
 
