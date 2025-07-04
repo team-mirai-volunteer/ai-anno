@@ -10,7 +10,7 @@ namespace AiTuber
     [RequireComponent(typeof(MainUI))]
     public class MainUIController : MonoBehaviour
     {
-        private const string DefaultSlideUrl = "https://storage.googleapis.com/ai-anno-ai-anno-manifest-images-staging/250701/slides/003_introduction.png";
+        private const string DefaultSlideUrl = "https://storage.googleapis.com/ai-anno-ai-anno-manifest-images-production/250704/slides/001_seisaku_manifesto.png";
         
         private MainUI mainUI;
 
