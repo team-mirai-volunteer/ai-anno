@@ -11,6 +11,21 @@ ScriptedImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: mat_anno_face_01
+    second: {fileID: 2100000, guid: 58d4e485fa4404047b5cb650678ed61a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: mat_anno_hair_01
+    second: {fileID: 2100000, guid: 9c8248d59403d3045bee80953f180092, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: mat_anno_skin_01
+    second: {fileID: 2100000, guid: 28a584d8ab6208643b7c551236df1a3c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: mat_anno_tasuki_01
     second: {fileID: 2100000, guid: ff65719b7f78a434b9cb6796872b9710, type: 2}
   serializedVersion: 2
