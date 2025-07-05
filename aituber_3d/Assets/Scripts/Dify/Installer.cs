@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using AiTuber;
 
 namespace AiTuber.Dify
 {
@@ -17,14 +18,19 @@ namespace AiTuber.Dify
         [SerializeField] private float reconnectInterval = 0.5f;
         [SerializeField] private float gapBetweenAudio = 1.0f;
         [SerializeField] private float gapBetweenDifyRequests = 10.0f;
+        [SerializeField] private float gapAfterAudio = 2.0f;
 
         [Header("Chat Components")]
         [SerializeField] private OneCommeClient? oneCommeClient;
-        [SerializeField] private NodeChainChunkedController? nodeChainChunkedController;
+        [SerializeField] private QueueBasedController? queueBasedController;
         [SerializeField] private AudioSource? audioSource;
 
+        [Header("UI Components")]
+        [SerializeField] private MainUIController? mainUIController;
+        [SerializeField] private MainUI? mainUI;
+
         private DifyChunkedClient? difyChunkedClient;
-        private BufferedAudioPlayer? bufferedAudioPlayer;
+        private DifyAudioFetcher? difyAudioFetcher;
 
         /// <summary>
         /// 初期化フラグ
@@ -59,23 +65,13 @@ namespace AiTuber.Dify
                     return;
                 }
 
-                // 全コンポーネントに依存注入
-                InstallComponents(oneCommeUrl);
-
-                // DifyChunkedClient作成
+                // 基本コンポーネント初期化
+                oneCommeClient = InstallComponents(oneCommeUrl);
                 difyChunkedClient = new DifyChunkedClient(difyUrl, apiKey, enableDebugLogging);
+                difyAudioFetcher = new DifyAudioFetcher(60, enableDebugLogging);
 
-                // BufferedAudioPlayer作成
-                if (audioSource != null)
-                {
-                    bufferedAudioPlayer = new BufferedAudioPlayer(audioSource, gapBetweenAudio, enableDebugLogging);
-                }
-
-                // NodeChainChunkedControllerの依存関係構築
-                if (oneCommeClient != null && nodeChainChunkedController != null && bufferedAudioPlayer != null)
-                {
-                    nodeChainChunkedController.Initialize(oneCommeClient, difyChunkedClient, bufferedAudioPlayer, gapBetweenAudio, gapBetweenDifyRequests, enableDebugLogging);
-                }
+                // 新キューシステム初期化（既存システム削除により単一システム）
+                InitializeNewQueueSystem();
 
                 IsInitialized = true;
                 
@@ -92,9 +88,40 @@ namespace AiTuber.Dify
         }
 
         /// <summary>
+        /// キューベースシステム初期化
+        /// </summary>
+        private void InitializeNewQueueSystem()
+        {
+            // 依存性チェック
+            Debug.Assert(queueBasedController != null, "[Installer] QueueBasedControllerが設定されていません");
+            Debug.Assert(audioSource != null, "[Installer] AudioSourceが設定されていません");
+            Debug.Assert(oneCommeClient != null, "[Installer] OneCommeClientが設定されていません");
+            Debug.Assert(difyChunkedClient != null, "[Installer] DifyChunkedClientが設定されていません");
+            Debug.Assert(difyAudioFetcher != null, "[Installer] DifyAudioFetcherが設定されていません");
+            
+            if (mainUIController != null && mainUI != null)
+            {
+                // UI統合版初期化
+                queueBasedController.InitializeWithUI(
+                    oneCommeClient, difyChunkedClient, difyAudioFetcher, audioSource, 
+                    mainUIController, mainUI, 60.0f, gapBetweenAudio, gapAfterAudio, gapBetweenDifyRequests, enableDebugLogging);
+            }
+            else
+            {
+                // UI無し版初理化
+                queueBasedController.Initialize(
+                    oneCommeClient, difyChunkedClient, difyAudioFetcher, audioSource, 
+                    60.0f, gapBetweenAudio, gapAfterAudio, gapBetweenDifyRequests, enableDebugLogging);
+            }
+            
+            if (enableDebugLogging) Debug.Log("[Installer] キューベースシステム初期化完了");
+        }
+
+
+        /// <summary>
         /// 全コンポーネントの依存注入
         /// </summary>
-        private void InstallComponents(string oneCommeUrl)
+        private OneCommeClient? InstallComponents(string oneCommeUrl)
         {
             // OneCommeClientの依存注入
             if (oneCommeClient != null)
@@ -102,7 +129,7 @@ namespace AiTuber.Dify
                 oneCommeClient.Install(oneCommeUrl, autoConnect, enableDebugLogging, enableAutoReconnect, reconnectInterval);
             }
 
-
+            return oneCommeClient;
         }
 
         /// <summary>

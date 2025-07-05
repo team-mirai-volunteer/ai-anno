@@ -1,36 +1,52 @@
+#nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using AiTuber.Dify;
 using UnityEngine;
 
 namespace AiTuber
 {
     /// <summary>
-    /// MainUIController - MainUIのコントローラー
+    /// MainUIController - 新キューベースシステム専用UIコントローラー
     /// </summary>
     [RequireComponent(typeof(MainUI))]
     public class MainUIController : MonoBehaviour
     {
         private const string DefaultSlideUrl = "https://storage.googleapis.com/ai-anno-ai-anno-manifest-images-production/250704/slides/001_seisaku_manifesto.png";
         
-        private MainUI mainUI;
+        private MainUI mainUI = null!;
+        private bool enableDebugLog = true;
 
-        private int _totalAnswerCount = 0;
+        // データ構造（既存のMainChunkedCommentContextと同じ）
+        private class MainChunkedCommentContext
+        {
+            public OneCommeComment Comment { get; set; } = null!;
+            public string UserName { get; set; } = "";
+            public DifyChunkedResponse? Response { get; set; }
+            public SubtitleAudioTask? AudioTask { get; set; }
+        }
 
-        private List<MainChunkedCommentContext> _waitChunkedComments = new();
+        private List<MainChunkedCommentContext> waitQueue = new();
+        private int totalAnswerCount = 0;
 
-        void Start()
+        private void Awake()
         {
             mainUI = GetComponent<MainUI>();
-            _totalAnswerCount = PlayerPrefs.GetInt(Constants.PlayerPrefs.TotalAnswerCount, 0);
-            SetupEventHandlers();
+        }
 
-            // 初期化処理
+        private void Start()
+        {
+            // PlayerPrefsから総回答数復元
+            totalAnswerCount = PlayerPrefs.GetInt(Constants.PlayerPrefs.TotalAnswerCount, 0);
             InitializeUI();
         }
 
-        void InitializeUI()
+        /// <summary>
+        /// UI初期化処理（既存のInitializeUIと等価）
+        /// </summary>
+        private void InitializeUI()
         {
-            mainUI.SetTotalAnswerCount(_totalAnswerCount);
+            mainUI.SetTotalAnswerCount(totalAnswerCount);
             mainUI.SetQuestionerName("");
             mainUI.SetQuestionText("質問をお待ちしています...");
             mainUI.SetAnswerText("質問をお待ちしています...");
@@ -38,139 +54,156 @@ namespace AiTuber
             UpdateWaitList();
         }
 
+        // ========== 新システムイベントハンドラー ==========
 
-        private void ChunkedCommentHandler(MainChunkedCommentContext context)
+        /// <summary>
+        /// 既存のChunkedCommentHandlerと等価
+        /// </summary>
+        public void HandleNewCommentQueued(OneCommeComment comment, string userName)
         {
-            _waitChunkedComments.Add(context);
-            UpdateWaitList();
-        }
-        private void UpdateWaitList()
-        {
-            for (var i = 0; i < mainUI.QueueCount; i++)
+            var context = new MainChunkedCommentContext
             {
-                string iconUrl = null;
-                
-                if (i < _waitChunkedComments.Count)
-                {
-                    iconUrl = _waitChunkedComments[i].Comment.data?.profileImage;
-                }
-                
-                mainUI.SetQueuedIcon(iconUrl, i);
-            }
-            mainUI.SetQueuedQuestionCount(_waitChunkedComments.Count);
-        }
-
-
-        private void ChunkedCommentPlay(SubtitleAudioNode subtitleAudioNode)
-        {
-            MainChunkedCommentContext? commentContext = null;
-            foreach (var context in _waitChunkedComments)
-            {
-                if (context.AudioNode == subtitleAudioNode)
-                {
-                    commentContext = context;
-                    break;
-                }
-            }
-
-            if (commentContext == null)
-            {
-                return;
-            }
-
-            _waitChunkedComments.Remove(commentContext);
-
-            var comment = commentContext.Comment;
-            var response = commentContext.Response;
-
-            // chunkedコメント再生時の処理
-            // 質問、質問者名、質問者アイコン
-            mainUI.SetQuestionerName(comment.data?.displayName ?? "匿名");
-            mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
-            var questionText = comment.data?.speechText ?? comment.data?.comment ?? "";
-            mainUI.SetQuestionText(questionText);
-            // 回答は空（字幕で表示）、スライドURL設定
-            mainUI.SetAnswerText("");
-            var slideUrl = string.IsNullOrEmpty(response.SiteUrl) 
-                ? DefaultSlideUrl
-                : response.SiteUrl;
+                Comment = comment,
+                UserName = userName,
+                Response = null, // 後でDifyProcessingTask完了時に設定
+                AudioTask = null // 後でSubtitleAudioTask作成時に設定
+            };
             
-            Debug.Log($"[MainUIController] Setting slide URL: {slideUrl} (Original: {response.SiteUrl ?? "null"})");
-            mainUI.SetSlideImageUrl(slideUrl);
-
+            waitQueue.Add(context);
             UpdateWaitList();
-
-            _totalAnswerCount++;
-            mainUI.SetTotalAnswerCount(_totalAnswerCount);
-            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
-        }
-
-        private void HandleChunkStarted(string chunkText)
-        {
-            mainUI.SetAnswerText(chunkText);
+            
+            if (enableDebugLog)
+            {
+                Debug.Log($"[MainUIController] 待機キューに追加: [{userName}] {comment.data.comment}");
+            }
         }
 
         /// <summary>
-        /// 音声再生チェーン完了時の処理 - デフォルト画像とUI状態に復帰
+        /// DifyProcessingTask完了時のコンテキスト更新
         /// </summary>
-        /// <param name="completedNode">完了したノード</param>
-        private void HandleChainCompleted(SubtitleAudioNode completedNode)
+        public void HandleProcessingCompleted(DifyProcessingTask task, DifyChunkedResponse response)
         {
-            // デフォルト画像に復帰
-            mainUI.SetSlideImageUrl(DefaultSlideUrl);
+            // 待機キューから該当コメントを検索してレスポンス設定
+            var context = waitQueue.Find(c => c.Comment == task.Comment);
+            if (context != null)
+            {
+                context.Response = response;
+            }
             
-            // UI状態をデフォルトに復帰
+            if (enableDebugLog)
+            {
+                Debug.Log($"[MainUIController] Dify処理完了: [{task.UserName}]");
+            }
+        }
+
+        /// <summary>
+        /// 既存のChunkedCommentPlayと等価
+        /// </summary>
+        public void HandleSubtitleTaskPlayStart(SubtitleAudioTask task)
+        {
+            // 待機キューから該当コメントを検索（publicプロパティアクセス）
+            var context = waitQueue.Find(c => c.Comment == task.Comment);
+            if (context == null) return;
+            
+            // 待機キューから削除
+            waitQueue.Remove(context);
+            
+            // UI更新（既存システムと同じ順序・内容）
+            var comment = context.Comment;
+            var response = context.Response;
+            
+            mainUI.SetQuestionerName(comment.data?.displayName ?? context.UserName ?? "匿名");
+            mainUI.SetQuestionerIconUrl(comment.data?.profileImage);
+            mainUI.SetQuestionText(comment.data?.speechText ?? comment.data?.comment ?? "");
+            mainUI.SetAnswerText(""); // 初期化（字幕で更新される）
+            
+            // スライド画像設定
+            string slideUrl = response?.SiteUrl ?? DefaultSlideUrl;
+            mainUI.SetSlideImageUrl(slideUrl);
+            
+            // 総回答数更新（既存システムと同じタイミング）
+            totalAnswerCount++;
+            mainUI.SetTotalAnswerCount(totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, totalAnswerCount);
+            
+            // 待機リスト更新
+            UpdateWaitList();
+            
+            if (enableDebugLog)
+            {
+                Debug.Log($"[MainUIController] 音声再生開始: [{context.UserName}] 総回答数:{totalAnswerCount}");
+            }
+        }
+
+        /// <summary>
+        /// 既存のHandleChunkStartedと等価
+        /// </summary>
+        public void HandleChunkStarted(string chunkText)
+        {
+            // 字幕表示（既存システムと同じ）
+            mainUI.SetAnswerText(chunkText);
+            
+            if (enableDebugLog)
+            {
+                Debug.Log($"[MainUIController] 字幕更新: {chunkText}");
+            }
+        }
+
+        /// <summary>
+        /// 既存のHandleChainCompletedと等価
+        /// </summary>
+        public void HandleSubtitleTaskCompleted(SubtitleAudioTask task)
+        {
+            // UI状態をデフォルトに復帰（既存システムと同じ）
+            mainUI.SetSlideImageUrl(DefaultSlideUrl);
             mainUI.SetQuestionerName("");
             mainUI.SetQuestionText("質問をお待ちしています...");
             mainUI.SetAnswerText("質問をお待ちしています...");
             mainUI.SetQuestionerIconUrl(null);
             
-            Debug.Log("[MainUIController] 字幕音声チェーン完了 - UI状態をデフォルトに復帰");
+            if (enableDebugLog)
+            {
+                Debug.Log($"[MainUIController] 音声再生完了・UI復帰: [{task.UserName}]");
+            }
+        }
+
+        // ========== 内部処理メソッド ==========
+
+        /// <summary>
+        /// 既存のUpdateWaitListと等価
+        /// </summary>
+        private void UpdateWaitList()
+        {
+            // 待機アイコン更新
+            for (var i = 0; i < mainUI.QueueCount; i++)
+            {
+                string? iconUrl = null;
+                
+                if (i < waitQueue.Count)
+                {
+                    iconUrl = waitQueue[i].Comment.data?.profileImage;
+                }
+                
+                mainUI.SetQueuedIcon(iconUrl, i);
+            }
+            
+            // 待機数更新
+            mainUI.SetQueuedQuestionCount(waitQueue.Count);
         }
 
         /// <summary>
-        /// 回答累積数をリセット（AiTuberSettingsUIから呼び出し）
+        /// 総回答数リセット機能（既存システムと同じ）
         /// </summary>
         public void ResetAnswerCount()
         {
-            _totalAnswerCount = 0;
-            mainUI.SetTotalAnswerCount(_totalAnswerCount);
-            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, _totalAnswerCount);
-            Debug.Log("[MainUIController] 回答累積数をリセットしました");
-        }
-
-        void OnDestroy()
-        {
-            CleanupEventHandlers();
-        }
-        private void SetupEventHandlers()
-        {
-            DifyProcessingChunkedNode.OnCommentProcessed += ChunkedCommentHandler;
-            SubtitleAudioNode.OnPlayStart += ChunkedCommentPlay;
-            SubtitleAudioNode.OnChunkStarted += HandleChunkStarted;
-            SubtitleAudioNode.OnChainCompleted += HandleChainCompleted;
-        }
-        private void CleanupEventHandlers()
-        {
-            DifyProcessingChunkedNode.OnCommentProcessed -= ChunkedCommentHandler;
-            SubtitleAudioNode.OnPlayStart -= ChunkedCommentPlay;
-            SubtitleAudioNode.OnChunkStarted -= HandleChunkStarted;
-            SubtitleAudioNode.OnChainCompleted -= HandleChainCompleted;
-        }
-    }
-
-
-    public class MainChunkedCommentContext
-    {
-        public OneCommeComment Comment { get; set; }
-        public DifyChunkedResponse Response { get; set; }
-        public SubtitleAudioNode AudioNode { get; set; }
-
-        public MainChunkedCommentContext(OneCommeComment comment, DifyChunkedResponse response, SubtitleAudioNode audioNode)
-        {
-            Comment = comment;
-            Response = response;
-            AudioNode = audioNode;
+            totalAnswerCount = 0;
+            mainUI.SetTotalAnswerCount(totalAnswerCount);
+            PlayerPrefs.SetInt(Constants.PlayerPrefs.TotalAnswerCount, totalAnswerCount);
+            
+            if (enableDebugLog)
+            {
+                Debug.Log("[MainUIController] 総回答数リセット");
+            }
         }
     }
 }
