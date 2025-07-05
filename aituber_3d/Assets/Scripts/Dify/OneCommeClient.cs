@@ -109,6 +109,7 @@ namespace AiTuber.Dify
             InitializeWebSocketClient();
         }
 
+
         /// <summary>
         /// 別スレッドからの生メッセージ受信イベント（キューにエンキュー）
         /// </summary>
@@ -273,8 +274,8 @@ namespace AiTuber.Dify
             
             if (debugLog) Debug.Log($"[OneComme] テストコメント注入: [{userName}] {comment}");
             
-            // 直接イベント発火（メインスレッドで実行）
-            OnCommentReceived?.Invoke(testComment);
+            // コメントキューを通してフィルタリングを適用
+            commentQueue.Enqueue(testComment);
         }
 
     }

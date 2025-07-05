@@ -122,6 +122,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &165623744 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4146230861837432692, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
+  m_PrefabInstance: {fileID: 293811638}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1421bdca5f0c4fb4a87a9feda47e1a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &293811638
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -175,6 +186,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
+      propertyPath: mainUI
+      value: 
+      objectReference: {fileID: 1679739002}
+    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
       propertyPath: difyUrl
       value: https://stg-ai-anno-dify.team-mir.ai/v1/chat-messages
       objectReference: {fileID: 0}
@@ -182,6 +197,14 @@ PrefabInstance:
       propertyPath: audioSource
       value: 
       objectReference: {fileID: 780862397}
+    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
+      propertyPath: mainUIController
+      value: 
+      objectReference: {fileID: 1679739003}
+    - target: {fileID: 7387740048526832887, guid: 04f60f3fb740b4b5f8aead56a7b56fe0, type: 3}
+      propertyPath: queueBasedController
+      value: 
+      objectReference: {fileID: 165623744}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -577,6 +600,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c0cca06069ec546f69b62538740ca39b, type: 3}
+--- !u!114 &1679739002 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4901347397991244398, guid: c0cca06069ec546f69b62538740ca39b, type: 3}
+  m_PrefabInstance: {fileID: 1565219961}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d795e4ca8dd67a4eacbf0238ec29cc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1679739003 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5648903592060526372, guid: c0cca06069ec546f69b62538740ca39b, type: 3}
+  m_PrefabInstance: {fileID: 1565219961}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb85c92fb5a3e424384b4a5eb6eba078, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
